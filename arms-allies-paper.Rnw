@@ -1,0 +1,125 @@
+\documentclass[12pt]{article}
+
+\usepackage{fullpage}
+\usepackage{graphicx, rotating, booktabs} 
+\usepackage{times} 
+\usepackage{natbib} 
+\usepackage{indentfirst} 
+\usepackage{setspace}
+\usepackage{grffile} 
+\usepackage{hyperref}
+\usepackage{adjustbox}
+\usepackage{ntheorem}
+\theoremseparator{:}
+\newtheorem{hyp}{Hypothesis}
+\setcitestyle{aysep{}}
+
+
+\singlespace
+\title{\textbf{Arms and Alliances}}
+\author{Joshua Alley\footnote{Graduate Student,
+Department of Political Science, Texas A\&M University.}}
+\date{{\normalsize \today}}
+
+\bibliographystyle{apsr}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\maketitle 
+
+\newpage 
+
+\doublespace 
+
+% Academic success cannot satisfy- only Jesus can
+
+\section*{Introduction}
+
+How can states increase their security in international relations? States can augment their material capabilities and security through spending more on arms, or forming new alliances. Because states can use either arms or alliances to gain security, it is possible for states to replace one policy with another. Conventional wisdom holds that states will often substitute alliances for arms, reducing their own defense effort as they gain the support of other states. 
+
+Two strands of academic inquiry expect that alliance formation will lead to reduced arms spending. Theories of arms and alliances start with the premise that the two are substitute goods and therefore increasing alliances will lead to decreasing reliance on arms \citep{Morrow1993, Sorokin1994, DigiuseppePoast2016}. Economic theories of alliances predict that small states will reduce defense effort and free-ride on the protection of more powerful actors in their alliance \citep{OlsonZeckhauser1966, SandlerHartley2001}. 
+
+These predictions have some empirical backing, but they do not apply to the Triple Entente. In the early 20th century, France, Russia and the UK formed an alliance network including three of the most capable states in the international system. But even after forming an alliance with France in 1904 and Russia in 1907, UK military spending rose from \textsterling 53207 thousand in 1907 to \textsterling 67957 thousand in 1912. Meanwhile, French military spending rose from \textsterling 38956 thousand  in 1904 to \textsterling 61367 thousand by 1912 \citep{SingerCINC1988}. For the members of the Triple Entente, new alliances did not lead to reduced defense effort \citep{Schmitt1924}. 
+
+Another puzzling case for theories of arms and alliances is the behavior of the Little Entente between the World Wars. Yugoslavia, Czechoslovakia and Romania formed an alliance network to balance Hungary and secure their new independence \citep{Benes1922, Osusky1934}. France formed alliances with all these states by 1921 to secure the new status quo in Eastern Europe \citep[pg. 142-3]{Crane1931}, but Czechoslovakian and Romanian military spending steadily increased from 1920 on before plateauing during the Great Depression and then increasing again until 1936, when the alliance broke down. France's substantial capability should have allowed the weaker members of the Little Entente to reduce their defense effort, but there is limited evidence they did. 
+
+Furthermore there is mixed statistical evidence for the prediction that alliances lead to reduced defense effort. Some studies find a negative correlation between alliances and arms spending \citep{Conybeare1992, Morrow1993, Kimball2010, DigiuseppePoast2016}, but others suggest that arms and alliances are positively associated \citep{Diehl1994, Horowitzetal2017}. Positive correlations between arms spending and alliances are also puzzling for theories that anticipate reduced defense expenditure as more alliances form. 
+
+What determines the combination of arms and alliances states use to seek security? I argue that.... 
+ 
+Whether international competition leads to alliances, military spending, or both has substantial ramifications for international and domestic prosperity and security. Military spending consumes resources that might otherwise be used for social welfare, creating a ``guns and butter trade off.'' According to the Stockholm International Peace Research Institute, less than 10\% of annual global military spending could fund the UN's Sustainable Development Goals for education \citep{SIPRI2016}. Alliances also generate externalities, including entrapment in war \citep{Snyder1984} and conflict diffusion \citep{MelinKoch2010}. 
+
+This research encompasses several fields of inquiry in international relations. Alliances and military spending are often examined separately. Most empirical work on alliances uses a binary dependent variable--- states can either form an alliances or not. But if the alternative to an alliance is added military spending, rather than no alliance, our theories and empirical tests of alliance formation are incomplete. Any determinants of military spending cannot be addressed in isolation from a state's alliance portfolio \citep{Nordhausetal2012}.   
+
+Understanding how states use arms and alliances to seek security also contributes to scholarship on the political economy of armed conflict. War has shaped state coercive capacity \citep{Bean1973, Tilly1990}, tax policy \citep{Dinceccoetal2011, ScheveStasavage2012}, and central banking \citep{Poast2015}. Military spending and alliances determine the economic burden of providing security, making them integral concerns in the political economy of armed conflict.  
+
+Trade offs between arms and alliances are relevant to the efficacy of different security policies. How states can mix arms and alliances will determine whether particular policy combinations can provide enough security at an acceptable economic burden. Clarifying the academic debate can therefore provide guidance about the future of international politics, including the viability of current alliance arrangements. 
+
+US policymakers often complain that few of NATO's 28 members meet the defense spending obligation of at least 2\% of GDP. In 2011, US Secretary of Defense Robert Gates warned that NATO was becoming a ``two-tier alliance.'' If states consistently reduce arms spending after forming alliances, these warnings will have little effect. Most contemporary theories predict that states will use alliances to maintain their security while reducing spending on arms. 
+
+
+\section*{Arms versus Alliances}
+
+% Can summarize lit to date here. KEEP THIS AS SHORT AS POSSIBLE! 
+
+\citet{Altfield1984} and \citet{Morrow1993} noted that states can use arms or alliances to produce security, making them substitute goods. Preferences over arms or alliances depend on the marginal costs of adding an additional unit of arms or an additional unit of alliances. In accordance with these expectations, \citet{AllenDigiuseppe2013} find that states facing an sovereign debt crisis are more likely to form an alliances to maintain their security while reducing the economic burden of military spending. Substitution theory has a clear logic, but the empirical evidence is mixed. 
+
+\citet{Diehl1994} finds that arms and alliances are positively associated, and \citet{Horowitzetal2017} show that states can use conscription to complement their efforts to form an alliance. However, states may only substitute arms for alliances with particular allies. \citet{DigiuseppePoast2016} argue that states are more likely to reduce military spending when they have a democratic ally, whose promises of support are more credible. 
+
+States want to replace arms with alliances because of the guns and butter trade off in the domestic economy. Military spending consumes resources that could be used to provide other goods to society. \citet{Kimball2010} tests whether states with high levels of social demand use substitution and finds a positive correlation between infant mortality rates and alliance formation. The economic theory of alliances predicts that smaller allies will ``free-ride'' on the security provided by their larger partners \citep{SandlerHartley2001, Lake2009}, but free-riding is absent in the Arab League \citep{Chenetal1996}. 
+
+In microeconomics, consumption of two goods depends on the marginal rate of substitution and the relative prices of those goods. The basic result in this framework is that individuals will consume as much as possible at the point where their indifference curves are tangential to the budget constraint. This point occurs when the marginal rate of substitution is equal to the ratio of the prices of these goods. The price ratio depends on the market price of each good, which in this case are the costs of arms and alliances. 
+
+Most effort has been devoted to understanding the price of arms through the guns-butter trade off in the domestic economy. As arms become more costly, states are more likely to produce security through alliances. States with high costs of alliances will have more arms and less alliances. This framework cannot explain why some states maintain high levels of both alliances and arms. What motivates states to carry a heavy economic and foreign policy burden through heavy investment in both arms and allies? 
+
+\section*{Theoretical Framework} 
+
+States can only reduce their defense effort if they believe that the promises of aid during war are credible. The regime type of allies is one possible source of credibility \citep{DigiuseppePoast2016}. However, that is not the only possible source of credibility. 
+
+Not all alliances are equivalent in their construction. Treaties contain a wide range of terms, conditions, and obligations for signatories \citep{Benson2011, Chibaetal2015}. The content of an alliance treaty informs the parties of its credibility, as not all commitments are equally credible. Put differently, the institutional design of alliances has consequences for their credibility, and subsequent investment in arms. 
+
+I make three assumptions about the connection between alliance design and defense effort. The first assumption is that states are risk-averse over conflict, due to the consequences of losing a war. The next two assumptions are drawn from \citep{Morrow1993}. I assume that arms are a more reliable source of military capability, but that they are slower to develop than alliances. Alliances provide an immediate capability boost, but they are less reliable than domestic arms. Due to these differences, arms and alliances are imperfect substitute goods for states seeking security. 
+
+
+\subsection*{Alliance Design}
+% A couple of paragraphs on alliance design considerations
+
+
+
+
+\subsection*{Design and Credible commmitments}
+
+
+
+
+
+
+
+
+
+
+\bibliography{C:/Users/jkalley14/Dropbox/Research/MasterBibliography}  
+%\bibliography{C:/Users/Josh/Dropbox/Research/MasterBibliography} 
+
+
+
+
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
