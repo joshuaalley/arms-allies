@@ -108,8 +108,20 @@ alliance.comp.expand <- alliance.comp.expand[
 alliance.comp.expand <- na.locf(alliance.comp.expand)
 alliance.comp.expand <- alliance.comp.expand[complete.cases(alliance.comp.expand), ]
 
+# Make sure no duplicate observations from merging process
+alliance.comp.expand <- unique(alliance.comp.expand)
+
+### The alliance.comp.expand dataframe has alliance-year data for all ATOP alliances
+# Countries appear in multiple years, so states are cross-classified within alliances
+# This next section of code brings in country-level data
+# For the country-level data, use DiGiuseppe and Poast's 2016 dataset
+# This also has the advantage of ensuring our samples are comparable
 
 
+# Start by subsettting the alliance data
+alliance.1950 <- subset(alliance.comp.expand, 
+                        alliance.comp.expand$year >= 1950 & alliance.comp.expand$year <= 2001)
 
+alliance.1950 <- alliance.1950[order(alliance.1950$ccode, alliance.1950$year, alliance.1950$atopid), ]
 
-
+# Pull out key variables from DiGiuseppe and Poast Data
