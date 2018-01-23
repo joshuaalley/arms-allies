@@ -14,6 +14,7 @@ library(reshape)
 library(dplyr)
 library(zoo)
 
+
 # Load Benson's 2011 Data
 d.benson <- read.csv("data/alliance-types-benson.csv")
 d.benson <- cbind.data.frame(d.benson[, 1:2], d.benson[,8:15 ])
@@ -86,15 +87,21 @@ alliance.comp$freq <- alliance.comp$endyear - alliance.comp$startyear
 # and add one year to the other alliance years
 alliance.comp$freq <- alliance.comp$freq +  1
 
+
+
 # Expand the dataset, copying each observation according to the frequency variable
 alliance.comp.expand <- untable(alliance.comp, alliance.comp$freq)
 
-# Create a year variable
-alliance.comp.expand$year <- alliance.comp.expand$startyear + 
-  floor((as.numeric(rownames(alliance.comp.expand)) %% 1)*10)
+# Create a year variable by using the number of exanded observations
+# group data by country and ATOP alliance and count rows 
+alliance.comp.expand <- alliance.comp.expand %>%
+  group_by(atopid, ccode, startyear, endyear) %>%
+  mutate(count = row_number() - 1)
+
+
+alliance.comp.expand$year = alliance.comp.expand$startyear + alliance.comp.expand$count
 
 # Check the missing data issue by ATOPID
-
 # Major chunk of missing data for some alliances, including ATOPIDs = 
 # 1160, 1165, 1260, 1355, 2015, 2375, 2550, 3075, 3130, 3015, 3180, 3205
 
@@ -102,7 +109,7 @@ alliance.comp.expand$year <- alliance.comp.expand$startyear +
 # Sort by country code to fill in missing data from these alliances
 # Missing data is the result of a start-date merger issue
 alliance.comp.expand <- alliance.comp.expand[
-  order(alliance.comp.expand$atopid, alliance.comp.expand$year), ]
+  order(alliance.comp.expand$ccode, alliance.comp.expand$atopid, alliance.comp.expand$year), ]
 
 # Again, fill in missing alliance information with info from same alliance
 alliance.comp.expand <- na.locf(alliance.comp.expand)
@@ -120,8 +127,58 @@ alliance.comp.expand <- unique(alliance.comp.expand)
 
 # Start by subsettting the alliance data
 alliance.1950 <- subset(alliance.comp.expand, 
-                        alliance.comp.expand$year >= 1950 & alliance.comp.expand$year <= 2001)
+                        alliance.comp.expand$year >= 1949 & alliance.comp.expand$year <= 2001)
+
+summary(alliance.1950$year)
 
 alliance.1950 <- alliance.1950[order(alliance.1950$ccode, alliance.1950$year, alliance.1950$atopid), ]
 
+
+
+# Load Digiuseppe and Poast's data
+dg.poast <- read.csv("data/dg-poast2016.csv")
+
 # Pull out key variables from DiGiuseppe and Poast Data
+state.char <- cbind.data.frame(dg.poast$ccode, dg.poast$year,
+                                 dg.poast$majpow1, dg.poast$cap_1, dg.poast$rivalcap, dg.poast$rivalmil,
+                                 dg.poast$rivalry, dg.poast$defense_dem, dg.poast$defense_nodem,
+                                 dg.poast$nato, dg.poast$atwar, dg.poast$civilwar, dg.poast$DEMOC, 
+                                 dg.poast$LNRGDP, dg.poast$LMILEX, dg.poast$LMILEX1,
+                                 dg.poast$atopally_capsum, dg.poast$atopally_milsum, dg.poast$threatenv)
+
+colnames(state.char) <- c("ccode", "year", 
+                            "majpower", "CINC", "rival.cap", "rival.mil",
+                            "rivalry", "defense.dem", "defense.nodem",
+                            "nato", "atwar", "civilwar", "polity",
+                            "ln.GDP", "ln.milex", "lag.ln.milex",
+                            "totalcap.atop.ally", "totalmilex.atop.ally", "ls.threatenv")
+
+summary(state.char$year)
+state.char <- subset(state.char, state.char$year <= 2001)
+
+# Merge the state characteristics and alliance data
+full.data <- right_join(alliance.1950, state.char)
+
+full.data <- merge(alliance.1950, state.char, all = TRUE)
+
+# Change order of variables for ease in viewing
+full.data <- full.data[c(1, 3, 28, 2, 4, 5:27, 29:43)]
+
+# Ensure no duplicate observations are present after merging- not an issue here
+full.data <- unique(full.data)
+
+# Sort data 
+full.data[order(full.data$ccode, full.data$year, full.data$atopid), ]
+
+
+# Some missing alliance characteristics data for states that are not members of an ATOP alliance
+# Replace ATOP indicator with zero if missing
+full.data$atopid[is.na(full.data$atopid)] <- 0
+
+# If no ATOP alliance, fill all other alliance characteristic variables with a zero.
+full.data[6:26][is.na(full.data[, 6:26] & full.data$atopid == 0)] <- 0
+
+
+
+
+
