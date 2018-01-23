@@ -40,6 +40,22 @@ colnames(atop.mem.key) <- c("atopid", "ccode", "startyear", "endyear",
                             "defcon", "offcon", "neucon", "concon",
                             "armsreq")
 
+summary(atop.mem.key$atopid)
+
+
+# Add Chiba et al data to ATOP member alliance data
+# Load Chiba et al Replication data 
+chiba.etal <- read.csv("data/chiba-etal2015.csv")
+chiba.etal <- cbind.data.frame(chiba.etal[, 1], chiba.etal[, 6], chiba.etal[, 3], chiba.etal[, 10])
+colnames(chiba.etal) <- c("atopid", "dem.prop", "onlyconsul", "num.mem")
+
+# Drop atopids greater than 6000, which are all missing
+chiba.etal <- subset(chiba.etal, chiba.etal$atopid < 6000)
+
+
+# merge chiba et al data with ATOP member data
+atop.mem.key <- merge(atop.mem.key, chiba.etal, all.x = TRUE)
+
 
 # Merge ATOP member and Benson data to create a dataset with alliance members
 # and key conditions of a given ATOP alliance
@@ -72,8 +88,6 @@ atop.ben[3:10] <- na.locf(atop.ben[3:10])
 
 # Merge the two alliance data types using ATOP ID and starting year
 alliance.comp <- merge(atop.mem.key, atop.ben.unique, all.x = TRUE)
-
-
 
 
 # Create a frequency variable to expand data to country-alliance-year data form
@@ -159,10 +173,8 @@ state.char <- subset(state.char, state.char$year <= 2001)
 # Merge the state characteristics and alliance data
 full.data <- right_join(alliance.1950, state.char)
 
-full.data <- merge(alliance.1950, state.char, all = TRUE)
-
 # Change order of variables for ease in viewing
-full.data <- full.data[c(1, 3, 28, 2, 4, 5:27, 29:43)]
+full.data <- full.data[c(1, 3, 30, 2, 4, 5:29, 31:47)]
 
 # Ensure no duplicate observations are present after merging- not an issue here
 full.data <- unique(full.data)
@@ -176,9 +188,9 @@ full.data[order(full.data$ccode, full.data$year, full.data$atopid), ]
 full.data$atopid[is.na(full.data$atopid)] <- 0
 
 # If no ATOP alliance, fill all other alliance characteristic variables with a zero.
-full.data[6:26][is.na(full.data[, 6:26] & full.data$atopid == 0)] <- 0
+full.data[6:28][is.na(full.data[, 6:28] & full.data$atopid == 0)] <- 0
 
-
+# States with no alliances in a year are given an alliance ID of zero, grouping them all together
 
 
 
