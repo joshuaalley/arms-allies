@@ -129,7 +129,7 @@ Probabilistic alliances are unlikely to lead to substitution between alliances a
 \textsc{Hypothesis 1}: Probabilistic alliances will be associated with no change or increases in defense spending by member states. 
 \end{quote}
 
-This framework also generates predictions about other classifications of alliance characteristics, such as that of \citet{Leedsetal2002}. The ATOP project divides alliances into offensive, defensive, neutrality, non-aggression and consultation treaties. Consultation pacts do not guarantee military support, reducing their credibility. Thus, alliances that promise only consultation should will be less likely to lead to reduced defense effort. 
+This framework also generates predictions about other classifications of alliance characteristics. The Alliance Treaty Obligations and Provisions ATOP project divides alliances into offensive, defensive, neutrality, non-aggression and consultation treaties \citet{Leedsetal2002}. Consultation pacts do not guarantee military support, reducing their credibility. Thus, alliances that promise only consultation should will be less likely to lead to reduced defense effort. 
 
 \begin{quote}
 \textsc{Hypothesis 2}: Alliances that promise consultation but not military support will be associated with no change or increases in defense spending by member states. 
@@ -147,6 +147,34 @@ Another theoretical narrative that produces the opposite prediction of my framew
 
 Careful empirical design is necessary to accurately estimate the impact of alliance characteristics on defense spending. Attention to the structure of alliance data is perhaps the most important concern, and control variables can account for many of the strategic concerns around alliance designs In the next section, I describe my research design. 
  
+
+\section*{Research Design} 
+
+I test my two predictions on a sample of all states in the international system from 1950-2001. While this sample has more limited temporal coverage, it allows me to compare my results with those of \citet{DigiuseppePoast2016} and \citet{Nordhausetal2012}.\footnote{These other samples are limited by the availability and quality of economic indicators.} Using the same sample is especially helpful for comparison because I use a different estimator from most studies of the relationship between arms and alliances. 
+
+Most studies of the arms-alliances tradeoff estimate regression models on state-year panel data. Averages or dummy variables then summarize key characteristics of each state's total alliance portfolio. For example, \citet{Benson2012} uses a dummy variable to indicate if the state that initiated a militarized interstate dispute (MID) had a conditional alliance. \citet{DigiuseppePoast2016} use dummy indicators of whether a state has at least one defensive alliance tie with a democratic state. Other studies aggregate the total capability of a state's allies \citep{Nordhausetal2012}. 
+
+Averaging or the use of dummy variables at the state-year level eliminates important variation between different alliances. In every year, multiple states are grouped within alliances, placing alliances at another level in the data-generating process. If we are interested in how variation in alliance characteristics affects defense effort at the state level, single-level regression requires sometimes indirect proxies for those characteristics, creating a gap between theory and hypothesis testing. Without a model of between alliance variation, there may be too much certainty in parameter estimates \citep{McElreath2016}. 
+
+Therefore, I use multilevel regression model, which simultaneously models variation among observations clustered within alliances and states. A multilevel model is appropriate because I am interested in the impact of \textsf{alliance-level} characteristics on state's defense spending, and this approach allows me to directly model the impact of between alliance variation on state-level outcomes \citep{GelmanHill2007}. Multilevel models also account for sampling imbalance by shrinking estimates towards an overall average. 
+
+Hierarchical models are the most well-known type of multilevel model, where units are nested inside one another. State membership in alliances is less neat--- many states are members of multiple alliance treaties, and different states are clustered within each treaty. Such cross-classified data is still amenable to the multilevel approach. 
+
+Multilevel models have some costs. Defining a separate regression for each level of the data requires additional assumptions about the distributions characterizing of state and alliance clusters \citep{McElreath2016}. Also, these models are computationally intensive and more difficult to estimate. 
+
+The key dependent variable is the log-transformed value of a state's military expenditures during each year, which is the most common proxy for defense effort. Following\citet{DigiuseppePoast2016} I use data from \citet{Nordhausetal2012} who combine data from the Stockholm International Peace Institute (SIPRI) and Correlates of War (COW) projects to address defects in each.\footnote{SIPRI tends to under report spending by Warsaw Pact nations during the Cold War, while the COW data has some instances of measurement error.} I also include a lagged dependent variable to account for autocorrelation in the data-generating process. Equations with lagged DV are also nearly equivalent to estimating changes in spending \citep{DeBoefKeele2008}, which is the quantity of interest. 
+
+I draw on two databases for binary measures of the key independent variables. To test Hypothesis 1, I use the coding of \citet{Benson2012}, who classifies alliances as probabilistic, conditional, or unconditional. For Hypothesis 2, I use the ATOP data of \citet{Leedsetal2002} to measure whether an alliance promises only consultation.  Because, there is some overlap in these classifications, I estimate separate models of each hypothesis. 
+
+Accounting for state and alliance characteristics that may be correlated with both alliance design and military expenditures is necessary to avoid omitted variable bias in the estimates. At the alliance level, I include binary indicators of whether an alliance requires its members to provide some level of arms, is a bilateral treaty, and if any member was involved in a war. I also include the average democracy of the alliance members at the time of formation  \citep{Chibaetal2015}. 
+
+Controlling for some other types of alliances changes the interpretation of the key independent variables by altering the comparison category for each binary variable. While testing the impact of probabilistic alliances, I control for both types of compellent alliance, which means that the impact of probabilistic commitments is relative to other deterrent alliances. For Hypothesis 2, I control for whether an alliance pact is offensive. Because offensive and compellent alliances aims altering the status quo, they may lead to increased military spending, and these alliances may not be comparable to other pacts.   
+
+State-level control variables are drawn from replication data provided by \citet{DigiuseppePoast2016}. The first set of controls addresses the geopolitical environment for each state. Dummy indicators of participation in international war or civil war capture conflict participation, which can make defense a superior good \citep{OlsonZeckhauser1966}. I include the log-transformed military expenditures of rival states to measure potential arms competition. The natural log of GDP, and the POLITY measure of political institutions control for key domestic characteristics. Last, I include a binary indicator of whether a state is a major power, as these states engage in markedly different alliance policies and can rarely reduce defense effort. 
+
+
+
+
 
 
 
