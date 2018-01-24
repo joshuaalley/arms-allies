@@ -13,7 +13,7 @@ getwd()
 library(reshape)
 library(dplyr)
 library(zoo)
-
+library(ggplot2)
 
 # Load Benson's 2011 Data
 d.benson <- read.csv("data/alliance-types-benson.csv")
@@ -193,4 +193,95 @@ full.data[6:28][is.na(full.data[, 6:28] & full.data$atopid == 0)] <- 0
 # States with no alliances in a year are given an alliance ID of zero, grouping them all together
 
 
+
+
+
+######
+# This section summarizes the data using descriptive statistics and plots
+
+# Start by grouping the full dataset by country and alliance
+full.data <- full.data %>%
+  group_by(atopid, ccode)
+
+
+
+# DV: ln(military expenditure)
+summary(full.data$ln.milex)
+ggplot(full.data, aes(ln.milex)) + geom_density()
+ggplot(state.char, aes(ln.milex)) + geom_density()
+
+# Plot expenditures over time in all states (not interpretable, uncomment and use with subsets)
+# ggplot(state.char) + 
+#  geom_line(mapping = aes(x = year, y = ln.milex)) + 
+#  facet_wrap(~ ccode)
+
+
+# IV1: Probabilistic Alliances
+summary(full.data$prob_det)
+summary(alliance.1950$prob_det)
+
+
+# IV2: Consultation only
+summary(full.data$onlyconsul)
+summary(alliance.1950$onlyconsul)
+
+
+# Compare densities of the DV within the treatment variable
+# Probabilistic alliances (Not working)
+# ggplot(full.data, aes(ln.milex, fill = prob_det, color = prob_det)) + geom_density(alpha = .25)
+
+
+# scatterplot of association between GDP and expenditure
+# within the state characteristics data
+ggplot(state.char) + geom_point(mapping = aes(x = ln.GDP, y = ln.milex))
+ggplot(state.char, mapping = aes(x = ln.GDP, y = ln.milex)) + 
+  geom_point() + 
+  geom_smooth()
+
+# Defense pacts with democracies
+ggplot(state.char) + geom_point(mapping = aes(x = ln.GDP, y = ln.milex, color = defense.dem))
+# Major powers 
+ggplot(state.char) + geom_point(mapping = aes(x = ln.GDP, y = ln.milex, color = majpower))
+
+
+# Show the same association with full data:
+# Compare probabilistic deterrent alliances
+ggplot(full.data) + geom_point(mapping = aes(x = ln.GDP, y = ln.milex, 
+                                             color = prob_det))
+
+# Only consultation alliances
+ggplot(full.data) + geom_point(mapping = aes(x = ln.GDP, y = ln.milex, 
+                                             color = onlyconsul))
+
+# Proportion of democracies in an alliance
+ggplot(full.data) + geom_point(mapping = aes(x = ln.GDP, y = ln.milex, 
+                                             color = dem.prop))
+
+# Spending over time
+ggplot(full.data) + geom_point(mapping = aes(x = year, y = ln.milex))
+
+ggplot(full.data) + 
+  geom_point(mapping = aes(x = year, y = ln.milex,
+                               color = prob_det), position = "jitter") +
+  ggtitle("Probabilistic Alliances and Spending")
+
+ggplot(full.data) + 
+  geom_point(mapping = aes(x = year, y = ln.milex,
+                              color = onlyconsul), position = "jitter") +
+  ggtitle("Consultation Alliances and Spending")
+
+
+
+# Smoothed spending over time
+ggplot(state.char) + geom_smooth(mapping = aes(x = year, y = ln.milex))
+ggplot(state.char, mapping = aes(x = year, y = ln.milex)) +
+                  geom_point() +
+                  geom_smooth() + ggtitle("Spending over time: State-Year")
+
+# smoothed lines won't be as informative because states with more alliances will have the same point appear multiple times
+# Plot those regardless
+ggplot(full.data) + geom_smooth(mapping = aes(x = year, y = ln.milex))
+ggplot(full.data, mapping = aes(x = year, y = ln.milex)) +
+  geom_point() +
+  geom_smooth() + ggtitle("Spending over time: Full Sample")
 
