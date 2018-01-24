@@ -174,7 +174,7 @@ state.char <- subset(state.char, state.char$year <= 2001)
 full.data <- right_join(alliance.1950, state.char)
 
 # Change order of variables for ease in viewing
-full.data <- full.data[c(1, 3, 30, 2, 4, 5:29, 31:47)]
+full.data <- full.data[c(1, 3, 31, 2, 4, 5:30, 32:47)]
 
 # Ensure no duplicate observations are present after merging- not an issue here
 full.data <- unique(full.data)
@@ -193,7 +193,65 @@ full.data[6:28][is.na(full.data[, 6:28] & full.data$atopid == 0)] <- 0
 # States with no alliances in a year are given an alliance ID of zero, grouping them all together
 
 
+# The full dataset can be used to create an alliance characteristics-year dataset
+alliance.year <- full.data %>%
+  filter(atopid > 0) %>%
+  group_by(atopid, year) %>%
+  summarize(
+    avg.democ = mean(polity, na.rm = TRUE),
+    total.cap = sum(CINC, na.rm = TRUE),
+    total.expend = sum(ln.milex, na.rm = TRUE),
+    count = n(),
+    consul.only = max(onlyconsul, na.rm = TRUE),
+    prob.det = max(prob_det, na.rm = TRUE),
+    num.mem = mean(num.mem, na.rm = TRUE),
+    offense = max(offense, na.rm = TRUE),
+    defense = max(defense, na.rm = TRUE),
+    wartime = max(wartime, na.rm = TRUE),
+    uncond_comp = max(uncond_comp, na.rm = TRUE),
+    cond_comp = max(cond_comp, na.rm = TRUE),
+    uncond_det = max(uncond_det, na.rm = TRUE),
+    cond_det = max(cond_det, na.rm = TRUE),
+    discret_intervene = max(discret_intervene, na.rm = TRUE)
+  )
 
+alliance.year[order(alliance.year$atopid, alliance.year$year), ]
+
+
+# merge the avg democracy, total capability, and total military expenditures variables into the full data
+alliance.totals <- alliance.year[, 1:5]
+full.data <- left_join(full.data, alliance.totals)
+
+
+
+# The full dataset can also provide the basis of a state-year characteristics dataset 
+# with some summary variables for the alliance portfolio
+# Can then merge this with the state characteristics dataset
+state.ally.year <- full.data %>%
+  group_by(ccode, year) %>%
+  summarize(
+    treaty.count = n(),
+    prob.det.pres = max(prob_det, na.rm = TRUE),
+    prob.det.total = sum(prob_det, na.rm = TRUE),
+    consul.only.pres = max(onlyconsul, na.rm = TRUE),
+    consul.only.total = sum(onlyconsul, na.rm = TRUE),
+    bilat.total = sum(bilat, na.rm = TRUE),
+    uncond.comp.pres = max(uncond_comp, na.rm = TRUE),
+    uncond.comp.total = sum(uncond_comp, na.rm = TRUE),
+    cond.comp.pres = max(cond_comp, na.rm = TRUE),
+    cond.comp.total = sum(cond_comp, na.rm = TRUE),
+    uncond.det.pres = max(uncond_det, na.rm = TRUE),
+    uncond.det.total = sum(uncond_det, na.rm = TRUE),
+    cond.det.pres = max(cond_det, na.rm = TRUE),
+    cond.det.total = sum(cond_det, na.rm = TRUE),
+    avg.dem.prop = mean(dem.prop, na.rm = TRUE),
+    arms.req = max(armsreq, na.rm = TRUE),
+    avg.num.mem = mean(num.mem, na.rm = TRUE),
+    defense.total = sum(defense, na.rm = TRUE),
+    offense.total = sum(offense, na.rm = TRUE)
+  )
+
+state.char.full <- left_join(state.char, state.ally.year)
 
 
 ######
@@ -256,6 +314,14 @@ ggplot(full.data) + geom_point(mapping = aes(x = ln.GDP, y = ln.milex,
 # Proportion of democracies in an alliance
 ggplot(full.data) + geom_point(mapping = aes(x = ln.GDP, y = ln.milex, 
                                              color = dem.prop))
+
+# Average polity score within an alliance
+ggplot(full.data) + geom_point(mapping = aes(x = ln.GDP, y = ln.milex, 
+                                             color = avg.democ))
+
+# Total capability of an alliance
+ggplot(full.data) + geom_point(mapping = aes(x = ln.GDP, y = ln.milex, 
+                                             color = total.cap))
 
 # Spending over time
 ggplot(full.data) + geom_point(mapping = aes(x = year, y = ln.milex))
