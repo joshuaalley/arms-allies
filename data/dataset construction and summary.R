@@ -132,8 +132,10 @@ alliance.comp.expand <- alliance.comp.expand[complete.cases(alliance.comp.expand
 # Make sure no duplicate observations from merging process
 alliance.comp.expand <- unique(alliance.comp.expand)
 
+
+
 ### The alliance.comp.expand dataframe has alliance-year data for all ATOP alliances
-# Countries appear in multiple years, so states are cross-classified within alliances
+# Countries appear in multiple years, so states are multiple members within alliances
 # This next section of code brings in country-level data
 # For the country-level data, use DiGiuseppe and Poast's 2016 dataset
 # This also has the advantage of ensuring our samples are comparable
@@ -188,9 +190,11 @@ full.data[order(full.data$ccode, full.data$year, full.data$atopid), ]
 full.data$atopid[is.na(full.data$atopid)] <- 0
 
 # If no ATOP alliance, fill all other alliance characteristic variables with a zero.
-full.data[6:28][is.na(full.data[, 6:28] & full.data$atopid == 0)] <- 0
+full.data[6:29][is.na(full.data[, 6:29] & full.data$atopid == 0)] <- 0
 
 # States with no alliances in a year are given an alliance ID of zero, grouping them all together
+
+
 
 
 # The full dataset can be used to create an alliance characteristics-year dataset
@@ -207,11 +211,15 @@ alliance.year <- full.data %>%
     num.mem = mean(num.mem, na.rm = TRUE),
     offense = max(offense, na.rm = TRUE),
     defense = max(defense, na.rm = TRUE),
+    neutral = max(neutral, na.rm = TRUE),
+    nonagg = max(nonagg, na.rm = TRUE),
+    consul = max(consul, na.rm = TRUE),
     wartime = max(wartime, na.rm = TRUE),
     uncond_comp = max(uncond_comp, na.rm = TRUE),
     cond_comp = max(cond_comp, na.rm = TRUE),
     uncond_det = max(uncond_det, na.rm = TRUE),
     cond_det = max(cond_det, na.rm = TRUE),
+    discret_milsupport = max(discret_milsupport, na.rm = TRUE),
     discret_intervene = max(discret_intervene, na.rm = TRUE)
   )
 
@@ -221,6 +229,9 @@ alliance.year[order(alliance.year$atopid, alliance.year$year), ]
 # merge the avg democracy, total capability, and total military expenditures variables into the full data
 alliance.totals <- alliance.year[, 1:5]
 full.data <- left_join(full.data, alliance.totals)
+
+# Fill in totals with zero for state-years with no alliance
+full.data[48:50][is.na(full.data[, 48:50] & full.data$atopid == 0)] <- 0
 
 
 
@@ -259,7 +270,7 @@ state.char.full <- left_join(state.char, state.ally.year)
 
 # Start by grouping the full dataset by country and alliance
 full.data <- full.data %>%
-  group_by(atopid, ccode)
+  group_by(atopid, ccode, year)
 
 
 
@@ -268,28 +279,54 @@ summary(full.data$ln.milex)
 ggplot(full.data, aes(ln.milex)) + geom_density()
 ggplot(state.char, aes(ln.milex)) + geom_density()
 
-# Plot expenditures over time in all states (not interpretable, uncomment and use with subsets)
-# ggplot(state.char) + 
-#  geom_line(mapping = aes(x = year, y = ln.milex)) + 
-#  facet_wrap(~ ccode)
+# Which states have the smallest military expenditures? 
+# At least one has democratic alliances
+# Data for states with negative log military expenditures: Iceland and Solomon Islands
+small.spend <- filter(state.char, state.char$ln.milex < 0)
+small.spend <- filter(state.char, state.char$ln.milex < 1)
 
 
 # IV1: Probabilistic Alliances
 summary(full.data$prob_det)
 summary(alliance.1950$prob_det)
-
+# Differences in expenditure
+t.test(full.data$ln.milex ~ full.data$prob_det, alternative = "less")
+# Split data and plot
+full.data %>% 
+  select(ln.milex, prob_det) %>%
+ggplot(mapping = aes(x = prob_det, y = ln.milex)) +
+  geom_boxplot(mapping = aes(group = prob_det))
 
 # IV2: Consultation only
 summary(full.data$onlyconsul)
 summary(alliance.1950$onlyconsul)
+# Differences in expenditure
+t.test(full.data$ln.milex ~ full.data$onlyconsul, alternative = "less")
+# Split data and plot
+full.data %>% 
+  select(ln.milex, onlyconsul) %>%
+ggplot(mapping = aes(x = onlyconsul, y = ln.milex)) +
+  geom_boxplot(mapping = aes(group = onlyconsul))
 
 
-# Compare densities of the DV within the treatment variable
-# Probabilistic alliances (Not working)
-# ggplot(full.data, aes(ln.milex, fill = prob_det, color = prob_det)) + geom_density(alpha = .25)
+# Overlap between probabilistic deterrent treaties and consultation only pacts
+# Consultation on top, probabilistic deterrent on sides
+table(full.data$prob_det, full.data$consul)
 
 
-# scatterplot of association between GDP and expenditure
+# Check alliance aggregates: the sums throw some funky values
+# total capability
+summary(full.data$total.cap)
+ggplot(full.data) + geom_histogram(mapping = aes(x = total.cap))
+# Total expenditures
+summary(full.data$total.expend)
+ggplot(full.data) + geom_histogram(mapping = aes(x = total.expend))
+# Average democracy
+summary(full.data$avg.democ)
+ggplot(full.data) + geom_histogram(mapping = aes(x = avg.democ))
+
+
+#### scatterplot of association between GDP and expenditure
 # within the state characteristics data
 ggplot(state.char) + geom_point(mapping = aes(x = ln.GDP, y = ln.milex))
 ggplot(state.char, mapping = aes(x = ln.GDP, y = ln.milex)) + 
@@ -298,18 +335,31 @@ ggplot(state.char, mapping = aes(x = ln.GDP, y = ln.milex)) +
 
 # Defense pacts with democracies
 ggplot(state.char) + geom_point(mapping = aes(x = ln.GDP, y = ln.milex, color = defense.dem))
+
+ggplot(state.char, aes(ln.GDP, ln.milex, group = defense.dem, colour = defense.dem)) +
+  geom_point() + 
+  stat_smooth(method="lm")
 # Major powers 
 ggplot(state.char) + geom_point(mapping = aes(x = ln.GDP, y = ln.milex, color = majpower))
 
 
 # Show the same association with full data:
 # Compare probabilistic deterrent alliances
+summary(full.data$prob_det)
 ggplot(full.data) + geom_point(mapping = aes(x = ln.GDP, y = ln.milex, 
                                              color = prob_det))
+
+ggplot(full.data, aes(ln.GDP, ln.milex, group =  prob_det, colour = prob_det)) +
+  geom_point() + 
+  stat_smooth(method="lm")
 
 # Only consultation alliances
 ggplot(full.data) + geom_point(mapping = aes(x = ln.GDP, y = ln.milex, 
                                              color = onlyconsul))
+
+ggplot(full.data, aes(ln.GDP, ln.milex, group =  onlyconsul, colour = onlyconsul)) +
+  geom_point() + 
+  stat_smooth(method="lm")
 
 # Proportion of democracies in an alliance
 ggplot(full.data) + geom_point(mapping = aes(x = ln.GDP, y = ln.milex, 
@@ -323,22 +373,63 @@ ggplot(full.data) + geom_point(mapping = aes(x = ln.GDP, y = ln.milex,
 ggplot(full.data) + geom_point(mapping = aes(x = ln.GDP, y = ln.milex, 
                                              color = total.cap))
 
-# Spending over time
+# Conditional on offensive or defensive pacts
+# Defensive
+ggplot(full.data) + geom_point(mapping = aes(x = ln.GDP, y = ln.milex, 
+                                             color = defense))
+ggplot(full.data, aes(ln.GDP, ln.milex, group =  defense, colour = defense)) +
+  geom_point() + 
+  stat_smooth(method="lm")
+# Offensive 
+ggplot(full.data) + geom_point(mapping = aes(x = ln.GDP, y = ln.milex, 
+                                             color = offense))
+ggplot(full.data, aes(ln.GDP, ln.milex, group =  offense, colour = offense)) +
+  geom_point() + 
+  stat_smooth(method="lm")
+
+
+# Bilateral treaties
+ggplot(full.data) + geom_point(mapping = aes(x = ln.GDP, y = ln.milex, 
+                                             color = bilat))
+ggplot(full.data, aes(ln.GDP, ln.milex, group =  bilat, colour = bilat)) +
+  geom_point() + 
+  stat_smooth(method="lm")
+
+
+# Discretion over military support
+ggplot(full.data) + geom_point(mapping = aes(x = ln.GDP, y = ln.milex, 
+                                             color = discret_milsupport))
+ggplot(full.data, aes(ln.GDP, ln.milex, group =  discret_milsupport, colour = discret_milsupport)) +
+  geom_point() + 
+  stat_smooth(method="lm")
+
+
+# Discretion over intervention
+ggplot(full.data) + geom_point(mapping = aes(x = ln.GDP, y = ln.milex, 
+                                             color = discret_intervene))
+ggplot(full.data, aes(ln.GDP, ln.milex, group =  discret_intervene, colour = discret_intervene)) +
+  geom_point() + 
+  stat_smooth(method="lm")
+
+### Spending over time
 ggplot(full.data) + geom_point(mapping = aes(x = year, y = ln.milex))
 
+# Probabilistic alliances over time
 ggplot(full.data) + 
   geom_point(mapping = aes(x = year, y = ln.milex,
-                               color = prob_det), position = "jitter") +
+                           color = prob_det), position = "jitter") +
   ggtitle("Probabilistic Alliances and Spending")
 
+
+# Consultation pacts over time
 ggplot(full.data) + 
   geom_point(mapping = aes(x = year, y = ln.milex,
-                              color = onlyconsul), position = "jitter") +
+                           color = onlyconsul), position = "jitter") +
   ggtitle("Consultation Alliances and Spending")
 
 
 
-# Smoothed spending over time
+# Smoothed spending and regression lines over time
 ggplot(state.char) + geom_smooth(mapping = aes(x = year, y = ln.milex))
 ggplot(state.char, mapping = aes(x = year, y = ln.milex)) +
                   geom_point() +
@@ -351,3 +442,29 @@ ggplot(full.data, mapping = aes(x = year, y = ln.milex)) +
   geom_point() +
   geom_smooth() + ggtitle("Spending over time: Full Sample")
 
+
+# Regression conditional on probabilistic deterrent
+ggplot(full.data, aes(year, ln.milex, group =  prob_det, colour = prob_det)) +
+  geom_point() + 
+  stat_smooth(method="lm")
+
+
+# Regression conditional on Consultation pacts
+ggplot(full.data, aes(year, ln.milex, group =  onlyconsul, colour = onlyconsul)) +
+  geom_point() + 
+  stat_smooth(method="lm")
+
+
+
+### Look at number of members and spending variables
+ggplot(full.data, aes(num.mem, ln.milex)) + geom_point()
+
+# Conditional regression by probabilistic deterrenct
+ggplot(full.data, aes(num.mem, ln.milex, group =  prob_det, colour = prob_det)) +
+  geom_point() + 
+  stat_smooth(method="lm")
+
+# Conditional regression by consultation only treaties
+ggplot(full.data, aes(num.mem, ln.milex, group =  onlyconsul, colour = onlyconsul)) +
+  geom_point() + 
+  stat_smooth(method="lm")
