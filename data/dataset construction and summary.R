@@ -3,17 +3,19 @@
 # Constructing Dataset for Prelim Paper on arms-alliances tradeoff
 
 
+# Load packages
+library(here)
+library(reshape)
+library(dplyr)
+library(zoo)
+library(ggplot2)
+
 
 # Set working directory to current folder
 setwd(here::here())
 getwd()
 
 
-# Load packages
-library(reshape)
-library(dplyr)
-library(zoo)
-library(ggplot2)
 
 # Load Benson's 2011 Data
 d.benson <- read.csv("data/alliance-types-benson.csv")
@@ -172,11 +174,20 @@ colnames(state.char) <- c("ccode", "year",
 summary(state.char$year)
 state.char <- subset(state.char, state.char$year <= 2001)
 
+# Create a differences in military expenditure variable
+# Start by taking the military expenditures data and reversing the log transformation
+state.char$milex <- exp(state.char$ln.milex)
+state.char$lag.milex <- exp(state.char$lag.ln.milex)
+# create the differences 
+state.char$change.milex <- state.char$milex - state.char$lag.milex
+state.char$change.ln.milex <- state.char$ln.milex - state.char$lag.ln.milex
+
 # Merge the state characteristics and alliance data
 full.data <- right_join(alliance.1950, state.char)
 
 # Change order of variables for ease in viewing
-full.data <- full.data[c(1, 3, 31, 2, 4, 5:30, 32:47)]
+full.data <- full.data %>% 
+  select(atopid, ccode, year, everything())
 
 # Ensure no duplicate observations are present after merging- not an issue here
 full.data <- unique(full.data)
@@ -193,6 +204,7 @@ full.data$atopid[is.na(full.data$atopid)] <- 0
 full.data[6:29][is.na(full.data[, 6:29] & full.data$atopid == 0)] <- 0
 
 # States with no alliances in a year are given an alliance ID of zero, grouping them all together
+
 
 
 
@@ -234,6 +246,20 @@ full.data <- left_join(full.data, alliance.totals)
 full.data[48:50][is.na(full.data[, 48:50] & full.data$atopid == 0)] <- 0
 
 
+### Add a couple more variables to the full data
+# binary indicator of compellent alliances
+full.data$compellent <- ifelse(full.data$uncond_comp == 1 | full.data$cond_comp == 1, 1, 0)
+
+# Binary indicator of deterrent alliances
+full.data$deterrent <- ifelse(full.data$cond_det == 1 | full.data$uncond_det == 1 |
+                              full.data$pure_cond_det == 1 | full.data$prob_det == 1,
+                              1, 0)
+# binary indicator of conditional alliances in the benson typology
+full.data$ben.cond <- ifelse(full.data$cond_det == 1 | full.data$cond_comp == 1, 1, 0)
+
+
+
+
 
 # The full dataset can also provide the basis of a state-year characteristics dataset 
 # with some summary variables for the alliance portfolio
@@ -265,6 +291,10 @@ state.ally.year <- full.data %>%
 state.char.full <- left_join(state.char, state.ally.year)
 
 
+
+
+
+
 ######
 # This section summarizes the data using descriptive statistics and plots
 
@@ -291,6 +321,7 @@ summary(full.data$prob_det)
 summary(alliance.1950$prob_det)
 # Differences in expenditure
 t.test(full.data$ln.milex ~ full.data$prob_det, alternative = "less")
+t.test(full.data$change.milex ~ full.data$prob_det, alternative = "less")
 # Split data and plot
 full.data %>% 
   select(ln.milex, prob_det) %>%
@@ -302,6 +333,7 @@ summary(full.data$onlyconsul)
 summary(alliance.1950$onlyconsul)
 # Differences in expenditure
 t.test(full.data$ln.milex ~ full.data$onlyconsul, alternative = "less")
+t.test(full.data$change.milex ~ full.data$onlyconsul, alternative = "less")
 # Split data and plot
 full.data %>% 
   select(ln.milex, onlyconsul) %>%
@@ -309,9 +341,19 @@ ggplot(mapping = aes(x = onlyconsul, y = ln.milex)) +
   geom_boxplot(mapping = aes(group = onlyconsul))
 
 
+
+### Summarize Benson's alliance typology in greater detail
+# Discretion to intervene and provide military support are subsets of probabilistic deterrent treaties
+# However, there are few observations where both are present
+table(full.data$prob_det, full.data$discret_intervene)
+table(full.data$prob_det, full.data$discret_milsupport)
+table(full.data$discret_intervene, full.data$discret_milsupport)
+
 # Overlap between probabilistic deterrent treaties and consultation only pacts
 # Consultation on top, probabilistic deterrent on sides
 table(full.data$prob_det, full.data$consul)
+
+
 
 
 # Check alliance aggregates: the sums throw some funky values
@@ -468,3 +510,29 @@ ggplot(full.data, aes(num.mem, ln.milex, group =  prob_det, colour = prob_det)) 
 ggplot(full.data, aes(num.mem, ln.milex, group =  onlyconsul, colour = onlyconsul)) +
   geom_point() + 
   stat_smooth(method="lm")
+
+
+
+#### Plot changes in military spending
+
+# Change in spending
+summary(full.data$change.milex)
+ggplot(full.data, aes(change.milex)) + geom_density()
+ggplot(state.char, aes(change.milex)) + geom_density()
+
+# Changes in the natural log of spending- still some crazy outliers, but not as extreme
+summary(full.data$change.ln.milex)
+ggplot(full.data, aes(change.ln.milex)) + geom_density()
+ggplot(state.char, aes(change.ln.milex)) + geom_density()
+
+
+# Plot changes against year
+ggplot(full.data, aes(year, change.ln.milex)) + geom_point()
+# Color conditional on probabilistic deterrent pacts
+ggplot(full.data, aes(year, change.ln.milex, group =  prob_det, colour = prob_det)) +
+  geom_point()
+# Color conditional on consultation only
+ggplot(full.data, aes(year, change.ln.milex, group =  onlyconsul, colour = onlyconsul)) +
+  geom_point()
+
+
