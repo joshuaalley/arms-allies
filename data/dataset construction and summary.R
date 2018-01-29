@@ -207,8 +207,6 @@ full.data[6:29][is.na(full.data[, 6:29] & full.data$atopid == 0)] <- 0
 
 
 
-
-
 # The full dataset can be used to create an alliance characteristics-year dataset
 alliance.year <- full.data %>%
   filter(atopid > 0) %>%
@@ -257,7 +255,9 @@ full.data$deterrent <- ifelse(full.data$cond_det == 1 | full.data$uncond_det == 
 # binary indicator of conditional alliances in the benson typology
 full.data$ben.cond <- ifelse(full.data$cond_det == 1 | full.data$cond_comp == 1, 1, 0)
 
-
+# Mark each unique state-year observation in the data with its own indicator 
+full.data <- full.data %>% group_by(ccode, year)
+full.data$state.year.id <- full.data %>% group_indices(ccode, year)
 
 
 
