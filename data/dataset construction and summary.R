@@ -9,6 +9,7 @@ library(reshape)
 library(dplyr)
 library(zoo)
 library(ggplot2)
+library(tidyr)
 
 
 # Set working directory to current folder
@@ -259,6 +260,8 @@ full.data$ben.cond <- ifelse(full.data$cond_det == 1 | full.data$cond_comp == 1,
 full.data <- full.data %>% group_by(ccode, year)
 full.data$state.year.id <- full.data %>% group_indices(ccode, year)
 
+# Remove observation with missing ccode
+full.data <- full.data[complete.cases(full.data$ccode), ]
 
 
 # The full dataset can also provide the basis of a state-year characteristics dataset 
@@ -292,6 +295,16 @@ state.char.full <- left_join(state.char, state.ally.year)
 
 
 
+# Create a dataset of state-year alliance membership:
+state.mem <- full.data %>% select(atopid, ccode, year)
+state.mem <-  mutate(state.mem, member = 1)
+state.mem <- distinct(state.mem, .keep_all = TRUE)
+
+# This matrix has a binary indicator of which alliances states are a member of in a given year
+state.mem <- spread(state.mem, key = atopid, value = member, fill = 0)
+
+# Remove the zero or no alliance category
+state.mem <- subset(state.mem, select = -(3))
 
 
 
@@ -308,6 +321,8 @@ full.data <- full.data %>%
 summary(full.data$ln.milex)
 ggplot(full.data, aes(ln.milex)) + geom_density()
 ggplot(state.char, aes(ln.milex)) + geom_density()
+
+ggplot(state.char, aes(milex)) + geom_density()
 
 # Which states have the smallest military expenditures? 
 # At least one has democratic alliances
