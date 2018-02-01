@@ -4,6 +4,7 @@
 
 # Load packages
 library(here)
+library(dplyr)
 library(rstan)
 library(bayesplot)
 library(shinystan)
@@ -26,19 +27,27 @@ reg.state.data <- reg.state.data[complete.cases(reg.state.data), ]
 # Subset data for testing the model- use eastern european states
 reg.state.sub <- reg.state.data %>%
                       filter(ccode >= 300 & ccode < 400)
+
+# create a state index variable
+reg.state.sub$state.id <- reg.state.sub %>% group_indices(ccode)
+
+
+# transform into a matrix for STAN
 reg.state.sub <- as.matrix(reg.state.sub)
 
 
 # Define data for STAN model
-stan.data <- list(N = nrow(reg.state.sub), y = reg.state.sub[, 3])
+stan.data <- list(N = nrow(reg.state.sub), y = reg.state.sub[, 3],
+                  state = reg.state.sub[, 11], S = length(unique(reg.state.sub[, 11])))
 
 
 # Run the model
 system.time(
-stan.model <- stan(file = "data/multi-member ML model.stan", data = stan.data, 
-                   iter = 4000, chains = 4, cores = 3)
+ml.model <- stan(file = "data/multi-member ML model.stan", data = stan.data, 
+                   iter = 5000, chains = 4, cores = 3, warmup = 500
+                  )
 )
 
 
 # diagnose the model
-launch_shinystan(stan.model)
+launch_shinystan(ml.model)
