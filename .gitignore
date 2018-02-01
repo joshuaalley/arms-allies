@@ -23,6 +23,8 @@
 *.bib.bak
 *.thm
 *.concordance.tex
+*.nav
+*.snm
 
 # don't ignore the .gitignore file
 !.gitignore
