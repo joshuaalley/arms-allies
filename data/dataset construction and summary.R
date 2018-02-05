@@ -216,10 +216,9 @@ alliance.year <- full.data %>%
     avg.democ = mean(polity, na.rm = TRUE),
     total.cap = sum(CINC, na.rm = TRUE),
     total.expend = sum(ln.milex, na.rm = TRUE),
-    count = n(),
+    num.mem = n(),
     consul.only = max(onlyconsul, na.rm = TRUE),
     prob.det = max(prob_det, na.rm = TRUE),
-    num.mem = mean(num.mem, na.rm = TRUE),
     offense = max(offense, na.rm = TRUE),
     defense = max(defense, na.rm = TRUE),
     neutral = max(neutral, na.rm = TRUE),
@@ -231,7 +230,9 @@ alliance.year <- full.data %>%
     uncond_det = max(uncond_det, na.rm = TRUE),
     cond_det = max(cond_det, na.rm = TRUE),
     discret_milsupport = max(discret_milsupport, na.rm = TRUE),
-    discret_intervene = max(discret_intervene, na.rm = TRUE)
+    discret_intervene = max(discret_intervene, na.rm = TRUE),
+    bilat = max(bilat, na.rm = TRUE),
+    armsreq = max(armsreq, na.rm = TRUE)
   )
 
 alliance.year[order(alliance.year$atopid, alliance.year$year), ]
@@ -293,18 +294,67 @@ state.ally.year <- full.data %>%
 
 state.char.full <- left_join(state.char, state.ally.year)
 
+# remove non-aggression pacts
+full.data <- mutate(full.data, nonagg.only = ifelse((nonagg == 1 & offense != 1 & defense != 1 & consul != 1 & neutral != 1), 1 , 0))
+summary(full.data$nonagg.only)
 
+full.data.rnonagg <- filter(full.data, nonagg.only != 1)
 
 # Create a dataset of state-year alliance membership:
-state.mem <- full.data %>% select(atopid, ccode, year)
+state.mem <- full.data.rnonagg %>% select(atopid, ccode, year)
 state.mem <-  mutate(state.mem, member = 1)
-state.mem <- distinct(state.mem, .keep_all = TRUE)
+state.mem <- distinct(state.mem, ccode, year, .keep_all = TRUE)
 
 # This matrix has a binary indicator of which alliances states are a member of in a given year
 state.mem <- spread(state.mem, key = atopid, value = member, fill = 0)
 
 # Remove the zero or no alliance category
 state.mem <- subset(state.mem, select = -(3))
+
+
+
+
+# Create a dataset with key alliance characteristics, not alliance-year data
+# average 
+alliance.char <- alliance.year %>%
+  filter(atopid > 0) %>%
+  group_by(atopid) %>%
+  summarize(
+    consul.only = max(consul.only, na.rm = TRUE),
+    prob.det = max(prob.det, na.rm = TRUE),
+    offense = max(offense, na.rm = TRUE),
+    defense = max(defense, na.rm = TRUE),
+    neutral = max(neutral, na.rm = TRUE),
+    nonagg = max(nonagg, na.rm = TRUE),
+    consul = max(consul, na.rm = TRUE),
+    wartime = max(wartime, na.rm = TRUE),
+    uncond_comp = max(uncond_comp, na.rm = TRUE),
+    cond_comp = max(cond_comp, na.rm = TRUE),
+    uncond.det = max(uncond_det, na.rm = TRUE),
+    cond_det = max(cond_det, na.rm = TRUE),
+    discret_milsupport = max(discret_milsupport, na.rm = TRUE),
+    discret_intervene = max(discret_intervene, na.rm = TRUE),
+    bilat = max(bilat, na.rm = TRUE),
+    armsreq = max(armsreq, na.rm = TRUE)
+  )
+
+# Merge in Chiba et al data
+alliance.char <- left_join(alliance.char, chiba.etal)
+
+# remove non-aggression only pacts
+alliance.char <- mutate(alliance.char, nonagg.only = ifelse((nonagg == 1 & offense != 1 & defense != 1 & consul != 1 & neutral != 1), 1 , 0))
+
+alliance.char <- filter(alliance.char, nonagg.only != 1)
+
+# Create an indicator of compellent alliances
+alliance.char <- mutate(alliance.char,
+                        compellent = ifelse((uncond_comp == 1 | cond_comp == 1), 1 , 0))
+
+
+
+
+
+
 
 
 
