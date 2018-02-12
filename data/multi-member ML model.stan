@@ -9,10 +9,12 @@ data {
   int<lower = 1> T; // number of years
   int<lower = 1> A; // number of alliances
   int<lower = 1> L; // number of alliance-level variables
+  int<lower = 1> M; // number of state-level variables
   int<lower = 1, upper = S> state[N]; // state idenifier
   int<lower = 1, upper = T> year[N]; // year indicator
   matrix[N, A] Z; // matrix of state membership in alliances
   matrix[A, L] X; // matrix of alliance-level variables
+  matrix[N, M] W; // matrix of state-level variables
   vector[N] y; // outcome 
 }
 
@@ -26,6 +28,7 @@ parameters {
   real<lower = 0> sigma_all; // variance hyperparameter of the alliances
   vector[L] beta; // vector of alliance-level coefficients
   vector[A] lambda; // alliance-specific values with mean theta
+  vector[M] gamma; // vector of state-level coefficients 
 }
 
 transformed parameters {
@@ -45,7 +48,7 @@ model {
   
   // Linear prediction of the state-year spending mean Row i of the membership matrix Z will produce a scalar when postmultiplied by the vector of alliance characteristics lambda
   for (i in 1:N)
-    y_hat[i] = alpha + alpha_state[state[i]] + alpha_year[year[i]] + Z[i] * lambda ;
+    y_hat[i] = alpha + alpha_state[state[i]] + alpha_year[year[i]] + Z[i] * lambda + W[i] * gamma;
   
   
   alpha ~ normal(7, 4);
@@ -56,6 +59,7 @@ model {
   sigma_year ~ cauchy(0, 3);
   sigma_all ~ cauchy(0, 3);
   beta ~  normal(0, 2);
+  gamma ~ normal(0, 2); 
   
   
   y ~ normal(y_hat, sigma);
