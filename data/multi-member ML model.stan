@@ -51,13 +51,13 @@ model {
     y_hat[i] = alpha + alpha_state[state[i]] + alpha_year[year[i]] + Z[i] * lambda + W[i] * gamma;
   
   
-  alpha ~ normal(7, 4);
+  alpha ~ normal(0, 2);
   sigma ~ cauchy(0, 2);
   alpha_year ~ normal(0, sigma_year);
   alpha_state ~ normal(0, sigma_state); 
-  sigma_state ~ cauchy(0, 6);
-  sigma_year ~ cauchy(0, 3);
-  sigma_all ~ cauchy(0, 3);
+  sigma_state ~ cauchy(0, 1);
+  sigma_year ~ cauchy(0, 1);
+  sigma_all ~ cauchy(0, 1);
   beta ~  normal(0, 2);
   gamma ~ normal(0, 2); 
   
