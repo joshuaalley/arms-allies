@@ -15,20 +15,25 @@ library(loo)
 setwd(here::here())
 getwd()
 
+# Set up RSTAN guidelines
+rstan_options(auto_write = TRUE)
+options(mc.cores = parallel::detectCores())
+
+
 # Environment is determined by use of projects and/or using this file in conjunction with
-# the file dataset construction and summary.R 
+# the script dataset construction and summary.R 
 
 
 # Define a state-year level dataset with no missing observations
 reg.state.data <- state.char %>%
-  select(ccode, year, ln.milex, lag.ln.milex, 
+  select(ccode, year, change.ln.milex, 
                                         atwar, civilwar, rival.mil, ln.GDP, polity, majpower)
 
 # Add state membership in alliances to this data
 reg.state.data <- left_join(reg.state.data, state.mem)
 
 # Replace missing alliance values with zero 
-reg.state.data[, 11: 355][is.na(reg.state.data[, 11: 355])] <- 0
+reg.state.data[, 10: 354][is.na(reg.state.data[, 10: 354])] <- 0
 
 # Remove observations with missing values
 reg.state.comp <- reg.state.data[complete.cases(reg.state.data), ]
@@ -38,7 +43,7 @@ reg.state.comp <- reg.state.data[complete.cases(reg.state.data), ]
 #       function(x) rescale(x, binary.inputs = "0/1"))
 
 
-state.mem.mat <- as.matrix(reg.state.comp[, 11: 355])
+state.mem.mat <- as.matrix(reg.state.comp[, 10: 354])
 
 # create a state index variable
 reg.state.comp$state.id <- reg.state.comp %>% group_indices(ccode)
@@ -59,7 +64,7 @@ reg.state.sub$year.id <- reg.state.sub %>% group_indices(year)
 
 
 # Subset state membership data
-state.mem.sub <- reg.state.sub[, 11:20] # was 355 b/c 345 alliances
+state.mem.sub <- reg.state.sub[, 10:19] 
 
 
 
@@ -81,7 +86,11 @@ reg.all.data <- reg.all.data[complete.cases(reg.all.data), ]
 
 ### transform data into matrices for STAN
 # State-level characeristics
-reg.state.mat <- as.matrix(reg.state.sub[, 3:10])
+reg.state.mat.sub <- as.matrix(reg.state.sub[, 3:10])
+reg.state.mat <- as.matrix(reg.state.comp[, 4:9])
+
+# check correlations among state-level regressors
+cor(reg.state.mat, method = "pearson")
 
 # State membership in alliances
 state.mem.sub <- as.matrix(state.mem.sub)
@@ -90,6 +99,10 @@ colnames(state.mem.sub) <- alliance.id
 
 # pull the alliance-level regressors into a matrix
 alliance.reg.mat <- as.matrix(reg.all.data[, 2:8])
+
+# check correlation of the alliance-level regressors
+cor(alliance.reg.mat, method = "pearson")
+
 # Add a constant to the alliance-level regression 
 cons <- rep(1, length = nrow(alliance.reg.mat))
 alliance.reg.mat <- cbind(cons, alliance.reg.mat)
@@ -99,7 +112,7 @@ alliance.reg.mat.sub <- alliance.reg.mat[1:10, ]
 
 
 
-# Define data for STAN model
+# Define data for STAN model of subset of data
 stan.data.sub <- list(N = nrow(reg.state.sub), y = reg.state.sub[, 3],
                   state = reg.state.sub$state.id, S = length(unique(reg.state.sub$state.id)),
                   year = reg.state.sub$year.id, T = length(unique(reg.state.sub$year.id)),
@@ -117,7 +130,7 @@ ml.model.vb.sub <- vb(model.1, data = stan.data.sub, seed = 12)
 
 system.time(
 ml.model.sub <- stan(file = "data/multi-member ML model.stan", data = stan.data.sub, 
-                   iter = 5000, chains = 4, cores = 3, warmup = 1000
+                   iter = 5000, chains = 4, warmup = 1000
                   )
 )
 
@@ -133,13 +146,14 @@ pairs(ml.model.sub, pars = c("alpha", "sigma_state", "alpha_state[1]", "alpha_st
 
 
 # run model on the full sample
-
+# Define the data list 
 stan.data <- list(N = nrow(reg.state.comp), y = reg.state.comp[, 3],
                       state = reg.state.comp$state.id, S = length(unique(reg.state.comp$state.id)),
                       year = reg.state.comp$year.id, T = length(unique(reg.state.comp$year.id)),
                       A = length(alliance.id), L = ncol(alliance.reg.mat),
                       Z = state.mem.mat, 
-                      X = alliance.reg.mat)
+                      X = alliance.reg.mat,
+                      W = reg.state.mat, M = ncol(reg.state.mat))
 
 
 # Variational Bayes- use to check coefficients on model
@@ -149,7 +163,7 @@ launch_shinystan(ml.model.vb)
 # Regular STAN
 system.time(
   ml.model <- stan(file = "data/multi-member ML model.stan", data = stan.data, 
-                       iter = 5000, chains = 4, cores = 3, warmup = 1000
+                       iter = 5000, chains = 4, warmup = 1000
   )
 )
 
@@ -171,3 +185,12 @@ pairs(ml.model, pars = c("alpha", "alpha_state[2]", "alpha_year[14]", "alpha_sta
                          "alpha_year[35]"))
 
 
+
+
+
+# summarize session info
+writeLines(readLines(file.path(Sys.getenv("HOME"), ".R/Makevars")))
+
+devtools::session_info("rstan")
+
+                       
