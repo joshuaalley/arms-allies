@@ -26,5 +26,8 @@
 *.nav
 *.snm
 
+# ignore compiled RSTAN code
+*.rds
+
 # don't ignore the .gitignore file
 !.gitignore
