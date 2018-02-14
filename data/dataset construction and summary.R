@@ -416,7 +416,16 @@ table(full.data$discret_intervene, full.data$discret_milsupport)
 
 # Overlap between probabilistic deterrent treaties and consultation only pacts
 # Consultation on top, probabilistic deterrent on sides
-table(full.data$prob_det, full.data$consul)
+table(full.data$prob_det, full.data$onlyconsul)
+
+# Overlap between benson's typology and democratic defense pacts
+table(full.data$prob_det, full.data$defense.dem)
+table(full.data$cond_det, full.data$defense.dem)
+table(full.data$uncond_det, full.data$defense.dem)
+
+
+# Consultation-only pacts and defense pacts with democracies
+table(full.data$onlyconsul, full.data$defense.dem)
 
 
 
