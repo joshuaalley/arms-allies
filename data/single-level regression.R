@@ -35,7 +35,9 @@ state.char.full <- state.char.full %>%
     offense.pres = ifelse((offense.total >= 1), 1 , 0),
     offense.share = offense.total / treaty.count, 
     defense.pres = ifelse((defense.total >= 1), 1 , 0),
-    defense.share = defense.total / treaty.count
+    defense.share = defense.total / treaty.count,
+    discret.inter.share = discret.inter.total / treaty.count,
+    discret.mils.share = discret.mils.total / treaty.count
   )
 
 
@@ -163,4 +165,48 @@ plotreg(m4r.cons, omit.coef = "Intercept")
 
 
 
+
+# Examine the component conditions of probabilistic deterrent alliances
+# All states with alliances in this subsample have a treat with discretion to intervene or over military support
+ state.char.full %>% 
+   filter(majpower == 0 & avg.num.mem != 0) %>% 
+   summary(state.char.full)
+
+
+# Use shares of treaties with discretion over intervention
+m5.din <- rlm(ln.milex ~ discret.inter.share + uncond.det.share + avg.dem.prop + lag.ln.milex +
+               atwar + civilwar + polity + ln.GDP +
+               ls.threatenv + comp.share, 
+             data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0))
+
+summary(m5.din)
+plot(m5.din$residuals, m5.din$w)
+
+plotreg(m5.din, omit.coef = "Intercept")
+
+
+
+
+# Share of treaties with discretion over military support
+m6.dmil <- rlm(ln.milex ~ discret.mils.share + offense.share + defense.share + avg.dem.prop + lag.ln.milex +
+                atwar + civilwar + polity + ln.GDP +
+                ls.threatenv, 
+              data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0))
+
+summary(m6.dmil)
+plot(m6.dmil$residuals, m6.dmil$w)
+
+plotreg(m6.dmil, omit.coef = "Intercept")
+
+
+# Both shares variables in the same model
+m7.dmil <- rlm(ln.milex ~ discret.inter.share + discret.mils.share + offense.share + defense.share + avg.dem.prop + lag.ln.milex +
+                 atwar + civilwar + polity + ln.GDP +
+                 ls.threatenv, 
+               data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0))
+
+summary(m7.dmil)
+plot(m7.dmil$residuals, m7.dmil$w)
+
+plotreg(m7.dmil, omit.coef = "Intercept")
 

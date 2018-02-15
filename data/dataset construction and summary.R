@@ -289,10 +289,15 @@ state.ally.year <- full.data %>%
     arms.req = max(armsreq, na.rm = TRUE),
     avg.num.mem = mean(num.mem, na.rm = TRUE),
     defense.total = sum(defense, na.rm = TRUE),
-    offense.total = sum(offense, na.rm = TRUE)
+    offense.total = sum(offense, na.rm = TRUE),
+    discret.inter.pres = max(discret_intervene, na.RM = TRUE),
+    discret.inter.total = sum(discret_intervene, na.RM = TRUE),
+    discret.mils.pres = max(discret_milsupport, na.RM = TRUE),
+    discret.mils.total = sum(discret_milsupport, na.RM = TRUE)
   )
 
 state.char.full <- left_join(state.char, state.ally.year)
+
 
 # remove non-aggression pacts
 full.data <- mutate(full.data, nonagg.only = ifelse((nonagg == 1 & offense != 1 & defense != 1 & consul != 1 & neutral != 1), 1 , 0))
