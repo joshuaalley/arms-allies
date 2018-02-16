@@ -308,7 +308,7 @@ full.data.rnonagg <- filter(full.data, nonagg.only != 1)
 # Create a dataset of state-year alliance membership:
 state.mem <- full.data.rnonagg %>% select(atopid, ccode, year)
 state.mem <-  mutate(state.mem, member = 1)
-state.mem <- distinct(state.mem, ccode, year, .keep_all = TRUE)
+state.mem <- distinct(state.mem, atopid, ccode, year, .keep_all = TRUE)
 
 # This matrix has a binary indicator of which alliances states are a member of in a given year
 state.mem <- spread(state.mem, key = atopid, value = member, fill = 0)
