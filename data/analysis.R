@@ -23,6 +23,9 @@ options(mc.cores = parallel::detectCores())
 # Environment is determined by use of projects and/or using this file in conjunction with
 # the script dataset construction and summary.R 
 
+# NOTE: To run the variational Bayes algorithm, must compile the model file on your machine 
+# In Windows, failure to compile the model on your machine will lead to a dynamic link library intitialization error
+
 
 # Define a state-year level dataset with no missing observations
 reg.state.data <- state.char %>%
@@ -38,33 +41,22 @@ reg.state.data[, 10: 354][is.na(reg.state.data[, 10: 354])] <- 0
 # Remove observations with missing values
 reg.state.comp <- reg.state.data[complete.cases(reg.state.data), ]
 
-# Rescale the outcome and state-level regressors
-# reg.state.comp[, 3:10] <- lapply(reg.state.comp[, 3:10], 
-#       function(x) rescale(x, binary.inputs = "0/1"))
+# Rescale the state-level regressors
+ reg.state.comp[, 4:9] <- lapply(reg.state.comp[, 4:9], 
+       function(x) rescale(x, binary.inputs = "0/1"))
 
 
+# Check the range and distribution of the DV
+summary(reg.state.comp$change.ln.milex)
+plot(density(reg.state.comp$change.ln.milex))
+
+# Create a matrix of state membership in alliances (Z in STAN model)
 state.mem.mat <- as.matrix(reg.state.comp[, 10: 354])
 
 # create a state index variable
 reg.state.comp$state.id <- reg.state.comp %>% group_indices(ccode)
 # Create a year index variable 
 reg.state.comp$year.id <- reg.state.comp %>% group_indices(year)
-
-
-# Subset data for testing the model- use eastern european states
-reg.state.sub <- reg.state.comp %>%
-                      filter(ccode >= 300 & ccode < 400)
-
-
-
-# create a state index variable
-reg.state.sub$state.id <- reg.state.sub %>% group_indices(ccode)
-# Create a year index variable 
-reg.state.sub$year.id <- reg.state.sub %>% group_indices(year)
-
-
-# Subset state membership data
-state.mem.sub <- reg.state.sub[, 10:19] 
 
 
 
@@ -86,17 +78,12 @@ reg.all.data <- reg.all.data[complete.cases(reg.all.data), ]
 
 ### transform data into matrices for STAN
 # State-level characeristics
-reg.state.mat.sub <- as.matrix(reg.state.sub[, 3:10])
 reg.state.mat <- as.matrix(reg.state.comp[, 4:9])
 
 # check correlations among state-level regressors
 cor(reg.state.mat, method = "pearson")
 
 # State membership in alliances
-state.mem.sub <- as.matrix(state.mem.sub)
-# Index by alliance id
-colnames(state.mem.sub) <- alliance.id
-
 # pull the alliance-level regressors into a matrix
 alliance.reg.mat <- as.matrix(reg.all.data[, 2:8])
 
@@ -112,37 +99,8 @@ alliance.reg.mat.sub <- alliance.reg.mat[1:10, ]
 
 
 
-# Define data for STAN model of subset of data
-stan.data.sub <- list(N = nrow(reg.state.sub), y = reg.state.sub[, 3],
-                  state = reg.state.sub$state.id, S = length(unique(reg.state.sub$state.id)),
-                  year = reg.state.sub$year.id, T = length(unique(reg.state.sub$year.id)),
-                  A = length(alliance.id), L = ncol(alliance.reg.mat),
-                  Z = state.mem.sub, 
-                  X = alliance.reg.mat.sub)
-
-
-# Compile the model code
+# Compile the model code for the variational Bayes algorithm
 model.1 <- stan_model(file = "data/multi-member ML model.stan")
-
-
-# Run the model on a subset of the sample
-ml.model.vb.sub <- vb(model.1, data = stan.data.sub, seed = 12)
-
-system.time(
-ml.model.sub <- stan(file = "data/multi-member ML model.stan", data = stan.data.sub, 
-                   iter = 5000, chains = 4, warmup = 1000
-                  )
-)
-
-
-# diagnose the model
-launch_shinystan(ml.model.vb.sub)
-launch_shinystan(ml.model.sub)
-
-# Pairs plot
-pairs(ml.model.sub, pars = c("alpha", "sigma_state", "alpha_state[1]", "alpha_state[2]", "alpha_state[15]", 
-                         "alpha_state[26]"))
-
 
 
 # run model on the full sample
