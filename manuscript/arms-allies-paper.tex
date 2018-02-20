@@ -160,30 +160,88 @@ Careful empirical design is necessary to accurately estimate the impact of allia
 
 I test my two predictions on a sample of all states in the international system from 1950-2001. While this sample has more limited temporal coverage, it allows me to compare my results with those of \citet{DigiuseppePoast2016} and \citet{Nordhausetal2012}.\footnote{These other samples are limited by the availability and quality of economic indicators.} Using the same sample is especially helpful for comparison because I use a different estimator from most studies of the relationship between arms and alliances. 
 
-Most studies of the arms-alliances tradeoff estimate regression models on state-year panel data. Averages or dummy variables then summarize key characteristics of each state's total alliance portfolio. For example, \citet{Benson2012} uses a dummy variable to indicate if the state that initiated a militarized interstate dispute (MID) had a conditional alliance. \citet{DigiuseppePoast2016} use dummy indicators of whether a state has at least one defensive alliance tie with a democratic state. Other studies aggregate the total capability of a state's allies \citep{Nordhausetal2012}. 
+Most studies of the arms-alliances tradeoff estimate regression models on state-year panel data. Researchers then use averages or dummy variables to summarize key characteristics of each state's total alliance portfolio. For example, \citet{Benson2012} uses a dummy variable to indicate if the state that initiated a militarized interstate dispute (MID) had a conditional alliance. \citet{DigiuseppePoast2016} use a dummy indicator of whether a state has at least one defensive alliance tie with a democratic state. Other studies aggregate the total capability of a state's allies \citep{Nordhausetal2012}. Both approaches limit our ability to make inferences about how differences in alliances affect state behavior. Dummy variables are particularly problematic because they can generate misleading comparisons between states by treating a state with at least one type of alliance as equivalent to states with many of the same type of treaties. 
 
-Averaging or the use of dummy variables at the state-year level eliminates important variation between different alliances. In every year, multiple states are grouped within alliances, placing alliances at another level in the data-generating process. If we are interested in how variation in alliance characteristics affects defense effort at the state level, single-level regression requires sometimes indirect proxies for those characteristics, creating a gap between theory and hypothesis testing. Without a model of between alliance variation, there may be too much certainty in parameter estimates \citep{McElreath2016}. 
+Averaging or the use of dummy variables at the state-year level eliminates important variation between alliances. Without an explicit model of between alliance variation, there may be too much certainty in parameter estimates \citep{McElreath2016} because state level measures reduce the amount of variation in alliance-level variables. This is especially problematic for my theory, which emphasizes differences in \textit{alliance-level} characteristics. 
 
-Therefore, I use multilevel regression model, which simultaneously models variation among observations clustered within alliances and states. A multilevel model is appropriate because I am interested in the impact of \textsf{alliance-level} characteristics on state's defense spending, and this approach allows me to directly model the impact of between alliance variation on state-level outcomes \citep{GelmanHill2007}. Multilevel models also account for sampling imbalance by shrinking estimates towards an overall average. 
+Therefore, I use a multilevel regression model, which simultaneously models variation among observations clustered within alliances, states and years. Multilevel modeling allows me to directly model the impact of alliance-level covariates on state-level outcomes \citep{GelmanHill2007}. Multilevel models also account for sampling imbalance between groups by pooling strength and shrinking estimates towards an overall average. Applying a partial pooling approach also allows me to estimate the amount of variation in spending between alliances and states. 
 
-Hierarchical models are the most well-known type of multilevel model, where units are nested inside one another. State membership in alliances is less neat--- many states are members of multiple alliance treaties, and different states are clustered within each treaty. Such multiple-membership data is still amenable to the multilevel approach, but it makes estimation more complicated. 
+Hierarchical models are the most well-known type of multilevel model, where units are nested inside one another. State membership in alliances is less neatly organized--- many states are members of multiple alliance treaties, and different states are clustered within each treaty. Such multiple-membership data requires a slightly more complicated model. 
 
-Multilevel models have some costs. Defining a separate regression for each level of the data requires additional assumptions about the distributions characterizing of state and alliance clusters \citep{McElreath2016}. Also, these models are computationally intensive and more difficult to estimate. 
+Using a multilevel model has some costs. Defining a separate regression for each level of the data requires additional assumptions about the distributions characterizing of state and alliance clusters \citep{McElreath2016}. Also, these models are computationally intensive and more difficult to estimate.
 
-The key dependent variable is the log-transformed value of a state's military expenditures during each year, which is the most common proxy for defense effort. Following\citet{DigiuseppePoast2016} I use data from \citet{Nordhausetal2012} who combine data from the Stockholm International Peace Institute (SIPRI) and Correlates of War (COW) projects to address defects in each.\footnote{SIPRI tends to under report spending by Warsaw Pact nations during the Cold War, while the COW data has some instances of measurement error.} I also include a lagged dependent variable to account for autocorrelation in the data-generating process. Equations with lagged DV are also nearly equivalent to estimating changes in spending \citep{DeBoefKeele2008}, which is the quantity of interest. 
+\subsection*{Variables} 
 
-I draw on two databases for binary measures of the key independent variables. To test Hypothesis 1, I use the coding of \citet{Benson2012}, who classifies alliances as probabilistic, conditional, or unconditional. For Hypothesis 2, I use the ATOP data of \citet{Leedsetal2002} to measure whether an alliance promises only consultation.  Because, there is some overlap in these classifications, I estimate separate models of each hypothesis. 
+The key dependent variable is changes in the log-transformed value of a state's military expenditures during each year.\footnote{Changes in the non-transformed value of military spending have massive positive and negative outliers, making them difficult to transform so that the scale of the data is coherent.} Military expenditure is the most common proxy for defense effort. Following\citet{DigiuseppePoast2016} I use data from \citet{Nordhausetal2012} who combine data from the Stockholm International Peace Institute (SIPRI) and Correlates of War (COW) projects to address defects in each.\footnote{SIPRI tends to under report spending by Warsaw Pact nations during the Cold War, while the COW data has some instances of measurement error.} Using changes as the dependent variable is reasonable given the year and state varying intercepts. 
+
+I draw on two databases for binary measures of the key independent variables. To test Hypothesis 1, I use the coding of \citet{Benson2012}, who classifies alliances as probabilistic, conditional, or unconditional. For Hypothesis 2, I use \citet{Chibaetal2015}'s measure of whether an alliance promises only consultation.  Because, there is some overlap in these classifications, I estimate separate models of each hypothesis. All alliance membership classifications are also from ATOP \citep{Leedsetal2002}. 
 
 Accounting for state and alliance characteristics that may be correlated with both alliance design and military expenditures is necessary to avoid omitted variable bias in the estimates. At the alliance level, I include binary indicators of whether an alliance requires its members to provide some level of arms, is a bilateral treaty, and if any member was involved in a war. I also include the average democracy of the alliance members at the time of formation \citep{Chibaetal2015}. 
 
-Controlling for some other types of alliances changes the interpretation of the key independent variables by altering the comparison category for each binary variable. While testing the impact of probabilistic and unconditional alliances, I control for whether an alliance has compellent aims, which leaves conditional deterrent alliances as the comparison cases. To test Hypothesis 3, I control for whether an alliance pact is offensive. Because offensive and compellent alliances aims altering the status quo, they may lead to increased military spending, and these alliances may not be comparable to other pacts.   
+Controlling for some other types of alliances changes the interpretation of the key independent variables by altering the comparison category for each binary variable. While testing the impact of probabilistic and unconditional alliances, I control for whether an alliance has compellent aims, which leaves conditional deterrent alliances as the comparison cases. To test Hypothesis 3, I control for whether an alliance pact is offensive. Because offensive and compellent alliances aims altering the status quo, they may lead to increased military spending, and these alliances may not be comparable to other pacts. Following previous work, I remove non-aggression pacts from the alliance sample. 
 
-State-level control variables are drawn from replication data provided by \citet{DigiuseppePoast2016}. The first set of controls addresses the geopolitical environment for each state. Dummy indicators of participation in international war or civil war capture conflict participation, which can make defense a superior good \citep{OlsonZeckhauser1966}. I include the log-transformed military expenditures of rival states to measure potential arms competition. The natural log of GDP, and the POLITY measure of political institutions control for key domestic characteristics. Last, I include a binary indicator of whether a state is a major power, as these states engage in markedly different alliance policies and can rarely reduce defense effort. 
-
-
+State-level control variables are drawn from replication data provided by \citet{DigiuseppePoast2016}. The first set of controls addresses the geopolitical environment for each state. Dummy indicators of participation in international war or civil war capture conflict participation, which can make defense a superior good \citep{OlsonZeckhauser1966}. I include the military expenditures of rival states to measure potential arms competition. The natural log of GDP, and the POLITY measure of political institutions control for key domestic characteristics. Last, I include a binary indicator of whether a state is a major power, as these states engage in markedly different alliance policies and can rarely reduce defense effort. GDP, POLITY, and rival military expenditures are all standardized for ease of interpretation. 
 
 
+\subsection*{Model Details}
 
+Varying intercepts are a key component of this multilevel model. Also known as random effects, these parameters are essential to modeling variance among groups within the data. Varying intercepts provide partial pooling among observations, which reduces the risk of maximally over or underfitting the data. I include an overall intercept parameter along with random intercepts for years, states, and alliances. The varying intercept parameters capture the deviation of each state, year, and alliance from the overall mean. 
+
+Formally, the full model can be expressed as follows, starting with state-year changes in the natural log of military spending $y_{it}$:
+\begin{equation}
+y_{it} \sim N( \mu, \sigma) 
+\end{equation}
+
+The mean of this distribution $\mu$ is a linear function of the overall mean $\alpha$, a state varying intercept $\alpha^{st}$, a year varying intercept $\alpha^{yr}$, a matrix of state-level regressors $W_{it}$ with a vector of parameters $\gamma$, and a column vector of alliance characteristics multiplied by a row vector of state $i$'s alliance memberships at time $t$ $Z_{it}$. Each element of $Z_{it}$ is equal to one if a state is a member of an alliance in a given year, and zero otherwise. So the overall impact of a state's alliance portfolio on its military spending is the sum of the impact of all the alliances it is a member of on military spending.\footnote{A further expansion could weight each alliance by the total capability of its members.} 
+
+\begin{equation}
+\mu_{it} = \alpha + \alpha^{st} + \alpha^{yr} + W_{it} \gamma + Z_{it} \lambda 
+\end{equation}
+
+The varying intercepts capture state, year, and alliance-specific deviations from the overall mean. I assume that each alliance-specific deviation $\lambda_k$ is normally distributed, with mean $\theta_k$ and variance $\sigma^{all}$. $\theta_k$ is predicted by a second-level regression using the alliance characteristics. Therefore:
+
+\begin{equation}
+\lambda_k \sim N(\theta_k , \sigma^{all})
+\end{equation} 
+and 
+\begin{equation}
+\theta = X \beta
+\end{equation}
+
+The regressors in the alliance-level model predict the expected deviation of that particular alliance from the overall mean. Because my theory addresses the impact of alliance design on military spending, the $\beta$ parameters are the primary quantity of interest. The state-level variables control for state characteristics that are also affect military spending. 
+
+For clarity and speed, I estimate the model in \textsf{R} using STAN \citep{Carpenteretal2016}. STAN is a probabilistic programming language that supports full Bayesian inference, approximating the posterior distribution of the parameters using Hamiltonian Monte Carlo (HMC). Fitting a multilevel regression model in the Bayesian framework requires clarity about the prior distributions. 
+
+Changes in the log of military expenditure have a mean and median of nearly zero, and half the observations fall between -0.05 and 0.12. There are a few large outliers, but large coefficient values are highly unlikely. Therefore, I use weakly informative normal priors with a mean of zero and standard deviation of one for the regression coefficients. 
+
+Using heavier-tailed priors such as the Cauchy distribution in place of the normal priors is much more computationally expensive and had no appreciable impact on the parameter estimates when I used the variational Bayes algorithm of \citep{Kucukelbiretal2015} as an approximate estimator. Furthermore, the normal prior places 95\% of the prior weight on coefficient values between negative two and two, which does not rule out some large coefficients relative to the scale of the data. \autoref{tab:priors} summarizes all the prior distributions from the model. 
+
+With at most 49 observations per state, and the concentration of the dependent variable close to zero, the estimated variances of the state and year intercepts are close to the zero lower bound of a variance parameter. This restricts the scale of the target distribution and creates serious difficulties in sampling. To correct for this problem, I use gamma priors to account for this information and avoid degenerate estimates \citep{Chungetal2013}. I express the gamma variance hyperpriors as having a shape parameter equal to two and a rate parameter of seven. The rate parameter is equal to $\frac{1}{\theta}$, where $\theta$ is a scale parameter. So larger values of the rate parameter apply to data with a smaller scale, which is appropriate for my dependent variable. 
+
+
+\begin{table} % Create a table of priors.
+
+ \begin{center}
+\begin{tabular}{c} 
+$ p(\alpha) \sim N(0, 1)$  \\
+$ p(\sigma) \sim N(0, 1) $ \\
+$ p(\alpha^{yr}) \sim N(0, \sigma^{yr}) $ \\ 
+$ p(\sigma^{yr}) \sim \Gamma(7, 2) $ \\
+$ p(\alpha^{st}) \sim N(0, \sigma^{st}) $ \\ 
+$ p(\sigma^{st}) \sim \gamma(2, 2) $ \\ 
+$ p(\sigma^{all}) \sim \Gamma(2, 2) $ \\
+$ p(\beta) \sim N(0, 1) $\\
+$ p(\gamma) \sim N(0, 1) $ 
+\end{tabular} 
+\end{center} 
+
+\caption{Summary of Priors for Multilevel Model}
+\label{tab:priors}
+\end{table} 
+
+A major limitation of the current model is that it does not account for time-varying alliance characteristics. Future work can address this issue. My focus on alliance design makes the focus on time-invariant characteristics acceptable for the moment- treaty conditions do not change over time without the alliance indicator changing in the ATOP data. 
+
+There are 345 alliances in the sample, each with its own intercept parameter. In addition, all 49 years and 164 states have their own intercept. To facilitate estimation, I use a non-centered parameterization for the intercepts,\footnote{Also known as a standardized adaptive prior} which separates the hierarchical parameters out from lower-level model parameters, because the mean and variances of the intercepts are strongly correlated \citep{BetancourtGirolani2015, McElreath2016}. Non-centered parameterization is another way of expressing the same model to improve sampling and protect the validity of inferences. 
 
 
 
