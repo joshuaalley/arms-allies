@@ -30,7 +30,7 @@ options(mc.cores = parallel::detectCores())
 # Define a state-year level dataset with no missing observations
 reg.state.data <- state.char %>%
   select(ccode, year, change.ln.milex, 
-                                        atwar, civilwar, rival.mil, ln.GDP, polity, majpower)
+                      atwar, civilwar, rival.mil, ln.GDP, polity, majpower)
 
 # Add state membership in alliances to this data
 reg.state.data <- left_join(reg.state.data, state.mem)
@@ -48,6 +48,7 @@ reg.state.comp <- reg.state.data[complete.cases(reg.state.data), ]
 
 # Check the range and distribution of the DV
 summary(reg.state.comp$change.ln.milex)
+sd(reg.state.comp$change.ln.milex)
 plot(density(reg.state.comp$change.ln.milex))
 
 # Create a matrix of state membership in alliances (Z in STAN model)
@@ -98,11 +99,6 @@ alliance.reg.mat.sub <- alliance.reg.mat[1:10, ]
 
 
 
-
-# Compile the model code for the variational Bayes algorithm
-model.1 <- stan_model(file = "data/multi-member ML model.stan")
-
-
 # run model on the full sample
 # Define the data list 
 stan.data <- list(N = nrow(reg.state.comp), y = reg.state.comp[, 3],
@@ -114,6 +110,9 @@ stan.data <- list(N = nrow(reg.state.comp), y = reg.state.comp[, 3],
                       W = reg.state.mat, M = ncol(reg.state.mat))
 
 
+# Compile the model code for the variational Bayes algorithm
+model.1 <- stan_model(file = "data/multi-member ML model.stan")
+
 # Variational Bayes- use to check coefficients on model
 ml.model.vb <- vb(model.1, data = stan.data, seed = 12)
 launch_shinystan(ml.model.vb)
@@ -121,7 +120,7 @@ launch_shinystan(ml.model.vb)
 # Regular STAN
 system.time(
   ml.model <- stan(file = "data/multi-member ML model.stan", data = stan.data, 
-                       iter = 5000, chains = 4, warmup = 1000
+                       iter = 1000, warmup = 500, chains = 4, cores = 4
   )
 )
 
