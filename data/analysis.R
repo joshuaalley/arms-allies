@@ -117,6 +117,36 @@ model.1 <- stan_model(file = "data/multi-member ML model.stan")
 # Variational Bayes- use to check coefficients on model
 ml.model.vb <- vb(model.1, data = stan.data, seed = 12)
 launch_shinystan(ml.model.vb)
+
+# Plots lambdas
+## Extract lambdas from fit and combine with covariates
+lambda_means <- get_posterior_mean(ml.model.vb, pars = "lambda")
+lambda_df <- data_frame(lambda = as.numeric(lambda_means)) %>%  # add lambdas to df
+  bind_cols(alliance.char) %>%  # add alliance characteristics to df
+  mutate(alliance.type = ifelse(prob.det == 1, "Probabilistic Deterrence",  # create a single factors that indicates the categories
+                                ifelse(uncond.det == 1, "Unconditional Deterrence",
+                                       ifelse(cond_det == 1, "Conditional Deterrence", "Other"))))
+## Violin plot for lambdas
+ggplot(lambda_df, aes(x = alliance.type, y = lambda)) +
+  geom_violin() +  # add violin
+  geom_point(position = position_jitter(width = 0.1),  # jitter points to prevent overlap
+             alpha = 0.5,  # somewhat trasparent
+             aes(size = num.mem, shape = factor(bilat))) +  # make size and shape corresponde to number of members
+  scale_shape_manual(values = c(1, 3))  # use circle and +
+ggsave("lambda-box.png", height = 6, width = 8)
+
+# Use random forest to assess variable importance
+library(party)
+rf <- cforest(lambda ~ ., data = select(lambda_df, -alliance.type))  # fit forest
+vi <- varimp(rf)  # calculate variable importance
+vi_df <- data_frame(var_name = names(vi), importance = vi) %>%  # put importance in a df
+  mutate(var_name = reorder(var_name, importance))  # order factor var_name by importance
+
+# Plot importance
+ggplot(vi_df, aes(x = var_name, y = importance)) + 
+  geom_col() + 
+  coord_flip()
+ggsave("varimp.png", height = 6, width = 8)
  
 # Regular STAN
 system.time(
