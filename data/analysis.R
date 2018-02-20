@@ -10,6 +10,7 @@ library(rstan)
 library(bayesplot)
 library(shinystan)
 library(loo)
+library(reshape2)
 
 # Set working directory to current folder 
 setwd(here::here())
@@ -127,6 +128,11 @@ system.time(
 # diagnose full model
 launch_shinystan(ml.model)
 
+check_energy(ml.model)
+check_divergences(ml.model)
+check_treedepth(ml.model)
+
+
 # Pairs plots to find sources of autocorrelation in the chains
 # Check for correlation between the means and variances of the state intercepts
 pairs(ml.model, pars = c("alpha", "sigma_state", "alpha_state[1]", "alpha_state[2]", "alpha_state[15]", 
@@ -140,6 +146,8 @@ pairs(ml.model, pars = c("alpha", "sigma_year", "alpha_year[2]", "alpha_year[14]
 # Check for correlation between the state and year intercepts
 pairs(ml.model, pars = c("alpha", "alpha_state[2]", "alpha_year[14]", "alpha_state[25]", 
                          "alpha_year[35]"))
+
+
 
 
 
