@@ -240,7 +240,7 @@ coef.probs$variable <- reorder(coef.probs$variable, coef.probs$`Posterior Probab
 ggplot(coef.probs, aes(x = variable, y = `Posterior Probability of Positive Coefficient`)) + 
   geom_col() + 
   coord_flip()
-ggsave("post-prob.png", height = 6, width = 8)
+ggsave("figures/post-prob.png", height = 6, width = 8)
 
 
 
@@ -260,7 +260,7 @@ ggplot(lambda_df, aes(x = alliance.type, y = lambda)) +
              alpha = 0.5,  # somewhat trasparent
              aes(size = num.mem, shape = factor(bilat))) +  # make size and shape corresponde to number of members
   scale_shape_manual(values = c(1, 3))  # use circle and +
-ggsave("lambda-box.png", height = 6, width = 8)
+ggsave("figures/lambda-box.png", height = 6, width = 8)
 
 # Use random forest to assess variable importance
 rf <- cforest(lambda ~ ., data = select(lambda_df, -alliance.type))  # fit forest
@@ -272,7 +272,7 @@ vi_df <- data_frame(var_name = names(vi), importance = vi) %>%  # put importance
 ggplot(vi_df, aes(x = var_name, y = importance)) + 
   geom_col() + 
   coord_flip()
-ggsave("varimp.png", height = 6, width = 8)
+ggsave("figures/varimp.png", height = 6, width = 8)
 
 
 
