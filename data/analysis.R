@@ -12,6 +12,7 @@ library(shinystan)
 library(loo)
 library(reshape2)
 library(party)
+library(xtable)
 
 # Set working directory to current folder 
 setwd(here::here())
@@ -181,7 +182,12 @@ ggplot(beta.melt, aes(x=value, fill = Var2)) +
   ggtitle("Posterior Distribution of Alliance-Level Covariates")
 
 # Summarize intervals
-
+beta.summary <- summary(ml.model, pars = c("beta", "sigma_all"), probs = c(0.05, 0.95))$summary
+rownames(beta.summary) <- c("Constant", "Probabilistic Deterrent", "Unconditional Deterrent", 
+                            "Compellent", "Bilateral", "Arms Requirement", "Share Dem. Members", 
+                            "Wartime", "sigma Alliances")
+print(beta.summary)
+xtable(beta.summary)
 
 
 # Similar calculations for the state-level variables
@@ -204,15 +210,49 @@ ggplot(gamma.melt, aes(x=value,  fill = Var2)) +
   ggtitle("Posterior Distribution of State-Level Covariates")
 
 
+# summarize posterior intervals
+gamma.summary <- summary(ml.model, pars = c("gamma", "sigma_state", "alpha"), probs = c(0.05, 0.95))$summary
+rownames(gamma.summary) <- c("Wartime", "Civil War", "Rival Mil. Expenditure", 
+                            "ln(GDP)", "Polity", "Major Power", "Sigma State", "Constant")
+print(gamma.summary)
+xtable(gamma.summary)
+
+
+# Plot posterior probabilities that a given coefficient is positive
+positive.check <- function(x){
+  mean(x > 0)
+}
+
+beta.probs <- apply(ml.model.sum$beta, 2, positive.check)
+gamma.probs <- apply(ml.model.sum$gamma, 2, positive.check)
+
+# append in a dataframe to be used for plotting
+coef.probs <- as.data.frame(append(beta.probs, gamma.probs))
+colnames(coef.probs) <- c("Posterior Probability of Positive Coefficient")
+rownames(coef.probs) <- c("Alliance Model Constant", "Probabilistic Deterrent", "Unconditional Deterrent", 
+                          "Compellent", "Bilateral", "Arms Requirement", "Share Dem. Members", 
+                          "Wartime Alliance",  "State War", "Civil War", "Rival Mil. Expenditure", 
+                            "ln(GDP)", "Polity", "Major Power")
+coef.probs$variable <- rownames(coef.probs)
+coef.probs$variable <- reorder(coef.probs$variable, coef.probs$`Posterior Probability of Positive Coefficient`)
+  
+# Plot
+ggplot(coef.probs, aes(x = variable, y = `Posterior Probability of Positive Coefficient`)) + 
+  geom_col() + 
+  coord_flip()
+ggsave("post-prob.png", height = 6, width = 8)
+
+
 
 # Plots lambdas
 ## Extract lambdas from fit and combine with covariates
 lambda_means <- get_posterior_mean(ml.model, pars = "lambda")
 lambda_df <- data_frame(lambda = lambda_means[, 5]) %>%  # add lambdas to df
   bind_cols(alliance.char) %>%  # add alliance characteristics to df
-  mutate(alliance.type = ifelse(prob.det == 1, "Probabilistic Deterrence",  # create a single factors that indicates the categories
-                                ifelse(uncond.det == 1, "Unconditional Deterrence",
-                                       ifelse(cond_det == 1, "Conditional Deterrence", "Compellent"))))
+  mutate(alliance.type = ifelse(prob.det == 1, "Probabilistic Deterrent",  # create a single factors that indicates the categories
+                                ifelse(uncond.det == 1, "Unconditional Deterrent",
+                                       ifelse(cond_det == 1, "Conditional Deterrent", 
+                                              ifelse(pure_cond_det == 1, "Pure Conditional Deterrent", "Compellent")))))
 ## Violin plot for lambdas
 ggplot(lambda_df, aes(x = alliance.type, y = lambda)) +
   geom_violin() +  # add violin
@@ -233,6 +273,8 @@ ggplot(vi_df, aes(x = var_name, y = importance)) +
   geom_col() + 
   coord_flip()
 ggsave("varimp.png", height = 6, width = 8)
+
+
 
 
 
