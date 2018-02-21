@@ -232,7 +232,8 @@ alliance.year <- full.data %>%
     discret_milsupport = max(discret_milsupport, na.rm = TRUE),
     discret_intervene = max(discret_intervene, na.rm = TRUE),
     bilat = max(bilat, na.rm = TRUE),
-    armsreq = max(armsreq, na.rm = TRUE)
+    armsreq = max(armsreq, na.rm = TRUE),
+    pure_cond_det = max(pure_cond_det, na.rm = TRUE)
   )
 
 alliance.year[order(alliance.year$atopid, alliance.year$year), ]
@@ -340,7 +341,8 @@ alliance.char <- alliance.year %>%
     discret_milsupport = max(discret_milsupport, na.rm = TRUE),
     discret_intervene = max(discret_intervene, na.rm = TRUE),
     bilat = max(bilat, na.rm = TRUE),
-    armsreq = max(armsreq, na.rm = TRUE)
+    armsreq = max(armsreq, na.rm = TRUE),
+    pure_cond_det = max(pure_cond_det, na.rm = TRUE)
   )
 
 # Merge in Chiba et al data
