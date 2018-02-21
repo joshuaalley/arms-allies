@@ -11,6 +11,7 @@ library(bayesplot)
 library(shinystan)
 library(loo)
 library(reshape2)
+library(party)
 
 # Set working directory to current folder 
 setwd(here::here())
@@ -118,35 +119,8 @@ model.1 <- stan_model(file = "data/multi-member ML model.stan")
 ml.model.vb <- vb(model.1, data = stan.data, seed = 12)
 launch_shinystan(ml.model.vb)
 
-# Plots lambdas
-## Extract lambdas from fit and combine with covariates
-lambda_means <- get_posterior_mean(ml.model.vb, pars = "lambda")
-lambda_df <- data_frame(lambda = as.numeric(lambda_means)) %>%  # add lambdas to df
-  bind_cols(alliance.char) %>%  # add alliance characteristics to df
-  mutate(alliance.type = ifelse(prob.det == 1, "Probabilistic Deterrence",  # create a single factors that indicates the categories
-                                ifelse(uncond.det == 1, "Unconditional Deterrence",
-                                       ifelse(cond_det == 1, "Conditional Deterrence", "Other"))))
-## Violin plot for lambdas
-ggplot(lambda_df, aes(x = alliance.type, y = lambda)) +
-  geom_violin() +  # add violin
-  geom_point(position = position_jitter(width = 0.1),  # jitter points to prevent overlap
-             alpha = 0.5,  # somewhat trasparent
-             aes(size = num.mem, shape = factor(bilat))) +  # make size and shape corresponde to number of members
-  scale_shape_manual(values = c(1, 3))  # use circle and +
-ggsave("lambda-box.png", height = 6, width = 8)
 
-# Use random forest to assess variable importance
-library(party)
-rf <- cforest(lambda ~ ., data = select(lambda_df, -alliance.type))  # fit forest
-vi <- varimp(rf)  # calculate variable importance
-vi_df <- data_frame(var_name = names(vi), importance = vi) %>%  # put importance in a df
-  mutate(var_name = reorder(var_name, importance))  # order factor var_name by importance
 
-# Plot importance
-ggplot(vi_df, aes(x = var_name, y = importance)) + 
-  geom_col() + 
-  coord_flip()
-ggsave("varimp.png", height = 6, width = 8)
  
 # Regular STAN
 system.time(
@@ -179,6 +153,86 @@ pairs(ml.model, pars = c("alpha", "alpha_state[2]", "alpha_year[14]", "alpha_sta
 
 
 
+# Extract coefficients from the model
+ml.model.sum <- extract(ml.model, permuted = TRUE)
+
+# Because the varying intercepts were modeling with a non-centered parameterization. need to process them further for interpretation.
+# 
+
+
+# Plot all the beta coefficients and calculate posterior probabilities
+# label columns
+colnames(ml.model.sum$beta) <- colnames(alliance.reg.mat)
+
+
+mean(ml.model.sum$beta[, 2] > 0) # posterior probability that a probabilistic alliance is associated with increased defense spending
+mean(ml.model.sum$beta[, 3] < 0) # posterior probability that an unconditional deterrent alliance is associated with increased spending
+mean(ml.model.sum$beta[, 4] > 0) # Posterior probability that a compellent alliance is associated with increased spending
+mean(ml.model.sum$beta[, 5] > 0) # Posterior probability that a bilateral alliance is associated with increased spending
+mean(ml.model.sum$beta[, 6] > 0) # Posterior probability that a arms requirements in an alliance are associated with increased spending
+mean(ml.model.sum$beta[, 7] < 0) # Posterior probability that more democratic members in the initial alliance is associated with decreased spending
+mean(ml.model.sum$beta[, 8] > 0) # Posterior probability that a partner in the initial alliance was at war during formation is associated with increased spending
+
+beta.melt <- melt(ml.model.sum$beta)
+
+# Plot density of the coefficients
+ggplot(beta.melt, aes(x=value, fill = Var2)) +
+  geom_density(alpha=0.25) +
+  ggtitle("Posterior Distribution of Alliance-Level Covariates")
+
+# Summarize intervals
+
+
+
+# Similar calculations for the state-level variables
+# label columns
+colnames(ml.model.sum$gamma) <- colnames(reg.state.mat)
+
+# posterior probabilities
+mean(ml.model.sum$gamma[, 1] > 0) # posterior probability that being at war leads to increased defense spending
+mean(ml.model.sum$gamma[, 2] > 0) # posterior probability that civil wars lead to increased defense spending
+mean(ml.model.sum$gamma[, 3] > 0) # posterior probability that rival military expenditures are associated with increased spending
+mean(ml.model.sum$gamma[, 4] > 0) # Posterior probability that GDP is associated with increased spending
+mean(ml.model.sum$gamma[, 5] < 0) # posterior probability that democracies tend to decrease spending
+mean(ml.model.sum$gamma[, 6] > 0) # posterior probability that major powers increase spending
+
+gamma.melt <- melt(ml.model.sum$gamma)
+
+# Plot density of the coefficients
+ggplot(gamma.melt, aes(x=value,  fill = Var2)) +
+  geom_density(alpha=0.25) +
+  ggtitle("Posterior Distribution of State-Level Covariates")
+
+
+
+# Plots lambdas
+## Extract lambdas from fit and combine with covariates
+lambda_means <- get_posterior_mean(ml.model, pars = "lambda")
+lambda_df <- data_frame(lambda = lambda_means[, 5]) %>%  # add lambdas to df
+  bind_cols(alliance.char) %>%  # add alliance characteristics to df
+  mutate(alliance.type = ifelse(prob.det == 1, "Probabilistic Deterrence",  # create a single factors that indicates the categories
+                                ifelse(uncond.det == 1, "Unconditional Deterrence",
+                                       ifelse(cond_det == 1, "Conditional Deterrence", "Compellent"))))
+## Violin plot for lambdas
+ggplot(lambda_df, aes(x = alliance.type, y = lambda)) +
+  geom_violin() +  # add violin
+  geom_point(position = position_jitter(width = 0.1),  # jitter points to prevent overlap
+             alpha = 0.5,  # somewhat trasparent
+             aes(size = num.mem, shape = factor(bilat))) +  # make size and shape corresponde to number of members
+  scale_shape_manual(values = c(1, 3))  # use circle and +
+ggsave("lambda-box.png", height = 6, width = 8)
+
+# Use random forest to assess variable importance
+rf <- cforest(lambda ~ ., data = select(lambda_df, -alliance.type))  # fit forest
+vi <- varimp(rf)  # calculate variable importance
+vi_df <- data_frame(var_name = names(vi), importance = vi) %>%  # put importance in a df
+  mutate(var_name = reorder(var_name, importance))  # order factor var_name by importance
+
+# Plot importance
+ggplot(vi_df, aes(x = var_name, y = importance)) + 
+  geom_col() + 
+  coord_flip()
+ggsave("varimp.png", height = 6, width = 8)
 
 
 
