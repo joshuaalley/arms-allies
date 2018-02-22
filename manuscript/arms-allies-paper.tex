@@ -137,12 +137,6 @@ Unconditional alliances are more credible than probabilistic pacts. In an uncond
 
 It is more difficult to make clear predictions about conditional alliances. While these pacts promise military support, their credibility is reduced by the limited breadth of the conditions. The scope of the conditions that trigger intervention also varies widely across treaties. The most important concern for states seeking security from an external threat is whether their alliance covers the most important threats. Many conditional pacts may not address some threats, which reduces their value. The net impact of conditional alliances will often be close to zero, making conditional alliances a useful set of comparison cases for probabilistic and deterrent alliances. 
 
-This framework also generates predictions within other classifications of alliance characteristics. The Alliance Treaty Obligations and Provisions ATOP project divides alliances into offensive, defensive, neutrality, non-aggression and consultation treaties \citet{Leedsetal2002}. Rather than military support, consultation pacts only commit members to coordinating their policies, which reduces the credibility of these treaties. Thus, alliances that promise only consultation should will be less likely to lead to reduced defense effort. 
-
-\begin{quote}
-\textsc{Hypothesis 3}: Alliances that promise consultation but not military support will be associated with increases in defense spending by member states. 
-\end{quote}
-
 Alliance designs are highly strategic. The characteristics of partner states determine whether they form an alliance and how those treaties are designed. Because they face higher audience costs for reneging on their commitments, democracies are more likely to form alliances that only obligate them to consult with a partner, or specify limits to their defensive obligations \citep{Chibaetal2015}. Shared interest and the level of threat faced by a client state may explain why some clients get unconditional defense pacts \citep{Yarhi-Miloetal2016}. Accounting for the process of alliance formation helps address a potential objection to the theory.
 
 An alternative to these predictions builds on the idea that weak commitments are designed to avoid generating entrapment and moral hazard \citep{Benson2012}. Ambiguous commitments restrain protege states from aggressive foreign policies by generating uncertainty about whether the patron will support them. But if a protege states is restrained by an uncertain treaty, might they then reduce military effort? States seeking conflict have every reason to increase defense spending, but if they can only rely on alliances for protection, they have more incentives to free ride. 
@@ -174,11 +168,11 @@ Using a multilevel model has some costs. Defining a separate regression for each
 
 The key dependent variable is changes in the log-transformed value of a state's military expenditures during each year.\footnote{Changes in the non-transformed value of military spending have massive positive and negative outliers, making them difficult to transform so that the scale of the data is coherent.} Military expenditure is the most common proxy for defense effort. Following\citet{DigiuseppePoast2016} I use data from \citet{Nordhausetal2012} who combine data from the Stockholm International Peace Institute (SIPRI) and Correlates of War (COW) projects to address defects in each.\footnote{SIPRI tends to under report spending by Warsaw Pact nations during the Cold War, while the COW data has some instances of measurement error.} Using changes as the dependent variable is reasonable given the year and state varying intercepts. 
 
-I draw on two databases for binary measures of the key independent variables. To test Hypothesis 1, I use the coding of \citet{Benson2012}, who classifies alliances as probabilistic, conditional, or unconditional. For Hypothesis 2, I use \citet{Chibaetal2015}'s measure of whether an alliance promises only consultation.  Because, there is some overlap in these classifications, I estimate separate models of each hypothesis. All alliance membership classifications are also from ATOP \citep{Leedsetal2002}. 
+I draw on two databases for binary measures of key alliance characteristics. To test Hypotheses 1 and 2, I use the alliance classification of \citet{Benson2012}, who classifies alliances as probabilistic, conditional, or unconditional. All state alliance membership data and other important characteristics come from classifications are also from ATOP \citep{Leedsetal2002}. 
 
 Accounting for state and alliance characteristics that may be correlated with both alliance design and military expenditures is necessary to avoid omitted variable bias in the estimates. At the alliance level, I include binary indicators of whether an alliance requires its members to provide some level of arms, is a bilateral treaty, and if any member was involved in a war. I also include the average democracy of the alliance members at the time of formation \citep{Chibaetal2015}. 
 
-Controlling for some other types of alliances changes the interpretation of the key independent variables by altering the comparison category for each binary variable. While testing the impact of probabilistic and unconditional alliances, I control for whether an alliance has compellent aims, which leaves conditional deterrent alliances as the comparison cases. To test Hypothesis 3, I control for whether an alliance pact is offensive. Because offensive and compellent alliances aims altering the status quo, they may lead to increased military spending, and these alliances may not be comparable to other pacts. Following previous work, I remove non-aggression pacts from the alliance sample. 
+Controlling for some other types of alliances changes the interpretation of the key independent variables by altering the comparison category for each binary variable. While testing the impact of probabilistic and unconditional alliances, I control for whether an alliance has compellent aims, which leaves conditional deterrent alliances as the comparison cases. Following previous work, I remove non-aggression pacts from the alliance sample. 
 
 State-level control variables are drawn from replication data provided by \citet{DigiuseppePoast2016}. The first set of controls addresses the geopolitical environment for each state. Dummy indicators of participation in international war or civil war capture conflict participation, which can make defense a superior good \citep{OlsonZeckhauser1966}. I include the military expenditures of rival states to measure potential arms competition. The natural log of GDP, and the POLITY measure of political institutions control for key domestic characteristics. Last, I include a binary indicator of whether a state is a major power, as these states engage in markedly different alliance policies and can rarely reduce defense effort. GDP, POLITY, and rival military expenditures are all standardized for ease of interpretation. 
 
@@ -242,13 +236,6 @@ $ p(\gamma) \sim N(0, 1) $
 A major limitation of the current model is that it does not account for time-varying alliance characteristics. Future work can address this issue. My focus on alliance design makes the focus on time-invariant characteristics acceptable for the moment- treaty conditions do not change over time without the alliance indicator changing in the ATOP data. 
 
 There are 345 alliances in the sample, each with its own intercept parameter. In addition, all 49 years and 164 states have their own intercept. To facilitate estimation, I use a non-centered parameterization for the intercepts,\footnote{Also known as a standardized adaptive prior} which separates the hierarchical parameters out from lower-level model parameters, because the mean and variances of the intercepts are strongly correlated \citep{BetancourtGirolani2015, McElreath2016}. Non-centered parameterization is another way of expressing the same model to improve sampling and protect the validity of inferences. 
-
-
-
-
-
-
-
 
 
 
