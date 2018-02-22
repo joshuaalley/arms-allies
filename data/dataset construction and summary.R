@@ -326,7 +326,6 @@ alliance.char <- alliance.year %>%
   filter(atopid > 0) %>%
   group_by(atopid) %>%
   summarize(
-    consul.only = max(consul.only, na.rm = TRUE),
     prob.det = max(prob.det, na.rm = TRUE),
     offense = max(offense, na.rm = TRUE),
     defense = max(defense, na.rm = TRUE),
