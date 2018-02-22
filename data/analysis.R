@@ -23,7 +23,7 @@ rstan_options(auto_write = TRUE)
 options(mc.cores = parallel::detectCores())
 
 
-# Environment is determined by use of projects and/or using this file in conjunction with
+# Environment is determined by use of projects and/or running this file in conjunction with
 # the script dataset construction and summary.R 
 
 # NOTE: To run the variational Bayes algorithm, must compile the model file on your machine 
@@ -137,8 +137,11 @@ check_energy(ml.model)
 check_divergences(ml.model)
 check_treedepth(ml.model)
 
+# Traceplots for the regression parameters
+traceplot(ml.model, pars = "beta")
+traceplot(ml.model, pars = "gamma")
 
-# Pairs plots to find sources of autocorrelation in the chains
+# Pairs plots to see sources of autocorrelation in the chains
 # Check for correlation between the means and variances of the state intercepts
 pairs(ml.model, pars = c("alpha", "sigma_state", "alpha_state[1]", "alpha_state[2]", "alpha_state[15]", 
                              "alpha_state[26]"))
@@ -238,8 +241,10 @@ coef.probs$variable <- reorder(coef.probs$variable, coef.probs$`Posterior Probab
   
 # Plot
 ggplot(coef.probs, aes(x = variable, y = `Posterior Probability of Positive Coefficient`)) + 
-  geom_col() + 
-  coord_flip()
+  geom_col() +
+  geom_text(aes(label = `Posterior Probability of Positive Coefficient`), nudge_y = .05) +
+  coord_flip() +
+  ggtitle("Posterior Probability of Positive Regression Coefficient")
 ggsave("figures/post-prob.png", height = 6, width = 8)
 
 
@@ -259,7 +264,8 @@ ggplot(lambda_df, aes(x = alliance.type, y = lambda)) +
   geom_point(position = position_jitter(width = 0.1),  # jitter points to prevent overlap
              alpha = 0.5,  # somewhat trasparent
              aes(size = num.mem, shape = factor(bilat))) +  # make size and shape corresponde to number of members
-  scale_shape_manual(values = c(1, 3))  # use circle and +
+  scale_shape_manual(values = c(1, 3)) + # use circle and +
+  ggtitle("Distribution of Mean Predicted Alliance Intercepts by Alliance Type and Size")
 ggsave("figures/lambda-box.png", height = 6, width = 8)
 
 # Use random forest to assess variable importance
@@ -271,7 +277,8 @@ vi_df <- data_frame(var_name = names(vi), importance = vi) %>%  # put importance
 # Plot importance
 ggplot(vi_df, aes(x = var_name, y = importance)) + 
   geom_col() + 
-  coord_flip()
+  coord_flip() +
+  ggtitle("Importance of Alliance Covariates from a Random Forest Model")
 ggsave("figures/varimp.png", height = 6, width = 8)
 
 
