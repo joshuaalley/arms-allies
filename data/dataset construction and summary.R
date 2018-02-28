@@ -363,7 +363,6 @@ alliance.char <- mutate(alliance.char,
 
 
 
-
 ######
 # This section summarizes the data using descriptive statistics and plots
 
@@ -374,11 +373,17 @@ full.data <- full.data %>%
 
 
 # DV: ln(military expenditure)
-summary(full.data$ln.milex)
-ggplot(full.data, aes(ln.milex)) + geom_density()
+ggplot(state.char, aes(milex)) + geom_density()
 ggplot(state.char, aes(ln.milex)) + geom_density()
 
-ggplot(state.char, aes(milex)) + geom_density()
+# Minor powers only 
+state.char %>% 
+  filter(majpower == 0) %>%
+  ggplot(mapping = aes(milex)) + geom_density()
+
+state.char %>% 
+  filter(majpower == 0) %>%
+  ggplot(mapping = aes(ln.milex)) + geom_density()
 
 # Which states have the smallest military expenditures? 
 # At least one has democratic alliances
@@ -600,10 +605,23 @@ summary(full.data$change.milex)
 ggplot(full.data, aes(change.milex)) + geom_density()
 ggplot(state.char, aes(change.milex)) + geom_density()
 
+
+# Changes in spending for milex
+
 # Changes in the natural log of spending- still some crazy outliers, but not as extreme
 summary(full.data$change.ln.milex)
 ggplot(full.data, aes(change.ln.milex)) + geom_density()
 ggplot(state.char, aes(change.ln.milex)) + geom_density()
+
+# Changes in expenditure for minor powers only
+state.char %>% 
+  filter(majpower == 0) %>%
+    ggplot(mapping = aes(change.milex)) + geom_density()
+
+state.char %>% 
+  filter(majpower == 0) %>%
+    ggplot(mapping = aes(change.ln.milex)) + geom_density()
+
 
 
 # Plot changes against year
