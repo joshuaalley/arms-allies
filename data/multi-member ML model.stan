@@ -29,6 +29,8 @@ parameters {
   real<lower = 0> sigma_all; // variance hyperparameter of the alliances
   vector[L] beta; // vector of alliance-level coefficients
   vector[M] gamma; // vector of state-level coefficients 
+  real<lower = 5> nu; // degrees of freedom in t-distribution of outcome
+
 }
 
 transformed parameters {
@@ -59,16 +61,29 @@ model {
     y_hat[i] = alpha + alpha_state[state[i]] + alpha_year[year[i]] + Z[i] * lambda + W[i] * gamma;
   
   
-  alpha ~ normal(0, 1);
+  alpha ~ normal(0, 3);
   sigma ~ normal(0, 1);
   alpha_year_std ~ normal(0, 1);
   alpha_state_std ~ normal(0, 1); 
   lambda_std ~ normal(0, 1);
-  sigma_state ~ gamma(7, 2); // boundary avoiding prior
-  sigma_year ~ gamma(2, 2); // boundary avoiding prior 
-  sigma_all ~ gamma(2, 2); // boundary avoiding prior 
+  sigma_state ~ cauchy(0, 1);
+  sigma_year ~ cauchy(0, 1); 
+  sigma_all ~ cauchy(0, 1); 
   beta ~  normal(0, 1);
   gamma ~ normal(0, 1); 
+  nu ~ gamma(2, 0.1); // Prior for degrees of freedom in t-dist
   
-  y ~ normal(y_hat, sigma);
+  y ~ student_t(nu, y_hat, sigma);
+}
+
+generated quantities {
+ vector[N] log_lik; // Log likelihood for loo and WAIC model comparisons
+ vector[N] y_pred; //  posterior predictive distribution
+
+for (i in 1:N) 
+log_lik[i] = student_t_lpdf(y[i] | nu, alpha + alpha_state[state[i]] + alpha_year[year[i]] + Z[i] * lambda + W[i] * gamma , sigma);
+
+for (i in 1:N)
+y_pred[i] = student_t_rng(nu, alpha + alpha_state[state[i]] + alpha_year[year[i]] + Z[i] * lambda + W[i] * gamma, sigma);
+
 }
