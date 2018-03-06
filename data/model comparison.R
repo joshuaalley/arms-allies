@@ -14,12 +14,14 @@ setwd(here::here())
 getwd()
 
 # Initial model is ml.model from the analysis script
+# Must use this file in conjunction with the analysis script
 # Note: Do not overwrite loo objects- this will crash the R session. 
 
 # extract the log-likelihood from the full model
 log.lik.full <- extract_log_lik(ml.model)
 loo.full <- loo(log.lik.full)
 print(loo.full)
+plot(loo.full, label_points = TRUE)
 waic.full <- waic(log.lik.full)
 
 
@@ -38,13 +40,14 @@ system.time(
   )
 )
 
- # Diagnose intercept only model
-launch_shinystan(ml.model.int)
+# Diagnose intercept only model
+check_hmc_diagnostics(ml.model.int)
 
 # extract the log-likelihood from the intercepts model
 log.lik.int <- extract_log_lik(ml.model.int)
 loo.int <- loo(log.lik.int)
 print(loo.int)
+plot(loo.int, label_points = TRUE)
 waic.int <- waic(log.lik.int)
 
 
@@ -65,12 +68,13 @@ system.time(
 )
 
 # Diagnostic checks
-launch_shinystan(ml.model.state)
+check_hmc_diagnostics(ml.model.state)
 
 # extract the log-likelihood from the state characteristics model
 log.lik.state <- extract_log_lik(ml.model.state)
 loo.state <- loo(log.lik.state)
 print(loo.state)
+plot(loo.state, label_points = TRUE)
 waic.state <- waic(log.lik.state)
 
 
@@ -89,16 +93,3 @@ print(diff2)
 compare(waic.int, waic.state, waic.full)
 
 
-# Posterior predictive distributions relative to observed data
-y = reg.state.comp[, 3]
-y.pred.full <- get_posterior_mean(ml.model, pars = "y_pred")
-y.pred.int <- get_posterior_mean(ml.model.int, pars = "y_pred")
-y.pred.state <- get_posterior_mean(ml.model.state, pars = "y_pred")
-
-posterior.pred.data <- cbind.data.frame(y, y.pred.int[5], y.pred.full[5], y.pred.state[5])
-
-posterior.pred.data <- melt(posterior.pred.data) 
-
-ggplot(posterior.pred.data, aes(x=value, fill = variable)) +
-  geom_density(alpha=0.25) +
-  ggtitle("Posterior Predictive Distributions")
