@@ -251,8 +251,9 @@ coef.probs <- as.data.frame(append(beta.probs, gamma.probs))
 colnames(coef.probs) <- c("Posterior Probability of Positive Coefficient")
 rownames(coef.probs) <- c("Alliance Model Constant", "Probabilistic Deterrent", "Unconditional Deterrent", 
                           "Compellent", "Bilateral", "Arms Requirement", "Share Dem. Members", 
+                          "Wartime Alliance", 
                           "Lag Expenditures",
-                          "Wartime Alliance",  "Interstate War", "Civil War", "Rival Mil. Expenditure", 
+                          "Interstate War", "Civil War", "Rival Mil. Expenditure", 
                             "ln(GDP)", "Polity", "Major Power")
 coef.probs$variable <- rownames(coef.probs)
 coef.probs$variable <- reorder(coef.probs$variable, coef.probs$`Posterior Probability of Positive Coefficient`)
@@ -260,7 +261,7 @@ coef.probs$variable <- reorder(coef.probs$variable, coef.probs$`Posterior Probab
 # Plot
 ggplot(coef.probs, aes(x = variable, y = `Posterior Probability of Positive Coefficient`)) + 
   geom_col() +
-  geom_text(aes(label = `Posterior Probability of Positive Coefficient`), nudge_y = .05) +
+  geom_text(aes(label = `Posterior Probability of Positive Coefficient`), nudge_y = .0675) +
   coord_flip()
 ggsave("figures/post-prob.png", height = 6, width = 8)
 
