@@ -10,7 +10,7 @@ data {
   int<lower = 1> A; // number of alliances
   int<lower = 1> L; // number of alliance-level variables
   int<lower = 1> M; // number of state-level variables
-  int<lower = 1, upper = S> state[N]; // state idenifier
+  int<lower = 1, upper = S> state[N]; // state indicator
   int<lower = 1, upper = T> year[N]; // year indicator
   matrix[N, A] Z; // matrix of state membership in alliances
   matrix[A, L] X; // matrix of alliance-level variables
