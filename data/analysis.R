@@ -40,11 +40,15 @@ reg.state.data <- left_join(reg.state.data, state.mem)
 # Replace missing alliance values with zero 
 reg.state.data[, 11: 355][is.na(reg.state.data[, 11: 355])] <- 0
 
+reg.state.data <- filter(reg.state.data, majpower == 0)
+
 # Remove observations with missing values
 reg.state.comp <- reg.state.data[complete.cases(reg.state.data), ]
 
+reg.state.comp <- select(reg.state.comp, -majpower)
+
 # Rescale the state-level regressors
- reg.state.comp[, 4:10] <- lapply(reg.state.comp[, 4:10], 
+ reg.state.comp[, 4:9] <- lapply(reg.state.comp[, 4:9], 
        function(x) rescale(x, binary.inputs = "0/1"))
 
  
@@ -56,7 +60,7 @@ ggplot(reg.state.comp, aes(ln.milex)) + geom_density()
 
 
 # Create a matrix of state membership in alliances (Z in STAN model)
-state.mem.mat <- as.matrix(reg.state.comp[, 11: 355])
+state.mem.mat <- as.matrix(reg.state.comp[, 10: 354])
 
 # create a state index variable
 reg.state.comp$state.id <- reg.state.comp %>% group_indices(ccode)
@@ -83,7 +87,7 @@ reg.all.data <- reg.all.data[complete.cases(reg.all.data), ]
 
 ### transform data into matrices for STAN
 # State-level characeristics
-reg.state.mat <- as.matrix(reg.state.comp[, 4:10])
+reg.state.mat <- as.matrix(reg.state.comp[, 4:9])
 
 # check correlations among state-level regressors
 cor(reg.state.mat, method = "pearson")
@@ -92,8 +96,6 @@ cor(reg.state.mat, method = "pearson")
 # pull the alliance-level regressors into a matrix
 alliance.reg.mat <- as.matrix(reg.all.data[, 2:8])
 
-# check correlation of the alliance-level regressors
-cor(alliance.reg.mat, method = "pearson")
 
 # Add a constant to the alliance-level regression 
 cons <- rep(1, length = nrow(alliance.reg.mat))
@@ -112,7 +114,7 @@ stan.data <- list(N = nrow(reg.state.comp), y = reg.state.comp[, 3],
                       W = reg.state.mat, M = ncol(reg.state.mat))
 
 
-# Compile the model code for the variational Bayes algorithm
+# Compile the model code
 model.1 <- stan_model(file = "data/multi-member ML model.stan")
 
 # Variational Bayes- use to check coefficients and posterior predictions on model
@@ -129,8 +131,8 @@ ppc_dens_overlay(y, vb.model.sum$y_pred[1:100, ])
  
 # Regular STAN
 system.time(
-  ml.model <- stan(file = "data/multi-member ML model.stan", data = stan.data, 
-                       iter = 2000, warmup = 1000, chains = 4, cores = 4
+  ml.model <- sampling(model.1, data = stan.data, 
+                       iter = 2000, warmup = 1000, chains = 4
   )
 )
 
@@ -164,7 +166,7 @@ pairs(ml.model, pars = c("beta[1]", "beta[2]", "beta[3]", "beta[4]",
 
 # State-level variables
 pairs(ml.model, pars = c("gamma[1]", "gamma[2]", "gamma[3]", "gamma[4]",
-                         "gamma[5]", "gamma[6]", "gamma[7]"))
+                         "gamma[5]", "gamma[6]"))
 
 
 # Extract coefficients from the model
@@ -220,7 +222,6 @@ mean(ml.model.sum$gamma[, 3] > 0) # posterior probability that civil wars lead t
 mean(ml.model.sum$gamma[, 4] > 0) # posterior probability that rival military expenditures are associated with increased spending
 mean(ml.model.sum$gamma[, 5] > 0) # Posterior probability that GDP is associated with increased spending
 mean(ml.model.sum$gamma[, 6] < 0) # posterior probability that democracies tend to decrease spending
-mean(ml.model.sum$gamma[, 7] > 0) # posterior probability that major powers increase spending
 
 gamma.melt <- melt(ml.model.sum$gamma)
 
@@ -233,7 +234,7 @@ ggplot(gamma.melt, aes(x=value,  fill = Var2)) +
 # summarize posterior intervals
 gamma.summary <- summary(ml.model, pars = c("gamma", "sigma_state", "alpha"), probs = c(0.05, 0.95))$summary
 rownames(gamma.summary) <- c("Lagged Expenditures", "Wartime", "Civil War", "Rival Mil. Expenditure", 
-                            "ln(GDP)", "Polity", "Major Power", "Sigma State", "Constant")
+                            "ln(GDP)", "Polity", "Sigma State", "Constant")
 print(gamma.summary)
 xtable(gamma.summary)
 
@@ -254,7 +255,7 @@ rownames(coef.probs) <- c("Alliance Model Constant", "Probabilistic Deterrent", 
                           "Wartime Alliance", 
                           "Lag Expenditures",
                           "Interstate War", "Civil War", "Rival Mil. Expenditure", 
-                            "ln(GDP)", "Polity", "Major Power")
+                            "ln(GDP)", "Polity")
 coef.probs$variable <- rownames(coef.probs)
 coef.probs$variable <- reorder(coef.probs$variable, coef.probs$`Posterior Probability of Positive Coefficient`)
   
@@ -284,7 +285,7 @@ ggplot(lambda_df, aes(x = alliance.type, y = lambda)) +
              aes(size = num.mem, shape = factor(bilat))) +  # make size and shape corresponde to number of members
   scale_shape_manual(values = c(1, 3)) + # use circle and +
   ggtitle("Distribution of Mean Predicted Alliance Intercepts by Alliance Type and Size")
-ggsave("figures/lambda-box.png", height = 6, width = 8)
+ggsave("figures/lambda-box subset.png", height = 6, width = 8)
 
 # Use random forest to assess variable importance
 rf <- cforest(lambda ~ ., data = select(lambda_df, -alliance.type))  # fit forest
@@ -300,6 +301,22 @@ ggplot(vi_df, aes(x = var_name, y = importance)) +
 ggsave("figures/varimp.png", height = 6, width = 8)
 
 
+## Violin plot for lambdas, broken down by arms requirements
+ggplot(lambda_df, aes(x = alliance.type, y = lambda)) +
+  geom_violin() +  # add violin
+  geom_point(position = position_jitter(width = 0.1),  # jitter points to prevent overlap
+             alpha = 0.5,  # somewhat trasparent
+             aes(shape = factor(armsreq))) +  # make shape corresponde to arms requirement
+  ggtitle("Distribution of Mean Predicted Alliance Intercepts by Alliance Type and Arms Requirements")
+
+
+## Violin plot for lambdas, broken down by wartime
+ggplot(lambda_df, aes(x = alliance.type, y = lambda)) +
+  geom_violin() +  # add violin
+  geom_point(position = position_jitter(width = 0.1),  # jitter points to prevent overlap
+             alpha = 0.5,  # somewhat trasparent
+             aes(shape = factor(wartime))) +  # make shape corresponde to arms requirement
+  ggtitle("Distribution of Mean Predicted Alliance Intercepts by Alliance Type and Wartime")
 
 
 
