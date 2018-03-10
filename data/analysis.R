@@ -71,7 +71,8 @@ reg.state.comp$year.id <- reg.state.comp %>% group_indices(year)
 
 # Create the matrix of alliance-level variables
 reg.all.data <- alliance.char %>%
-  select(atopid, prob.det, uncond.det, compellent, bilat, armsreq, dem.prop, wartime, onlyconsul)
+  select(atopid, prob.det, uncond.det, compellent, bilat, 
+         armsreq, dem.prop, wartime, organ1, milaid)
 
 # Create an alliance index variable
 alliance.id <- reg.all.data %>% group_indices(atopid)
@@ -90,7 +91,7 @@ cor(reg.state.mat, method = "pearson")
 
 # State membership in alliances
 # pull the alliance-level regressors into a matrix
-alliance.reg.mat <- as.matrix(reg.all.data[, 2:8])
+alliance.reg.mat <- as.matrix(reg.all.data[, 2:10])
 
 
 # Add a constant to the alliance-level regression 

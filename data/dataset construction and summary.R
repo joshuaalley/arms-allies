@@ -35,13 +35,13 @@ atop.mem.key <- cbind.data.frame(atop.mem$atopid, atop.mem$member, atop.mem$yren
                       atop.mem$offense, atop.mem$defense, atop.mem$neutral, atop.mem$consul, atop.mem$nonagg,           
                       atop.mem$bilat, atop.mem$wartime, atop.mem$conditio,
                       atop.mem$defcon, atop.mem$offcon, atop.mem$neucon, atop.mem$concon,
-                      atop.mem$armred)
+                      atop.mem$armred, atop.mem$organ1, atop.mem$milaid)
 
 colnames(atop.mem.key) <- c("atopid", "ccode", "startyear", "endyear",
                             "offense", "defense", "neutral", "consul", "nonagg",
                             "bilat", "wartime", "conditional",
                             "defcon", "offcon", "neucon", "concon",
-                            "armsreq")
+                            "armsreq", "organ1", "milaid")
 
 summary(atop.mem.key$atopid)
 
@@ -236,7 +236,9 @@ alliance.year <- full.data %>%
     discret_intervene = max(discret_intervene, na.rm = TRUE),
     bilat = max(bilat, na.rm = TRUE),
     armsreq = max(armsreq, na.rm = TRUE),
-    pure_cond_det = max(pure_cond_det, na.rm = TRUE)
+    pure_cond_det = max(pure_cond_det, na.rm = TRUE),
+    organ1 = max(organ1, na.rm = TRUE),
+    milaid = max(milaid, na.rm = TRUE)
   )
 
 alliance.year[order(alliance.year$atopid, alliance.year$year), ]
@@ -344,7 +346,9 @@ alliance.char <- alliance.year %>%
     discret_intervene = max(discret_intervene, na.rm = TRUE),
     bilat = max(bilat, na.rm = TRUE),
     armsreq = max(armsreq, na.rm = TRUE),
-    pure_cond_det = max(pure_cond_det, na.rm = TRUE)
+    pure_cond_det = max(pure_cond_det, na.rm = TRUE),
+    organ1 = max(organ1, na.rm = TRUE),
+    milaid = max(milaid, na.rm = TRUE)
   )
 
 # Merge in Chiba et al data
