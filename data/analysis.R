@@ -32,13 +32,13 @@ options(mc.cores = parallel::detectCores())
 # Define a state-year level dataset with no missing observations
 reg.state.data <- state.char %>%
   select(ccode, year, ln.milex, lag.ln.milex,
-                      atwar, civilwar, rival.mil, ln.GDP, polity, majpower)
+                      atwar, civilwar, rival.mil, ln.GDP, polity, cold.war, majpower)
 
 # Add state membership in alliances to this data
 reg.state.data <- left_join(reg.state.data, state.mem)
 
 # Replace missing alliance values with zero 
-reg.state.data[, 11: 355][is.na(reg.state.data[, 11: 355])] <- 0
+reg.state.data[, 12: 356][is.na(reg.state.data[, 12: 356])] <- 0
 
 reg.state.data <- filter(reg.state.data, majpower == 0)
 
@@ -48,7 +48,7 @@ reg.state.comp <- reg.state.data[complete.cases(reg.state.data), ]
 reg.state.comp <- select(reg.state.comp, -majpower)
 
 # Rescale the state-level regressors
- reg.state.comp[, 4:9] <- lapply(reg.state.comp[, 4:9], 
+ reg.state.comp[, 4:10] <- lapply(reg.state.comp[, 4:10], 
        function(x) rescale(x, binary.inputs = "0/1"))
 
  
@@ -60,7 +60,7 @@ ggplot(reg.state.comp, aes(ln.milex)) + geom_density()
 
 
 # Create a matrix of state membership in alliances (Z in STAN model)
-state.mem.mat <- as.matrix(reg.state.comp[, 10: 354])
+state.mem.mat <- as.matrix(reg.state.comp[, 11: 355])
 
 # create a state index variable
 reg.state.comp$state.id <- reg.state.comp %>% group_indices(ccode)
@@ -79,15 +79,11 @@ alliance.id <- reg.all.data %>% group_indices(atopid)
 # Check for missing data
 reg.all.data <- reg.all.data[complete.cases(reg.all.data), ]
 
-# Rescale the regressors
-# reg.all.data[, 2:9] <- lapply(reg.all.data[, 2:9], 
-#                                 function(x) rescale(x, binary.inputs = "0/1"))
-
 
 
 ### transform data into matrices for STAN
 # State-level characeristics
-reg.state.mat <- as.matrix(reg.state.comp[, 4:9])
+reg.state.mat <- as.matrix(reg.state.comp[, 4:10])
 
 # check correlations among state-level regressors
 cor(reg.state.mat, method = "pearson")

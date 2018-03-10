@@ -175,6 +175,9 @@ colnames(state.char) <- c("ccode", "year",
 summary(state.char$year)
 state.char <- subset(state.char, state.char$year <= 2001)
 
+# Add a Cold War variable 
+state.char$cold.war <- ifelse(state.char$year >= 1949 & state.char$year <= 1990, 1, 0)
+
 # Create a differences in military expenditure variable
 # Start by taking the military expenditures data and reversing the log transformation
 state.char$milex <- exp(state.char$ln.milex)
