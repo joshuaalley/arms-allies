@@ -40,6 +40,7 @@ reg.state.data <- left_join(reg.state.data, state.mem)
 # Replace missing alliance values with zero 
 reg.state.data[, 12: 356][is.na(reg.state.data[, 12: 356])] <- 0
 
+# remove major powers from the sample
 reg.state.data <- filter(reg.state.data, majpower == 0)
 
 # Remove observations with missing values
@@ -71,14 +72,14 @@ reg.state.comp$year.id <- reg.state.comp %>% group_indices(year)
 
 # Create the matrix of alliance-level variables
 reg.all.data <- alliance.char %>%
-  select(atopid, prob.det, uncond.det, compellent, bilat, 
-         armsreq, dem.prop, wartime, organ1, milaid)
+  select(atopid, prob_det, uncond_det, compellent, bilat, 
+         armred, dem.prop, wartime, organ1, milaid)
 
 # Create an alliance index variable
 alliance.id <- reg.all.data %>% group_indices(atopid)
 
-# Check for missing data
-reg.all.data <- reg.all.data[complete.cases(reg.all.data), ]
+# Replace missing conditions (arms, instituions and military aid) with zeros
+reg.all.data[is.na(reg.all.data)] <- 0
 
 
 
@@ -163,7 +164,7 @@ pairs(ml.model, pars = c("beta[1]", "beta[2]", "beta[3]", "beta[4]",
 
 # State-level variables
 pairs(ml.model, pars = c("gamma[1]", "gamma[2]", "gamma[3]", "gamma[4]",
-                         "gamma[5]", "gamma[6]"))
+                         "gamma[5]", "gamma[6]", "gamma[7]"))
 
 
 # Extract coefficients from the model
@@ -191,6 +192,8 @@ mean(ml.model.sum$beta[, 5] > 0) # Posterior probability that a bilateral allian
 mean(ml.model.sum$beta[, 6] > 0) # Posterior probability that a arms requirements in an alliance are associated with increased spending
 mean(ml.model.sum$beta[, 7] < 0) # Posterior probability that more democratic members in the initial alliance is associated with decreased spending
 mean(ml.model.sum$beta[, 8] > 0) # Posterior probability that a partner in the initial alliance was at war during formation is associated with increased spending
+mean(ml.model.sum$beta[, 9] > 0) # Posterior probability that greater alliance institutionalization is associated with increased spending
+mean(ml.model.sum$beta[, 10] > 0) # Posterior probability that military aid conditions are associated with increased spending
 
 beta.melt <- melt(ml.model.sum$beta)
 
@@ -203,7 +206,7 @@ ggplot(beta.melt, aes(x=value, fill = Var2)) +
 beta.summary <- summary(ml.model, pars = c("beta", "sigma_all"), probs = c(0.05, 0.95))$summary
 rownames(beta.summary) <- c("Constant", "Probabilistic Deterrent", "Unconditional Deterrent", 
                             "Compellent", "Bilateral", "Arms Requirement", "Share Dem. Members", 
-                            "Wartime", "sigma Alliances")
+                            "Wartime", "Institutionalization", "Military aid", "sigma Alliances")
 print(beta.summary)
 xtable(beta.summary, digits = 3)
 
@@ -219,6 +222,8 @@ mean(ml.model.sum$gamma[, 3] > 0) # posterior probability that civil wars lead t
 mean(ml.model.sum$gamma[, 4] > 0) # posterior probability that rival military expenditures are associated with increased spending
 mean(ml.model.sum$gamma[, 5] > 0) # Posterior probability that GDP is associated with increased spending
 mean(ml.model.sum$gamma[, 6] < 0) # posterior probability that democracies tend to decrease spending
+mean(ml.model.sum$gamma[, 7] > 0) # posterior probability that Cold war years are associated with increased spending
+
 
 gamma.melt <- melt(ml.model.sum$gamma)
 
@@ -231,7 +236,7 @@ ggplot(gamma.melt, aes(x=value,  fill = Var2)) +
 # summarize posterior intervals
 gamma.summary <- summary(ml.model, pars = c("gamma", "sigma_state", "alpha"), probs = c(0.05, 0.95))$summary
 rownames(gamma.summary) <- c("Lagged Expenditures", "Wartime", "Civil War", "Rival Mil. Expenditure", 
-                            "ln(GDP)", "Polity", "Sigma State", "Constant")
+                            "ln(GDP)", "Polity", "Cold War", "Sigma State", "Constant")
 print(gamma.summary)
 xtable(gamma.summary)
 
@@ -249,10 +254,10 @@ coef.probs <- as.data.frame(append(beta.probs, gamma.probs))
 colnames(coef.probs) <- c("Posterior Probability of Positive Coefficient")
 rownames(coef.probs) <- c("Alliance Model Constant", "Probabilistic Deterrent", "Unconditional Deterrent", 
                           "Compellent", "Bilateral", "Arms Requirement", "Share Dem. Members", 
-                          "Wartime Alliance", 
+                          "Wartime Alliance", "Insitutionalization", "Military Aid",
                           "Lag Expenditures",
                           "Interstate War", "Civil War", "Rival Mil. Expenditure", 
-                            "ln(GDP)", "Polity")
+                            "ln(GDP)", "Polity", "Cold War")
 coef.probs$variable <- rownames(coef.probs)
 coef.probs$variable <- reorder(coef.probs$variable, coef.probs$`Posterior Probability of Positive Coefficient`)
   
@@ -270,10 +275,16 @@ ggsave("figures/post-prob.png", height = 6, width = 8)
 lambda_means <- get_posterior_mean(ml.model, pars = "lambda")
 lambda_df <- data_frame(lambda = lambda_means[, 5]) %>%  # add lambdas to df
   bind_cols(alliance.char) %>%  # add alliance characteristics to df
-  mutate(alliance.type = ifelse(prob.det == 1, "Probabilistic Deterrent",  # create a single factors that indicates the categories
-                                ifelse(uncond.det == 1, "Unconditional Deterrent",
+  mutate(alliance.type = ifelse(mixed == 1, "Mixed",  # create a single factors that indicates the categories
+                          ifelse(prob_det == 1, "Probabilistic Deterrent", 
+                                ifelse(uncond_det == 1, "Unconditional Deterrent",
                                        ifelse(cond_det == 1, "Conditional Deterrent", 
-                                              ifelse(pure_cond_det == 1, "Pure Conditional Deterrent", "Compellent")))))
+                                          ifelse(compellent == 1, "Compellent", "None"))))))
+
+# check the validity of the type variable
+count(lambda_df, alliance.type)
+                                              
+                                                                                           
 ## Violin plot for lambdas
 ggplot(lambda_df, aes(x = alliance.type, y = lambda)) +
   geom_violin() +  # add violin
@@ -303,7 +314,7 @@ ggplot(lambda_df, aes(x = alliance.type, y = lambda)) +
   geom_violin() +  # add violin
   geom_point(position = position_jitter(width = 0.1),  # jitter points to prevent overlap
              alpha = 0.5,  # somewhat trasparent
-             aes(shape = factor(armsreq))) +  # make shape corresponde to arms requirement
+             aes(shape = factor(armred))) +  # make shape corresponde to arms requirement
   ggtitle("Distribution of Mean Predicted Alliance Intercepts by Alliance Type and Arms Requirements")
 
 
@@ -315,6 +326,23 @@ ggplot(lambda_df, aes(x = alliance.type, y = lambda)) +
              aes(shape = factor(wartime))) +  # make shape corresponde to arms requirement
   ggtitle("Distribution of Mean Predicted Alliance Intercepts by Alliance Type and Wartime")
 
+
+## Violin plot for lambdas, broken down by instititutionalization
+ggplot(lambda_df, aes(x = alliance.type, y = lambda)) +
+  geom_violin() +  # add violin
+  geom_point(position = position_jitter(width = 0.1),  # jitter points to prevent overlap
+             alpha = 0.5,  # somewhat trasparent
+             aes(shape = factor(organ1))) +  # make shape corresponde to arms requirement
+  ggtitle("Distribution of Mean Predicted Alliance Intercepts by Alliance Type and Institutionalization")
+
+
+## Violin plot for lambdas, broken down by whether pact is consultation only (to compare Benson with ATOP)
+ggplot(lambda_df, aes(x = alliance.type, y = lambda)) +
+  geom_violin() +  # add violin
+  geom_point(position = position_jitter(width = 0.1),  # jitter points to prevent overlap
+             alpha = 0.5,  # somewhat trasparent
+             aes(shape = factor(onlyconsul))) +  # make shape corresponde to arms requirement
+  ggtitle("Distribution of Mean Predicted Alliance Intercepts by Alliance Type and Consultation Only")
 
 
 
