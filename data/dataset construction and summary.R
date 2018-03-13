@@ -22,75 +22,89 @@ getwd()
 d.benson <- read.csv("data/alliance-types-benson.csv")
 d.benson <- cbind.data.frame(d.benson[, 1:2], d.benson[,8:15 ])
 
+# Compile all the phases into a single observation
+# NB: Benson's phases do not match ATOPs exactly. This makes combining his coding with other ATOP coding very difficult. 
+d.benson$atopid <- trunc(d.benson$atopid)
+
+d.benson <- d.benson %>% 
+    group_by(atopid) %>% 
+      summarize(
+        phases = n(),
+        startyear = min(startyear, na.rm = TRUE),
+        uncond_comp = max(uncond_comp, na.rm = TRUE), 
+        cond_comp = max(cond_comp, na.rm = TRUE), 
+        uncond_det = max(uncond_det, na.rm = TRUE),
+        cond_det = max(cond_det, na.rm = TRUE),
+        prob_det = max(prob_det, na.rm = TRUE),
+        pure_cond.det = max(pure_cond_det, na.rm = TRUE),
+        discret_milsupport = max(discret_milsupport, na.rm = TRUE),
+        discret_intervene = max(discret_intervene, na.rm = TRUE)
+      )
+      
 
 # Load the ATOP data on alliance-level characteristics
-atop <- read.csv("data/atop-alliancephase-level.csv")
-
-# load the ATOP alliance-member data
-atop.mem <- read.csv("data/atop-member-level.csv")
-
+atop <- read.csv("data/atop-alliance-level.csv")
 
 # Create a datasets with essential ATOP variables
-atop.mem.key <- cbind.data.frame(atop.mem$atopid, atop.mem$member, atop.mem$yrent, atop.mem$yrexit,
-                      atop.mem$offense, atop.mem$defense, atop.mem$neutral, atop.mem$consul, atop.mem$nonagg,           
-                      atop.mem$bilat, atop.mem$wartime, atop.mem$conditio,
-                      atop.mem$defcon, atop.mem$offcon, atop.mem$neucon, atop.mem$concon,
-                      atop.mem$armred, atop.mem$organ1, atop.mem$milaid)
-
-colnames(atop.mem.key) <- c("atopid", "ccode", "startyear", "endyear",
-                            "offense", "defense", "neutral", "consul", "nonagg",
-                            "bilat", "wartime", "conditional",
-                            "defcon", "offcon", "neucon", "concon",
-                            "armsreq", "organ1", "milaid")
+atop.key <- select(atop, atopid, 
+                   offense, defense, neutral, consul, nonagg,           
+                   bilat, wartime, 
+                   armred, organ1, milaid)
 
 summary(atop.mem.key$atopid)
 
+# merge with Benson data
+alliance.char.full <- left_join(atop.key, d.benson)
 
-# Add Chiba et al data to ATOP member alliance data
+
 # Load Chiba et al Replication data 
 chiba.etal <- read.csv("data/chiba-etal2015.csv")
-chiba.etal <- cbind.data.frame(chiba.etal[, 1], chiba.etal[, 6], chiba.etal[, 3], chiba.etal[, 10])
+chiba.etal <- select(chiba.etal, atopid, dem_prop, onlyconsul, mem_num)
 colnames(chiba.etal) <- c("atopid", "dem.prop", "onlyconsul", "num.mem")
 
 # Drop atopids greater than 6000, which are all missing
 chiba.etal <- subset(chiba.etal, chiba.etal$atopid < 6000)
 
 
-# merge chiba et al data with ATOP member data
-atop.mem.key <- merge(atop.mem.key, chiba.etal, all.x = TRUE)
+# add Chiba et al data
+alliance.char.full <- left_join(alliance.char.full, chiba.etal)
+
+# remove non-aggression only pacts
+alliance.char.full <- mutate(alliance.char.full, nonagg.only = ifelse((nonagg == 1 & offense != 1 & defense != 1 & consul != 1 & neutral != 1), 1 , 0))
+
+alliance.char <- filter(alliance.char.full, nonagg.only != 1)
+alliance.char <- select(alliance.char, -nonagg.only)
+
+# Create an indicator of compellent alliances and another for alliances with none of Benson's conditions
+alliance.char <- mutate(alliance.char,
+                        compellent = ifelse((uncond_comp == 1 | cond_comp == 1), 1 , 0),
+                        none = ifelse(prob_det == 0 & uncond_det == 0 & cond_det == 0 & compellent == 0, 1, 0),
+                        number.types = prob_det + uncond_det + cond_det + compellent,
+                        mixed = ifelse(number.types > 1, 1, 0))
 
 
-# Merge ATOP member and Benson data to create a dataset with alliance members
-# and key conditions of a given ATOP alliance
-# This is necessary because Benson's replication data only provides ATOP ids 
-# and his dyadic data doesn't have the raw alliance types
-
-# Pull the ATOP ID variable out as a dataframe to merge Benson's data on
-atop.id <- cbind.data.frame(atop$atopidphase, atop$begyr)
-colnames(atop.id) <- c("atopid", "startyear")
+# Check overlap between consultation only and none variable 
+table(alliance.char$none, alliance.char$onlyconsul)
 
 
-# Merge Benson's data with the regular ATOP indicator
-# Use of ALL provides max chance of getting data in a merger
-atop.ben <- merge(atop.id, d.benson, by = c("atopid", "startyear"), all = TRUE)
 
-# truncate atopid phaseid variable to facilitate merging
- atop.ben$atopid <- trunc(atop.ben$atopid)
- 
-# Fill in missing data on alliance characteristics based on ATOP ID
-atop.ben <- atop.ben[order(atop.ben$atopid, atop.ben$startyear, atop.ben$uncond_comp), ]
-atop.ben[3:10] <- na.locf(atop.ben[3:10])
 
-# remove duplicates
- unique(atop.ben)
- atop.ben.unique <- unique(atop.ben)
- 
- # Some rows with missing data shows up as unique
- atop.ben.unique <- atop.ben.unique[complete.cases(atop.ben.unique), ] 
+
+####
+# load the ATOP alliance-member data (This provides the basis for the alliance member matrix)
+atop.mem <- read.csv("data/atop-member-level.csv")
+
+
+# Create a datasets with observation identifiers
+atop.mem <- cbind.data.frame(atop.mem$atopid, atop.mem$member, atop.mem$yrent, atop.mem$yrexit)
+
+colnames(atop.mem) <- c("atopid", "ccode", "startyear", "endyear")
+
+summary(atop.mem$atopid)
 
 
 # Merge the two alliance data types using ATOP ID and starting year
-alliance.comp <- merge(atop.mem.key, atop.ben.unique, all.x = TRUE)
+alliance.comp <- merge(atop.mem.key, alliance.char, all.x = TRUE)
 
 
 # Create a frequency variable to expand data to country-alliance-year data form
@@ -186,6 +200,11 @@ state.char$lag.milex <- exp(state.char$lag.ln.milex)
 state.char$change.milex <- state.char$milex - state.char$lag.milex
 state.char$change.ln.milex <- state.char$ln.milex - state.char$lag.ln.milex
 
+
+
+
+
+### 
 # Merge the state characteristics and alliance data
 full.data <- right_join(alliance.1950, state.char)
 
@@ -235,7 +254,7 @@ alliance.year <- full.data %>%
     discret_milsupport = max(discret_milsupport, na.rm = TRUE),
     discret_intervene = max(discret_intervene, na.rm = TRUE),
     bilat = max(bilat, na.rm = TRUE),
-    armsreq = max(armsreq, na.rm = TRUE),
+    armred = max(armred, na.rm = TRUE),
     pure_cond_det = max(pure_cond_det, na.rm = TRUE),
     organ1 = max(organ1, na.rm = TRUE),
     milaid = max(milaid, na.rm = TRUE)
@@ -263,9 +282,6 @@ full.data$deterrent <- ifelse(full.data$cond_det == 1 | full.data$uncond_det == 
 # binary indicator of conditional alliances in the benson typology
 full.data$ben.cond <- ifelse(full.data$cond_det == 1 | full.data$cond_comp == 1, 1, 0)
 
-# Mark each unique state-year observation in the data with its own indicator 
-full.data <- full.data %>% group_by(ccode, year)
-full.data$state.year.id <- full.data %>% group_indices(ccode, year)
 
 # Remove observation with missing ccode
 full.data <- full.data[complete.cases(full.data$ccode), ]
@@ -273,7 +289,8 @@ full.data <- full.data[complete.cases(full.data$ccode), ]
 
 # The full dataset can also provide the basis of a state-year characteristics dataset 
 # with some summary variables for the alliance portfolio
-# Can then merge this with the state characteristics dataset
+# Can then merge this with the state characteristics dataset to create a dataset for 
+# single-level regressions
 state.ally.year <- full.data %>%
   group_by(ccode, year) %>%
   summarize(
@@ -292,7 +309,7 @@ state.ally.year <- full.data %>%
     cond.det.pres = max(cond_det, na.rm = TRUE),
     cond.det.total = sum(cond_det, na.rm = TRUE),
     avg.dem.prop = mean(dem.prop, na.rm = TRUE),
-    arms.req = max(armsreq, na.rm = TRUE),
+    armred = max(armred, na.rm = TRUE),
     avg.num.mem = mean(num.mem, na.rm = TRUE),
     defense.total = sum(defense, na.rm = TRUE),
     offense.total = sum(offense, na.rm = TRUE),
@@ -323,45 +340,12 @@ state.mem <- spread(state.mem, key = atopid, value = member, fill = 0)
 state.mem <- subset(state.mem, select = -(3))
 
 
+# Make the alliance characteristics data match the membership matrix
+alliance.char <- filter(alliance.char, atopid %in% colnames(state.mem))
 
 
-# Create a dataset with key alliance characteristics, not alliance-year data
-# average 
-alliance.char <- alliance.year %>%
-  filter(atopid > 0) %>%
-  group_by(atopid) %>%
-  summarize(
-    prob.det = max(prob.det, na.rm = TRUE),
-    offense = max(offense, na.rm = TRUE),
-    defense = max(defense, na.rm = TRUE),
-    neutral = max(neutral, na.rm = TRUE),
-    nonagg = max(nonagg, na.rm = TRUE),
-    consul = max(consul, na.rm = TRUE),
-    wartime = max(wartime, na.rm = TRUE),
-    uncond_comp = max(uncond_comp, na.rm = TRUE),
-    cond_comp = max(cond_comp, na.rm = TRUE),
-    uncond.det = max(uncond_det, na.rm = TRUE),
-    cond_det = max(cond_det, na.rm = TRUE),
-    discret_milsupport = max(discret_milsupport, na.rm = TRUE),
-    discret_intervene = max(discret_intervene, na.rm = TRUE),
-    bilat = max(bilat, na.rm = TRUE),
-    armsreq = max(armsreq, na.rm = TRUE),
-    pure_cond_det = max(pure_cond_det, na.rm = TRUE),
-    organ1 = max(organ1, na.rm = TRUE),
-    milaid = max(milaid, na.rm = TRUE)
-  )
 
-# Merge in Chiba et al data
-alliance.char <- left_join(alliance.char, chiba.etal)
 
-# remove non-aggression only pacts
-alliance.char <- mutate(alliance.char, nonagg.only = ifelse((nonagg == 1 & offense != 1 & defense != 1 & consul != 1 & neutral != 1), 1 , 0))
-
-alliance.char <- filter(alliance.char, nonagg.only != 1)
-
-# Create an indicator of compellent alliances
-alliance.char <- mutate(alliance.char,
-                        compellent = ifelse((uncond_comp == 1 | cond_comp == 1), 1 , 0))
 
 
 
