@@ -43,13 +43,17 @@ state.char.full <- state.char.full %>%
 
 state.char.full <- state.char.full[complete.cases(state.char.full$ccode), ]
 
+
+# What states have these probabilistic deterrent pacts- wide variety
+ state.char.full %>% filter(prob.det.pres == 1) %>% count(ccode)
+
 # Sample is minor powers only, and those minor powers that have alliances
 # otherwise, states with no alliances enter the base category, which may alter comparisons
 
 # Start with a simple linear model 
 m1.reg <- plm(ln.milex ~ prob.det.pres + uncond.det.pres + comp.pres  + avg.dem.prop + lag.ln.milex +
                atwar + civilwar + polity + ln.GDP + nato +
-               ls.threatenv + cold.war,
+               ls.threatenv + cold.war + totalmilex.atop.ally,
              data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0),
             effect = "twoways",  model = "within")
 
@@ -59,7 +63,7 @@ plot(density(m1.reg$residuals))
 # Hausman test
 m1.reg.re <- plm(ln.milex ~ prob.det.pres + uncond.det.pres + comp.pres  + avg.dem.prop + lag.ln.milex +
                 atwar + civilwar + polity + ln.GDP + nato +
-                ls.threatenv,
+                ls.threatenv + cold.war + totalmilex.atop.ally,
               data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0),
               effect = "twoways",  model = "random")
 summary(m1.reg.re)
@@ -71,7 +75,7 @@ phtest(m1.reg, m1.reg.re, method = "aux")
 # Use shares instead
 m2.reg <- plm(ln.milex ~ prob.det.share + uncond.det.share + comp.share  + avg.dem.prop + lag.ln.milex +
                atwar + civilwar + polity + ln.GDP +
-               ls.threatenv + cold.war, 
+               ls.threatenv + cold.war + totalmilex.atop.ally, 
              data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0),
              effect = c("twoways"))
 
@@ -83,7 +87,7 @@ plot(density(m2.reg$residuals))
 # Hausman test
 m2.reg.re <- plm(ln.milex ~  prob.det.share + uncond.det.share + comp.share + avg.dem.prop + lag.ln.milex +
                    atwar + civilwar + polity + ln.GDP + nato +
-                   ls.threatenv + cold.war,
+                   ls.threatenv + cold.war + totalmilex.atop.ally,
                  data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0),
                  effect = "twoways",  model = "random")
 summary(m2.reg.re)
@@ -92,16 +96,19 @@ phtest(m2.reg, m2.reg.re, method = "aux")
 
 
 
+
+
 # Robust Regression 
 ###### 
 # Residuals in the early models have some really heavy tails. Robust regression weights observations as 
 # a function of their residual, ensuring least squares is still efficient
+# Had trouble getting fixed effects into these models
 
 
 # Start with a binary indicator of probabilistic deterrent pacts 
 m1r.reg <- rlm(ln.milex ~ prob.det.pres + uncond.det.pres + comp.pres  + avg.dem.prop + lag.ln.milex +
                  atwar + civilwar + polity + ln.GDP +
-                 ls.threatenv,
+                 ls.threatenv + totalmilex.atop.ally,
                data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0))
 
 summary(m1r.reg)
@@ -111,9 +118,9 @@ plotreg(m1r.reg, omit.coef = "Intercept")
 
 
 # Use shares instead
-m2r.reg <- rlm(ln.milex ~ prob.det.share + uncond.det.share + avg.dem.prop + lag.ln.milex +
+m2r.reg <- rlm(ln.milex ~ prob.det.share + uncond.det.share + comp.share  + avg.dem.prop + lag.ln.milex +
                  atwar + civilwar + polity + ln.GDP +
-                 ls.threatenv + comp.share, 
+                 ls.threatenv + totalmilex.atop.ally, 
                data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0))
 
 summary(m2r.reg)
@@ -132,7 +139,7 @@ plotreg(m2r.reg, omit.coef = "Intercept")
 # Use shares of treaties with discretion over intervention
 m5.din <- rlm(ln.milex ~ discret.inter.share + uncond.det.share + avg.dem.prop + lag.ln.milex +
                atwar + civilwar + polity + ln.GDP +
-               ls.threatenv + comp.share, 
+               ls.threatenv + comp.share + totalmilex.atop.ally, 
              data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0))
 
 summary(m5.din)
@@ -146,7 +153,7 @@ plotreg(m5.din, omit.coef = "Intercept")
 # Share of treaties with discretion over military support
 m6.dmil <- rlm(ln.milex ~ discret.mils.share + uncond.det.share + comp.share + avg.dem.prop + lag.ln.milex +
                 atwar + civilwar + polity + ln.GDP +
-                ls.threatenv, 
+                ls.threatenv + totalmilex.atop.ally, 
               data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0))
 
 summary(m6.dmil)
@@ -158,7 +165,7 @@ plotreg(m6.dmil, omit.coef = "Intercept")
 # Both shares variables in the same model
 m7.dmil <- rlm(ln.milex ~ discret.inter.share + discret.mils.share + uncond.det.share + comp.share + avg.dem.prop + lag.ln.milex +
                  atwar + civilwar + polity + ln.GDP +
-                 ls.threatenv, 
+                 ls.threatenv + totalmilex.atop.ally, 
                data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0))
 
 summary(m7.dmil)
@@ -178,7 +185,7 @@ plotreg(m7.dmil, omit.coef = "Intercept")
 # Use consultation variable 
 m3.cons <- plm(ln.milex ~ consul.only.pres + offense.pres + defense.pres + avg.dem.prop + lag.ln.milex +
                 atwar + civilwar + polity + ln.GDP +
-                ls.threatenv + cold.war, 
+                ls.threatenv + cold.war + totalmilex.atop.ally, 
               data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0),
               effect = c("twoways"))
 
@@ -190,7 +197,7 @@ plot(density(m3.cons$residuals))
 # Use consultation only as a share of total treaties 
 m4.cons <- plm(ln.milex ~ consul.only.share + offense.share + defense.share + avg.dem.prop + lag.ln.milex +
                 atwar + civilwar + polity + ln.GDP +
-                ls.threatenv + cold.war, 
+                ls.threatenv + cold.war + totalmilex.atop.ally, 
               data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0),
               effect = c("twoways"))
 
@@ -205,7 +212,7 @@ plot(density(m4.cons$residuals))
 # Use consultation variable 
 m3r.cons <- rlm(ln.milex ~ consul.only.pres + offense.pres + defense.pres + avg.dem.prop + lag.ln.milex +
                   atwar + civilwar + polity + ln.GDP +
-                  ls.threatenv, 
+                  ls.threatenv + totalmilex.atop.ally, 
                 data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0))
 
 summary(m3r.cons)
@@ -217,7 +224,7 @@ plotreg(m3r.cons, omit.coef = "Intercept")
 # Use consultation only as a share of total treaties 
 m4r.cons <- rlm(ln.milex ~ consul.only.share + offense.share + defense.share + avg.dem.prop + lag.ln.milex +
                   atwar + civilwar + polity + ln.GDP +
-                  ls.threatenv, 
+                  ls.threatenv + totalmilex.atop.ally, 
                 data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0))
 
 summary(m4r.cons)
