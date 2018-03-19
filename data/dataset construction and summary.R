@@ -36,7 +36,7 @@ d.benson <- d.benson %>%
         uncond_det = max(uncond_det, na.rm = TRUE),
         cond_det = max(cond_det, na.rm = TRUE),
         prob_det = max(prob_det, na.rm = TRUE),
-        pure_cond.det = max(pure_cond_det, na.rm = TRUE),
+        pure_cond_det = max(pure_cond_det, na.rm = TRUE),
         discret_milsupport = max(discret_milsupport, na.rm = TRUE),
         discret_intervene = max(discret_intervene, na.rm = TRUE)
       )
@@ -48,7 +48,7 @@ atop <- read.csv("data/atop-alliance-level.csv")
 # Create a datasets with essential ATOP variables
 atop.key <- select(atop, atopid, 
                    offense, defense, neutral, consul, nonagg,           
-                   bilat, wartime, 
+                   bilat, wartime, conditio,
                    armred, organ1, milaid)
 
 summary(atop.mem.key$atopid)
@@ -76,16 +76,21 @@ alliance.char <- filter(alliance.char.full, nonagg.only != 1)
 alliance.char <- select(alliance.char, -nonagg.only)
 
 # Create an indicator of compellent alliances and another for alliances with none of Benson's conditions
+# Further indicators of mixed alliances and general indicators of conditional/unconditional pacts
 alliance.char <- mutate(alliance.char,
                         compellent = ifelse((uncond_comp == 1 | cond_comp == 1), 1 , 0),
                         none = ifelse(prob_det == 0 & uncond_det == 0 & cond_det == 0 & compellent == 0, 1, 0),
                         number.types = prob_det + uncond_det + cond_det + compellent,
-                        mixed = ifelse(number.types > 1, 1, 0))
+                        mixed = ifelse(number.types > 1, 1, 0),
+                        conditional = ifelse(cond_det == 1 | cond_comp == 1 | pure_cond_det == 1, 1, 0),
+                        unconditional = ifelse(uncond_comp == 1 | uncond_det == 1, 1, 0))
 
 
-# Check overlap between consultation only and none variable 
+# Check overlap between consultation only, neutrality and none variable 
 table(alliance.char$none, alliance.char$onlyconsul)
-
+table(alliance.char$none, alliance.char$neutral)
+sum(alliance.char$compellent)
+table(alliance.char$uncond_comp, alliance.char$uncond_det)
 
 
 
@@ -201,7 +206,10 @@ state.char$change.milex <- state.char$milex - state.char$lag.milex
 state.char$change.ln.milex <- state.char$ln.milex - state.char$lag.ln.milex
 
 
-
+# Look at differences between a rival expenditures and a state's expenditures, plus those of its allies
+state.char$ally.milex.gap <- state.char$totalmilex.atop.ally - state.char$rival.mil
+summary(state.char$ally.milex.gap)
+ggplot(state.char, aes(ally.milex.gap)) + geom_histogram(bins = 60)
 
 
 ### 
@@ -329,6 +337,7 @@ summary(full.data$nonagg.only)
 full.data.rnonagg <- filter(full.data, nonagg.only != 1)
 
 # Create a dataset of state-year alliance membership:
+full.data.rnonagg <- group_by(full.data.rnonagg, atopid, ccode, year)
 state.mem <- full.data.rnonagg %>% select(atopid, ccode, year)
 state.mem <-  mutate(state.mem, member = 1)
 state.mem <- distinct(state.mem, atopid, ccode, year, .keep_all = TRUE)
