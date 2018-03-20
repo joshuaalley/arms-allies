@@ -45,11 +45,28 @@ d.benson <- d.benson %>%
 # Load the ATOP data on alliance-level characteristics
 atop <- read.csv("data/atop-alliance-level.csv")
 
+# Create variables for US and USSR membership
+russ.mem <- apply(atop[, 71:120], 1, function(x) ifelse(x == 365, 1, 0))
+russ.mem <- t(russ.mem)
+atop$russ.mem <- rowSums(russ.mem, na.rm = TRUE)
+
+# US
+us.mem <- apply(atop[, 71:120], 1, function(x) ifelse(x == 2, 1, 0))
+us.mem <- t(us.mem)
+atop$us.mem <- rowSums(us.mem, na.rm = TRUE)
+
+# Remove the US and Russian membership matrices from the environment
+rm(russ.mem)
+rm(us.mem)
+
+
+
+
 # Create a datasets with essential ATOP variables
 atop.key <- select(atop, atopid, 
                    offense, defense, neutral, consul, nonagg,           
                    bilat, wartime, conditio,
-                   armred, organ1, milaid)
+                   armred, organ1, milaid, us.mem, russ.mem)
 
 summary(atop.mem.key$atopid)
 
@@ -77,14 +94,20 @@ alliance.char <- select(alliance.char, -nonagg.only)
 
 # Create an indicator of compellent alliances and another for alliances with none of Benson's conditions
 # Further indicators of mixed alliances and general indicators of conditional/unconditional pacts
+# Also, recode arms requirements and military aid variables from ATOP into dummy 
+# variables that capture conditions where increases in arms spending are likely
 alliance.char <- mutate(alliance.char,
                         compellent = ifelse((uncond_comp == 1 | cond_comp == 1), 1 , 0),
                         none = ifelse(prob_det == 0 & uncond_det == 0 & cond_det == 0 & compellent == 0, 1, 0),
                         number.types = prob_det + uncond_det + cond_det + compellent,
                         mixed = ifelse(number.types > 1, 1, 0),
                         conditional = ifelse(cond_det == 1 | cond_comp == 1 | pure_cond_det == 1, 1, 0),
-                        unconditional = ifelse(uncond_comp == 1 | uncond_det == 1, 1, 0))
+                        unconditional = ifelse(uncond_comp == 1 | uncond_det == 1, 1, 0),
+                        armred.rc = ifelse(armred == 2, 1, 0),
+                        milaid.rc = ifelse(milaid >= 2, 1, 0))
 
+# Remove surplus variables 
+alliance.char <- select(alliance.char, - c(armred, milaid))
 
 # Check overlap between consultation only, neutrality and none variable 
 table(alliance.char$none, alliance.char$onlyconsul)
@@ -246,34 +269,14 @@ alliance.year <- full.data %>%
     avg.democ = mean(polity, na.rm = TRUE),
     total.cap = sum(CINC, na.rm = TRUE),
     total.expend = sum(ln.milex, na.rm = TRUE),
-    num.mem = n(),
-    consul.only = max(onlyconsul, na.rm = TRUE),
-    prob.det = max(prob_det, na.rm = TRUE),
-    offense = max(offense, na.rm = TRUE),
-    defense = max(defense, na.rm = TRUE),
-    neutral = max(neutral, na.rm = TRUE),
-    nonagg = max(nonagg, na.rm = TRUE),
-    consul = max(consul, na.rm = TRUE),
-    wartime = max(wartime, na.rm = TRUE),
-    uncond_comp = max(uncond_comp, na.rm = TRUE),
-    cond_comp = max(cond_comp, na.rm = TRUE),
-    uncond_det = max(uncond_det, na.rm = TRUE),
-    cond_det = max(cond_det, na.rm = TRUE),
-    discret_milsupport = max(discret_milsupport, na.rm = TRUE),
-    discret_intervene = max(discret_intervene, na.rm = TRUE),
-    bilat = max(bilat, na.rm = TRUE),
-    armred = max(armred, na.rm = TRUE),
-    pure_cond_det = max(pure_cond_det, na.rm = TRUE),
-    organ1 = max(organ1, na.rm = TRUE),
-    milaid = max(milaid, na.rm = TRUE)
+    num.mem = n()
   )
 
 alliance.year[order(alliance.year$atopid, alliance.year$year), ]
 
 
 # merge the avg democracy, total capability, and total military expenditures variables into the full data
-alliance.totals <- alliance.year[, 1:5]
-full.data <- left_join(full.data, alliance.totals)
+full.data <- left_join(full.data, alliance.year)
 
 # Fill in totals with zero for state-years with no alliance
 full.data[48:50][is.na(full.data[, 48:50] & full.data$atopid == 0)] <- 0
