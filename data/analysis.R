@@ -368,7 +368,16 @@ ggplot(lambda_df, aes(x = onlyconsul, y = lambda)) +
 
 
 
+# Summarize the distribution of the estimated lambdas
+ggplot(lambda_df, aes(x = lambda)) + geom_density() + ggtitle("Density of Posterior Means for all Alliance Intercepts")
 
+# Plot posterior densities of variance parameters
+sigma_df <- cbind.data.frame(ml.model.sum$sigma_year, ml.model.sum$sigma_state, ml.model.sum$sigma_all)
+colnames(sigma_df) <- c("sigma_year", "sigma_state", "sigma_all")
+
+ggplot(sigma_df, aes(x = sigma_year)) + geom_density() + ggtitle("Posterior Density of Year Variance Parameter")
+ggplot(sigma_df, aes(x = sigma_state)) + geom_density() + ggtitle("Posterior Density of State Variance Parameter")
+ggplot(sigma_df, aes(x = sigma_all)) + geom_density() + ggtitle("Posterior Density of Alliance Variance Parameter")
 
 
 # summarize session info
