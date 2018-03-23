@@ -281,6 +281,8 @@ full.data <- left_join(full.data, alliance.year)
 # Fill in totals with zero for state-years with no alliance
 full.data[48:50][is.na(full.data[, 48:50] & full.data$atopid == 0)] <- 0
 
+# Fill in alliance characteristics with zero if no alliance is present
+full.data[30:39][is.na(full.data[, 30:39] & full.data$atopid == 0)] <- 0
 
 ### Add a couple more variables to the full data
 # binary indicator of compellent alliances
@@ -298,11 +300,35 @@ full.data$ben.cond <- ifelse(full.data$cond_det == 1 | full.data$cond_comp == 1,
 full.data <- full.data[complete.cases(full.data$ccode), ]
 
 
+# Create variables for new alliance membership- for single-level model
+full.data <- full.data %>% 
+  group_by(ccode, year) %>% mutate(
+    alliance.duration = year - startyear, na.rm = TRUE, 
+    new.prob.det5 = ifelse(alliance.duration <= 5 & prob_det == 1, 1, 0),
+    new.conditional5 = ifelse(alliance.duration <= 5 & conditional == 1, 1, 0),
+    new.unconditional5 = ifelse(alliance.duration <= 5 & unconditional == 1, 1, 0), 
+    new.compellent5 = ifelse(alliance.duration <= 5 & compellent == 1, 1, 0),
+    
+    new.prob.det10 = ifelse(alliance.duration <= 10 & prob_det == 1, 1, 0),
+    new.conditional10 = ifelse(alliance.duration <= 10 & conditional == 1, 1, 0),
+    new.unconditional10 = ifelse(alliance.duration <= 10 & unconditional == 1, 1, 0), 
+    new.compellent10 = ifelse(alliance.duration <= 10 & compellent == 1, 1, 0)
+)
+
+
+# remove non-aggression pacts
+full.data <- mutate(full.data, nonagg.only = ifelse((nonagg == 1 & offense != 1 & defense != 1 & consul != 1 & neutral != 1), 1 , 0))
+summary(full.data$nonagg.only)
+
+full.data.rnonagg <- filter(full.data, nonagg.only != 1)
+
+
+
 # The full dataset can also provide the basis of a state-year characteristics dataset 
 # with some summary variables for the alliance portfolio
 # Can then merge this with the state characteristics dataset to create a dataset for 
 # single-level regressions
-state.ally.year <- full.data %>%
+state.ally.year <- full.data.rnonagg %>%
   group_by(ccode, year) %>%
   summarize(
     treaty.count = n(),
@@ -324,20 +350,30 @@ state.ally.year <- full.data %>%
     avg.num.mem = mean(num.mem, na.rm = TRUE),
     defense.total = sum(defense, na.rm = TRUE),
     offense.total = sum(offense, na.rm = TRUE),
-    discret.inter.pres = max(discret_intervene, na.RM = TRUE),
-    discret.inter.total = sum(discret_intervene, na.RM = TRUE),
-    discret.mils.pres = max(discret_milsupport, na.RM = TRUE),
-    discret.mils.total = sum(discret_milsupport, na.RM = TRUE)
+    discret.inter.pres = max(discret_intervene, na.rm = TRUE),
+    discret.inter.total = sum(discret_intervene, na.rm = TRUE),
+    discret.mils.pres = max(discret_milsupport, na.rm = TRUE),
+    discret.mils.total = sum(discret_milsupport, na.rm = TRUE),
+    
+    new.prob.det5 = max(new.prob.det5, na.rm = TRUE),
+    new.conditional5 = max(new.conditional5, na.rm = TRUE),
+    new.unconditional5 = max(new.unconditional5, na.rm = TRUE), 
+    new.compellent5 = max(new.compellent5, na.rm = TRUE),
+    
+    new.prob.det10 = max(new.prob.det10, na.rm = TRUE),
+    new.conditional10 = max(new.conditional10, na.rm = TRUE),
+    new.unconditional10 = max(new.unconditional10, na.rm = TRUE), 
+    new.compellent10 = max(new.compellent10, na.rm = TRUE)
   )
 
+# State-year characteristics including alliance portfolio summaries
 state.char.full <- left_join(state.char, state.ally.year)
 
 
-# remove non-aggression pacts
-full.data <- mutate(full.data, nonagg.only = ifelse((nonagg == 1 & offense != 1 & defense != 1 & consul != 1 & neutral != 1), 1 , 0))
-summary(full.data$nonagg.only)
+# Compare new alliance variables with presence variables
+summary(state.char.full$prob.det.pres)
+summary(state.char.full$new.prob.det5)
 
-full.data.rnonagg <- filter(full.data, nonagg.only != 1)
 
 # Create a dataset of state-year alliance membership:
 full.data.rnonagg <- group_by(full.data.rnonagg, atopid, ccode, year)
