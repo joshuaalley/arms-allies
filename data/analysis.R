@@ -33,13 +33,13 @@ options(mc.cores = parallel::detectCores())
 reg.state.data <- state.char %>%
   select(ccode, year, ln.milex, lag.ln.milex,
                       atwar, civilwar, rival.mil, ln.GDP, polity, 
-                      cold.war, majpower)
+                      cold.war, totalmilex.atop.ally, majpower)
 
 # Add state membership in alliances to this data
 reg.state.data <- left_join(reg.state.data, state.mem)
 
 # Replace missing alliance values with zero 
-reg.state.data[, 12: 356][is.na(reg.state.data[, 12: 356])] <- 0
+reg.state.data[, 13: 357][is.na(reg.state.data[, 13: 357])] <- 0
 
 # remove major powers from the sample
 reg.state.data <- filter(reg.state.data, majpower == 0)
@@ -49,8 +49,8 @@ reg.state.comp <- reg.state.data[complete.cases(reg.state.data), ]
 
 reg.state.comp <- select(reg.state.comp, -majpower)
 
-# Rescale the state-level regressors
- reg.state.comp[, 4:10] <- lapply(reg.state.comp[, 4:10], 
+# Rescale the state-level regressors- but not the LDV
+ reg.state.comp[, 5:11] <- lapply(reg.state.comp[, 5:11], 
        function(x) rescale(x, binary.inputs = "0/1"))
 
  
@@ -62,7 +62,7 @@ ggplot(reg.state.comp, aes(ln.milex)) + geom_density()
 
 
 # Create a matrix of state membership in alliances (Z in STAN model)
-state.mem.mat <- as.matrix(reg.state.comp[, 11: 355])
+state.mem.mat <- as.matrix(reg.state.comp[, 12: 356])
 
 # create a state index variable
 reg.state.comp$state.id <- reg.state.comp %>% group_indices(ccode)
@@ -86,7 +86,7 @@ reg.all.data[is.na(reg.all.data)] <- 0
 
 ### transform data into matrices for STAN
 # State-level characeristics
-reg.state.mat <- as.matrix(reg.state.comp[, 4:10])
+reg.state.mat <- as.matrix(reg.state.comp[, 4:11])
 
 # check correlations among state-level regressors
 cor(reg.state.mat, method = "pearson")
@@ -230,6 +230,7 @@ mean(ml.model.sum$gamma[, 4] > 0) # posterior probability that rival military ex
 mean(ml.model.sum$gamma[, 5] > 0) # Posterior probability that GDP is associated with increased spending
 mean(ml.model.sum$gamma[, 6] < 0) # posterior probability that democracies tend to decrease spending
 mean(ml.model.sum$gamma[, 7] > 0) # posterior probability that Cold war years are associated with increased spending
+mean(ml.model.sum$gamma[, 8] < 0) # posterior probability that allied expenditures are associated with reduced spending
 
 
 gamma.melt <- melt(ml.model.sum$gamma)
@@ -265,7 +266,7 @@ rownames(coef.probs) <- c("Alliance Model Constant", "Probabilistic Deterrent", 
                           "Military Aid", "US Member", "Russia Member",
                           "Lag Expenditures",
                           "Interstate War", "Civil War", "Rival Expenditure",
-                            "ln(GDP)", "Polity", "Cold War")
+                            "ln(GDP)", "Polity", "Cold War", "Ally Expenditure")
 coef.probs$variable <- rownames(coef.probs)
 coef.probs$variable <- reorder(coef.probs$variable, coef.probs$`Posterior Probability of Positive Coefficient`)
   
@@ -300,7 +301,7 @@ ggplot(lambda_df, aes(x = alliance.type, y = lambda)) +
              aes(size = num.mem, shape = factor(bilat))) +  # make size and shape corresponde to number of members
   scale_shape_manual(values = c(1, 3)) + # use circle and +
   ggtitle("Distribution of Mean Predicted Alliance Intercepts by Alliance Type and Size")
-ggsave("figures/lambda-box subset.png", height = 6, width = 8)
+ggsave("figures/lambda-box.png", height = 6, width = 8)
 
 # Use random forest to assess variable importance
 rf <- cforest(lambda ~ ., data = select(lambda_df, -alliance.type))  # fit forest
