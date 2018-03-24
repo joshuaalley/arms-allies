@@ -274,6 +274,13 @@ alliance.year <- full.data %>%
 
 alliance.year[order(alliance.year$atopid, alliance.year$year), ]
 
+# With na.rm = TRUE, all missing values have a sum of zero.
+# I filter out all of these alliance-year observations
+alliance.year <- filter(alliance.year, total.expend != 0)
+
+ggplot(alliance.year, aes(x = total.expend)) + geom_density()
+
+
 
 # merge the avg democracy, total capability, and total military expenditures variables into the full data
 full.data <- left_join(full.data, alliance.year)
@@ -303,7 +310,7 @@ full.data <- full.data[complete.cases(full.data$ccode), ]
 # Create variables for new alliance membership- for single-level model
 full.data <- full.data %>% 
   group_by(ccode, year) %>% mutate(
-    alliance.duration = year - startyear, na.rm = TRUE, 
+    alliance.duration = year - startyear, 
     new.prob.det5 = ifelse(alliance.duration <= 5 & prob_det == 1, 1, 0),
     new.conditional5 = ifelse(alliance.duration <= 5 & conditional == 1, 1, 0),
     new.unconditional5 = ifelse(alliance.duration <= 5 & unconditional == 1, 1, 0), 
@@ -373,7 +380,7 @@ state.char.full <- left_join(state.char, state.ally.year)
 # Compare new alliance variables with presence variables
 summary(state.char.full$prob.det.pres)
 summary(state.char.full$new.prob.det5)
-
+summary(state.char.full$new.prob.det10)
 
 # Create a dataset of state-year alliance membership:
 full.data.rnonagg <- group_by(full.data.rnonagg, atopid, ccode, year)
@@ -388,8 +395,30 @@ state.mem <- spread(state.mem, key = atopid, value = member, fill = 0)
 state.mem <- subset(state.mem, select = -(3))
 
 
-# Make the alliance characteristics data match the membership matrix
+# Using total capability of an alliance, create a dataset of state-year alliance membership:
+full.data.rnonagg <- group_by(full.data.rnonagg, atopid, ccode, year)
+
+state.mem.cap <- full.data.rnonagg %>% 
+                select(atopid, ccode, year) %>% 
+                  left_join(alliance.year) %>%
+              distinct(state.mem.cap, atopid, ccode, year, .keep_all = TRUE) %>%
+                 select(ccode, atopid, year, total.expend)
+
+# Drop missing values of the expenditure variable
+# Necessary because spread will fill all missing values with zero,
+# not just absent combinations as in the above membership matrix
+state.mem.cap <- state.mem.cap[complete.cases(state.mem.cap), ]
+
+# This matrix contains the spending for the alliances states are a member of in a given year
+state.mem.cap <- spread(state.mem.cap, key = atopid, value = total.expend, fill = 0)
+
+
+# Make the alliance characteristics data match the membership matrices
+alliance.char.cap <- filter(alliance.char, atopid %in% colnames(state.mem.cap))
+
 alliance.char <- filter(alliance.char, atopid %in% colnames(state.mem))
+
+
 
 
 

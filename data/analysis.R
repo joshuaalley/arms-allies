@@ -33,13 +33,13 @@ options(mc.cores = parallel::detectCores())
 reg.state.data <- state.char %>%
   select(ccode, year, ln.milex, lag.ln.milex,
                       atwar, civilwar, rival.mil, ln.GDP, polity, 
-                      cold.war, totalmilex.atop.ally, majpower)
+                      cold.war, majpower) 
 
 # Add state membership in alliances to this data
-reg.state.data <- left_join(reg.state.data, state.mem)
+reg.state.data <-  left_join(reg.state.data, state.mem.cap) 
 
 # Replace missing alliance values with zero 
-reg.state.data[, 13: 357][is.na(reg.state.data[, 13: 357])] <- 0
+reg.state.data[, 12: 338][is.na(reg.state.data[, 12: 338])] <- 0
 
 # remove major powers from the sample
 reg.state.data <- filter(reg.state.data, majpower == 0)
@@ -47,10 +47,26 @@ reg.state.data <- filter(reg.state.data, majpower == 0)
 # Remove observations with missing values
 reg.state.comp <- reg.state.data[complete.cases(reg.state.data), ]
 
+# Subtract a state's own expenditures from the total alliance expenditures in the membership matrix
+sum(reg.state.comp[, 12:338] < 0)
+sum(reg.state.comp[, 12:338] == 0)
+sum(reg.state.comp[, 12:338] > 0)
+
+cols = 12:338
+
+for(i in cols) {
+  reg.state.comp[ ,i] = ifelse(reg.state.comp[ , i] == 0, 0, reg.state.comp[ ,i] - abs(reg.state.comp$ln.milex))
+}
+
+sum(reg.state.comp[, 12:338] < 0) # 1 negative value- replace with zero
+reg.state.comp[, 12:338][reg.state.comp[, 12:338] < 0] <- 0
+sum(reg.state.comp[, 12:338] == 0)
+sum(reg.state.comp[, 12:338] > 0) # some 140 observations, where one partner has missing expenditures data, go to zero. 
+
 reg.state.comp <- select(reg.state.comp, -majpower)
 
 # Rescale the state-level regressors- but not the LDV
- reg.state.comp[, 5:11] <- lapply(reg.state.comp[, 5:11], 
+ reg.state.comp[, 5:10] <- lapply(reg.state.comp[, 5:10], 
        function(x) rescale(x, binary.inputs = "0/1"))
 
  
@@ -62,7 +78,7 @@ ggplot(reg.state.comp, aes(ln.milex)) + geom_density()
 
 
 # Create a matrix of state membership in alliances (Z in STAN model)
-state.mem.mat <- as.matrix(reg.state.comp[, 12: 356])
+state.mem.mat <- as.matrix(reg.state.comp[, 11: 337])
 
 # create a state index variable
 reg.state.comp$state.id <- reg.state.comp %>% group_indices(ccode)
@@ -72,7 +88,7 @@ reg.state.comp$year.id <- reg.state.comp %>% group_indices(year)
 
 
 # Create the matrix of alliance-level variables
-reg.all.data <- alliance.char %>%
+reg.all.data <- alliance.char.cap %>%
   select(atopid, prob_det, conditional, unconditional, compellent, num.mem, 
          armred.rc, dem.prop, wartime, organ1, milaid.rc, us.mem, russ.mem)
 
@@ -109,9 +125,10 @@ stan.data <- list(N = nrow(reg.state.comp), y = reg.state.comp[, 3],
                       year = reg.state.comp$year.id, T = length(unique(reg.state.comp$year.id)),
                       A = length(alliance.id), L = ncol(alliance.reg.mat),
                       Z = state.mem.mat, 
+                      Q = sum(state.mem.mat != 0),
                       X = alliance.reg.mat,
-                      W = reg.state.mat, M = ncol(reg.state.mat))
-
+                      W = reg.state.mat, M = ncol(reg.state.mat)
+)
 
 # Compile the model code
 model.1 <- stan_model(file = "data/multi-member ML model.stan")
