@@ -10,7 +10,6 @@ data {
   int<lower = 1> A; // number of alliances
   int<lower = 1> L; // number of alliance-level variables
   int<lower = 1> M; // number of state-level variables
-  int<lower = 1> Q; // numder of non-zero elements in state membership matrix
   int<lower = 1, upper = S> state[N]; // state indicator
   int<lower = 1, upper = T> year[N]; // year indicator
   matrix[A, L] X; // matrix of alliance-level variables
@@ -21,8 +20,8 @@ data {
 
 transformed data{
   
-  // This section decompose the sparse matrix Z into a more efficient representation.
-  vector[Q] w;
+  // This section decomposes the sparse matrix Z into a more efficient representation.
+  vector[rows(csr_extract_w(Z))] w;
   int v[size(csr_extract_v(Z))]; 
   int u[size(csr_extract_u(Z))]; 
   
@@ -72,7 +71,6 @@ model {
   
   
   // Linear prediction of the state-year spending mean Row i of the membership matrix Z will produce a scalar when postmultiplied by the vector of alliance characteristics lambda
-  
     y_hat = alpha + alpha_state[state] + alpha_year[year] + csr_matrix_times_vector(N, A, w, v, u, lambda) + W * gamma;
   
   
