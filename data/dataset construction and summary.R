@@ -399,24 +399,27 @@ state.mem <- subset(state.mem, select = -(3))
 full.data.rnonagg <- group_by(full.data.rnonagg, atopid, ccode, year)
 
 state.mem.cap <- full.data.rnonagg %>% 
-                select(atopid, ccode, year) %>% 
+                select(atopid, ccode, year, ln.milex) %>% 
                   left_join(alliance.year) %>%
+              mutate(ally.spend = total.expend - ln.milex) %>%
               distinct(state.mem.cap, atopid, ccode, year, .keep_all = TRUE) %>%
-                 select(ccode, atopid, year, total.expend)
+                 select(ccode, atopid, year, ally.spend)
 
 # Drop missing values of the expenditure variable
 # Necessary because spread will fill all missing values with zero,
 # not just absent combinations as in the above membership matrix
-state.mem.cap <- state.mem.cap[complete.cases(state.mem.cap), ]
+state.mem.cap <- state.mem.cap[complete.cases(state.mem.cap$ally.spend), ]
 
-# This matrix contains the spending for the alliances states are a member of in a given year
-state.mem.cap <- spread(state.mem.cap, key = atopid, value = total.expend, fill = 0)
+# rescale the ally expenditures variable by two standard deviations
+state.mem.cap$ally.spend <- rescale(state.mem.cap$ally.spend)
 
 
-# Make the alliance characteristics data match the membership matrices
-alliance.char.cap <- filter(alliance.char, atopid %in% colnames(state.mem.cap))
+# This dataframe  contains the spending for the alliances states are a member of in a given year
+state.mem.cap <- spread(state.mem.cap, key = atopid, value = ally.spend, fill = 0)
 
-alliance.char <- filter(alliance.char, atopid %in% colnames(state.mem))
+
+
+
 
 
 
