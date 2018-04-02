@@ -331,57 +331,6 @@ full.data.rnonagg <- filter(full.data, nonagg.only != 1)
 
 
 
-# The full dataset can also provide the basis of a state-year characteristics dataset 
-# with some summary variables for the alliance portfolio
-# Can then merge this with the state characteristics dataset to create a dataset for 
-# single-level regressions
-state.ally.year <- full.data.rnonagg %>%
-  group_by(ccode, year) %>%
-  summarize(
-    treaty.count = n(),
-    prob.det.pres = max(prob_det, na.rm = TRUE),
-    prob.det.total = sum(prob_det, na.rm = TRUE),
-    consul.only.pres = max(onlyconsul, na.rm = TRUE),
-    consul.only.total = sum(onlyconsul, na.rm = TRUE),
-    bilat.total = sum(bilat, na.rm = TRUE),
-    uncond.comp.pres = max(uncond_comp, na.rm = TRUE),
-    uncond.comp.total = sum(uncond_comp, na.rm = TRUE),
-    cond.comp.pres = max(cond_comp, na.rm = TRUE),
-    cond.comp.total = sum(cond_comp, na.rm = TRUE),
-    uncond.det.pres = max(uncond_det, na.rm = TRUE),
-    uncond.det.total = sum(uncond_det, na.rm = TRUE),
-    cond.det.pres = max(cond_det, na.rm = TRUE),
-    cond.det.total = sum(cond_det, na.rm = TRUE),
-    avg.dem.prop = mean(dem.prop, na.rm = TRUE),
-    armred = max(armred, na.rm = TRUE),
-    avg.num.mem = mean(num.mem, na.rm = TRUE),
-    defense.total = sum(defense, na.rm = TRUE),
-    offense.total = sum(offense, na.rm = TRUE),
-    discret.inter.pres = max(discret_intervene, na.rm = TRUE),
-    discret.inter.total = sum(discret_intervene, na.rm = TRUE),
-    discret.mils.pres = max(discret_milsupport, na.rm = TRUE),
-    discret.mils.total = sum(discret_milsupport, na.rm = TRUE),
-    
-    new.prob.det5 = max(new.prob.det5, na.rm = TRUE),
-    new.conditional5 = max(new.conditional5, na.rm = TRUE),
-    new.unconditional5 = max(new.unconditional5, na.rm = TRUE), 
-    new.compellent5 = max(new.compellent5, na.rm = TRUE),
-    
-    new.prob.det10 = max(new.prob.det10, na.rm = TRUE),
-    new.conditional10 = max(new.conditional10, na.rm = TRUE),
-    new.unconditional10 = max(new.unconditional10, na.rm = TRUE), 
-    new.compellent10 = max(new.compellent10, na.rm = TRUE)
-  )
-
-# State-year characteristics including alliance portfolio summaries
-state.char.full <- left_join(state.char, state.ally.year)
-
-
-# Compare new alliance variables with presence variables
-summary(state.char.full$prob.det.pres)
-summary(state.char.full$new.prob.det5)
-summary(state.char.full$new.prob.det10)
-
 # Create a dataset of state-year alliance membership:
 full.data.rnonagg <- group_by(full.data.rnonagg, atopid, ccode, year)
 state.mem <- full.data.rnonagg %>% select(atopid, ccode, year)
