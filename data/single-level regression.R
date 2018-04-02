@@ -20,11 +20,63 @@ getwd()
 # Environment is determined by use of projects and/or using this file in conjunction with
 # the file dataset construction and summary.R 
 
+# The full dataset can provide the basis of a state-year characteristics dataset 
+# with some summary variables for the alliance portfolio
+# Can then merge this with the state characteristics dataset to create a dataset for 
+# single-level regressions
+state.ally.year <- full.data.rnonagg %>%
+  group_by(ccode, year) %>%
+  summarize(
+    treaty.count = n(),
+    total.ally.expend = sum(ln.milex, na.rm = TRUE),
+    total.ally.cap = sum(CINC, na.rm = TRUE),
+    prob.det.pres = max(prob_det, na.rm = TRUE),
+    prob.det.total = sum(prob_det, na.rm = TRUE),
+    consul.only.pres = max(onlyconsul, na.rm = TRUE),
+    consul.only.total = sum(onlyconsul, na.rm = TRUE),
+    bilat.total = sum(bilat, na.rm = TRUE),
+    uncond.comp.pres = max(uncond_comp, na.rm = TRUE),
+    uncond.comp.total = sum(uncond_comp, na.rm = TRUE),
+    cond.comp.pres = max(cond_comp, na.rm = TRUE),
+    cond.comp.total = sum(cond_comp, na.rm = TRUE),
+    uncond.det.pres = max(uncond_det, na.rm = TRUE),
+    uncond.det.total = sum(uncond_det, na.rm = TRUE),
+    cond.det.pres = max(cond_det, na.rm = TRUE),
+    cond.det.total = sum(cond_det, na.rm = TRUE),
+    avg.dem.prop = mean(dem.prop, na.rm = TRUE),
+    armred = max(armred, na.rm = TRUE),
+    avg.num.mem = mean(num.mem, na.rm = TRUE),
+    defense.total = sum(defense, na.rm = TRUE),
+    offense.total = sum(offense, na.rm = TRUE),
+    discret.inter.pres = max(discret_intervene, na.rm = TRUE),
+    discret.inter.total = sum(discret_intervene, na.rm = TRUE),
+    discret.mils.pres = max(discret_milsupport, na.rm = TRUE),
+    discret.mils.total = sum(discret_milsupport, na.rm = TRUE),
+    
+    new.prob.det5 = max(new.prob.det5, na.rm = TRUE),
+    new.conditional5 = max(new.conditional5, na.rm = TRUE),
+    new.unconditional5 = max(new.unconditional5, na.rm = TRUE), 
+    new.compellent5 = max(new.compellent5, na.rm = TRUE),
+    
+    new.prob.det10 = max(new.prob.det10, na.rm = TRUE),
+    new.conditional10 = max(new.conditional10, na.rm = TRUE),
+    new.unconditional10 = max(new.unconditional10, na.rm = TRUE), 
+    new.compellent10 = max(new.compellent10, na.rm = TRUE)
+  )
 
-# Regression is based on data from the state.char.full dataset, which 
-# contains state-level variables, including summaries of alliance characteristics
+# State-year characteristics including alliance portfolio summaries
+state.char.full <- left_join(state.char, state.ally.year)
 
-# Create a couple new variables
+# Check sums of expenditure and capability
+summary(state.char.full$total.ally.expend)
+summary(state.char.full$total.ally.cap)
+
+# Compare new alliance variables with presence variables
+summary(state.char.full$prob.det.pres)
+summary(state.char.full$new.prob.det5)
+summary(state.char.full$new.prob.det10)
+
+# Create a couple new variables: shares of each treaty type
 state.char.full <- state.char.full %>%
   mutate(
     treaty.count = treaty.count - 1,
@@ -40,16 +92,30 @@ state.char.full <- state.char.full %>%
     defense.pres = ifelse((defense.total >= 1), 1 , 0),
     defense.share = defense.total / treaty.count,
     discret.inter.share = discret.inter.total / treaty.count,
-    discret.mils.share = discret.mils.total / treaty.count
+    discret.mils.share = discret.mils.total / treaty.count,
+    
+    prob.det.expend = prob.det.share * total.ally.expend,
+    cond.expend = cond.det.share * total.ally.expend,
+    uncond.expend = uncond.det.share * total.ally.expend,
+    comp.expend = comp.share * total.ally.expend
   )
 
 state.char.full <- state.char.full[complete.cases(state.char.full$ccode), ]
 
 
-# What states have these probabilistic deterrent pacts- wide variety
- state.char.full %>% filter(prob.det.pres == 1) %>% count(ccode)
+# Create a set of variables to capture the total capability from each type of alliance
+state.char.full <- state.char.full %>%
+  mutate(
+    prob.det.expend = prob.det.share * total.ally.expend,
+    cond.expend = cond.det.share * total.ally.expend,
+    uncond.expend = uncond.det.share * total.ally.expend,
+    comp.expend = comp.share * total.ally.expend
+  )
 
-# Sample is minor powers only, and those minor powers that have alliances
+
+
+
+# Sample is non-major powers only, and those states that have at least one alliances
 # otherwise, states with no alliances enter the base category, which may alter comparisons
 
 # Start with a simple linear model 
@@ -179,7 +245,7 @@ plotreg(m7.dmil, omit.coef = "Intercept")
 
 
 ### Test whether new alliances are what matters- this variable only encodes an alliance effect
-# Start with the first 5 years of an alliance 
+# during with the first 5 years of an alliance 
 m1.reg5 <- plm(ln.milex ~ new.prob.det5 + new.conditional5 + new.unconditional5 + new.compellent5  + avg.dem.prop + lag.ln.milex +
                 atwar + civilwar + polity + ln.GDP + nato +
                 ls.threatenv + cold.war + totalmilex.atop.ally,
@@ -199,6 +265,30 @@ m1.reg10 <- plm(ln.milex ~ new.prob.det10 + new.conditional10 + new.unconditiona
 
 summary(m1.reg10)
 plot(density(m1.reg10$residuals))
+
+
+
+### Another option is to consider the role of the total capabilities aggregated by each alliance type
+# This is a crude approximation of the multilevel model with capability in the membership matrix
+reg.ex <- plm(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend  + avg.dem.prop + lag.ln.milex +
+                atwar + civilwar + polity + ln.GDP + nato +
+                ls.threatenv + cold.war,
+              data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0),
+              effect = "twoways",  model = "within")
+
+summary(reg.ex)
+plot(density(reg.ex$residuals))
+
+# Hausman test
+reg.ex.re <- plm(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend  + avg.dem.prop + lag.ln.milex +
+                   atwar + civilwar + polity + ln.GDP + nato +
+                   ls.threatenv + cold.war,
+                 data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0),
+                 effect = "twoways",  model = "random")
+summary(reg.ex.re)
+
+phtest(reg.ex, reg.ex.re, method = "aux")
+
 
 
 
