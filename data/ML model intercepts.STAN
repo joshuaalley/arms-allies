@@ -20,7 +20,7 @@ parameters {
   vector[T] alpha_year_std; // better behaved distribution of year intercepts
   real<lower = 0> sigma_state; // variance hyperparameter of the state intercepts
   real<lower = 0> sigma_year; // variance hyperparameter of the year intercepts
-  real<lower = 5> nu; // prior for degrees of freedom in t-distribution
+  real<lower = 4> nu; // prior for degrees of freedom in t-distribution
 }
 
 transformed parameters {

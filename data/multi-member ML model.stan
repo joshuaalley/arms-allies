@@ -41,7 +41,7 @@ parameters {
   real<lower = 0> sigma_all; // variance hyperparameter of the alliances
   vector[L] beta; // vector of alliance-level coefficients
   vector[M] gamma; // vector of state-level coefficients 
-  real<lower = 5> nu; // degrees of freedom in t-distribution of outcome
+  real<lower = 4> nu; // degrees of freedom in t-distribution of outcome
 
 }
 
@@ -50,6 +50,7 @@ transformed parameters {
   vector[T] alpha_year; // year intercepts
   vector[A] lambda; // alliance intercepts
   vector[A] theta; // linear prediction of the mean hyperparameter for each alliances
+  vector[N] y_hat; // linear prediction of the outcome mean
 
 
  alpha_state = 0 + sigma_state * alpha_state_std; // non-centered parameterization, where alpha_state ~ N(0, sigma_state)
@@ -61,17 +62,14 @@ theta = X * beta; // linear predction of the mean of the alliance intercepts
 for (i in 1:A)
     lambda[i] = theta[i] + sigma_all * lambda_std[i]; // non-centered parameterization where lamda ~ N(theta, sigma_all)
 
+
+// Linear prediction of the state-year spending. csr_matrix_times vector will
+// produce a vector as a it multiplies the membership matrix by the vector of alliance characteristics lambda
+    y_hat = alpha + alpha_state[state] + alpha_year[year] + csr_matrix_times_vector(N, A, w, v, u, lambda) + W * gamma;
     
 }
 
 model {
-  
-  vector[N] y_hat; // linear prediction of the mean
-
-  
-  
-  // Linear prediction of the state-year spending mean Row i of the membership matrix Z will produce a scalar when postmultiplied by the vector of alliance characteristics lambda
-    y_hat = alpha + alpha_state[state] + alpha_year[year] + csr_matrix_times_vector(N, A, w, v, u, lambda) + W * gamma;
   
   
   alpha ~ normal(0, 3);
@@ -90,13 +88,13 @@ model {
 }
 
 generated quantities {
-// vector[N] log_lik; // Log likelihood for loo and WAIC model comparisons
-// vector[N] y_pred; //  posterior predictive distribution
+ vector[N] log_lik; // Log likelihood for loo and WAIC model comparisons
+ vector[N] y_pred; //  posterior predictive distribution
 
-// for(i in 1:N)
-// log_lik[i] = student_t_lpdf(y | nu, alpha + alpha_state[state[i]] + alpha_year[year[i]] + csr_matrix_times_vector(N, A, w, v, u, lambda)[i] + W[i] * gamma, sigma);
+ for(i in 1:N)
+ log_lik[i] = student_t_lpdf(y[i] | nu, y_hat[i], sigma);
 
-// for(i in 1:N)
-// y_pred[i] = student_t_rng(nu, alpha + alpha_state[state[i]] + alpha_year[year[i]] + csr_matrix_times_vector(N, A, w, v, u, lambda)[i] + W[i] * gamma, sigma);
+ for(i in 1:N)
+ y_pred[i] = student_t_rng(nu, y_hat[i], sigma);
 
 }
