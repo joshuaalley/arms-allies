@@ -22,6 +22,10 @@ rstan_options(auto_write = TRUE)
 options(mc.cores = parallel::detectCores())
 
 
+# Set seed
+set.seed(12)
+
+
 # Environment is determined by use of projects and/or running this file in conjunction with
 # the script dataset construction and summary.R 
 
@@ -105,7 +109,6 @@ cons <- rep(1, length = nrow(alliance.reg.mat))
 alliance.reg.mat <- cbind(cons, alliance.reg.mat)
 
 
-
 # run model on the full sample
 # Define the data list 
 stan.data <- list(N = nrow(reg.state.comp), y = reg.state.comp[, 3],
@@ -178,7 +181,7 @@ ml.model.sum <- extract(ml.model, permuted = TRUE)
 # Posterior predictive distributions relative to observed data
 yrep.full <- ml.model.sum$y_pred
 
-# plot posterior predictive denisty of first 50 simulations
+# plot posterior predictive denisty of first 100 simulations
 ppc_dens_overlay(y, yrep.full[1:100, ])
 
 
@@ -280,8 +283,18 @@ ggplot(coef.probs, aes(x = variable, y = `Posterior Probability of Positive Coef
 ggsave("figures/post-prob.png", height = 6, width = 8)
 
 
+# Calculate substantive impact of an unconditional deterrent alliance
+# LRM = beta / (1 - alpha), where alpha is the coef on the lagged DV
+lrm.uncond <- ml.model.sum$beta[, 4] / (1 - ml.model.sum$gamma[, 1])
+summary(lrm.uncond)
+plot(density(lrm.uncond))
+positive.check(lrm.uncond)
 
-# Plots lambdas
+
+
+
+
+#### Plots lambdas
 ## Extract lambdas from fit and combine with covariates
 lambda_means <- get_posterior_mean(ml.model, pars = "lambda")
 lambda_df <- data_frame(lambda = lambda_means[, 5]) %>%  # add lambdas to df
@@ -293,6 +306,7 @@ lambda_df <- data_frame(lambda = lambda_means[, 5]) %>%  # add lambdas to df
 
 # check the validity of the type variable
 count(lambda_df, alliance.type)
+# All compellent alliances are nested under unconditional pacts
                                               
                                                                                            
 ## Violin plot for lambdas
@@ -303,7 +317,8 @@ ggplot(lambda_df, aes(x = alliance.type, y = lambda)) +
              aes(size = num.mem, shape = factor(bilat))) +  # make size and shape corresponde to number of members
   scale_shape_manual(values = c(1, 3)) + # use circle and +
   ggtitle("Distribution of Mean Predicted Alliance Intercepts by Alliance Type and Size")
-ggsave("figures/lambda-box cap.png", height = 6, width = 8)
+ggsave("figures/lambda-box.png", height = 6, width = 8)
+
 
 # Use random forest to assess variable importance
 rf <- cforest(lambda ~ ., data = select(lambda_df, -alliance.type))  # fit forest
@@ -316,7 +331,7 @@ ggplot(vi_df, aes(x = var_name, y = importance)) +
   geom_col() + 
   coord_flip() +
   ggtitle("Importance of Alliance Covariates from a Random Forest Model")
-ggsave("figures/varimp cap.png", height = 6, width = 8)
+ggsave("figures/varimp.png", height = 6, width = 8)
 
 
 ## plot for lambdas, broken down by arms requirements
@@ -326,6 +341,9 @@ ggplot(lambda_df, aes(x = armred.rc, y = lambda)) +
              aes(size = num.mem, shape = factor(bilat))) +  # make size and shape corresponde to number of members
   scale_shape_manual(values = c(1, 3)) + # use circle and +
   ggtitle("Distribution of Mean Predicted Alliance Intercepts by Arms Requirements and Size")
+
+# What are these two alliances with arms requirements?
+filter(alliance.char.model, armred.rc == 1)
 
 ## Violin plot for lambdas, broken down by military aid
 ggplot(lambda_df, aes(x = milaid.rc, y = lambda)) +
@@ -371,9 +389,51 @@ ggplot(lambda_df, aes(x = onlyconsul, y = lambda)) +
 
 
 
-# Summarize the distribution of the estimated lambdas
+### Summarize the distribution of the estimated lambdas
+# General density plot of the means
 ggplot(lambda_df, aes(x = lambda)) + geom_density() + ggtitle("Density of Posterior Means for all Alliance Intercepts")
 
+# Check how many lambda parameters can be reliably distinguished from zero:
+lambda.probs <- apply(ml.model.sum$lambda, 2, positive.check)
+lambda.probs <- cbind.data.frame(alliance.char.model$atopid, round(lambda_df$lambda, digits = 4), lambda_df$alliance.type, lambda.probs)
+colnames(lambda.probs) <- c("atopid", "lambda.mean", "alliance.type", "pos.post.prob")
+# binary indicator if posterior probability is greater than 90$ for positive or negative
+lambda.probs$non.zero <- ifelse(lambda.probs$pos.post.prob >= .89 | lambda.probs$pos.post.prob <= .11, 1, 0)
+sum(lambda.probs$non.zero) # 13 alliances have an impact on spending that can be reliably differentiated from zero
+
+
+# Plot posterior probabilities
+lambda.probs$atopid <- reorder(lambda.probs$atopid, lambda.probs$pos.post.prob)
+
+# For all alliances
+ggplot(lambda.probs, aes(x = atopid, y = pos.post.prob, fill = alliance.type)) + 
+  geom_col() +
+  coord_flip()
+
+# Remove the none category from these alliances
+lambda.probs %>% 
+  filter(alliance.type != "None") %>% 
+ggplot(mapping = aes(x = atopid, y = pos.post.prob, fill = alliance.type)) + 
+  geom_col() +
+  coord_flip()
+
+# For non-zero alliances 
+lambda.probs %>% 
+  filter(non.zero == 1) %>% 
+  ggplot(mapping = aes(x = atopid, y = pos.post.prob, fill = alliance.type)) + 
+  geom_col() +
+  geom_text(aes(label = lambda.mean), nudge_y = .04) +
+  coord_flip()
+  
+# Plot the lambda means, coloring by type
+lambda.probs$atopid <- reorder(lambda.probs$atopid, lambda.probs$lambda.mean)
+ggplot(lambda.probs, aes(x = atopid, y = lambda.mean, fill = alliance.type)) + 
+  geom_col() 
+
+
+
+
+### 
 # Plot posterior densities of variance parameters
 sigma_df <- cbind.data.frame(ml.model.sum$sigma_year, ml.model.sum$sigma_state, ml.model.sum$sigma_all)
 colnames(sigma_df) <- c("sigma_year", "sigma_state", "sigma_all")
@@ -381,6 +441,33 @@ colnames(sigma_df) <- c("sigma_year", "sigma_state", "sigma_all")
 ggplot(sigma_df, aes(x = sigma_year)) + geom_density() + ggtitle("Posterior Density of Year Variance Parameter")
 ggplot(sigma_df, aes(x = sigma_state)) + geom_density() + ggtitle("Posterior Density of State Variance Parameter")
 ggplot(sigma_df, aes(x = sigma_all)) + geom_density() + ggtitle("Posterior Density of Alliance Variance Parameter")
+
+
+
+
+
+
+
+###
+# Check what types of alliances the US and Russia are part of in the estimation sample
+filter(alliance.char.model, us.mem == 1) %>%
+  summarize(
+    us.uncond = sum(unconditional, na.rm = TRUE),
+    us.cond = sum(conditional, na.rm = TRUE),
+    us.prob.det = sum(prob_det, na.rm = TRUE),
+    us.comp = sum(compellent, na.rm = TRUE),
+    us.bilat = sum(bilat, na.rm = TRUE)
+  )
+
+filter(alliance.char.model, russ.mem == 1) %>%
+  summarize(
+    russ.uncond = sum(unconditional, na.rm = TRUE),
+    russ.cond = sum(conditional, na.rm = TRUE),
+    russ.prob.det = sum(prob_det, na.rm = TRUE),
+    russ.comp = sum(compellent, na.rm = TRUE),
+    russ.bilat = sum(bilat, na.rm = TRUE)
+  )
+
 
 
 # summarize session info
