@@ -9,7 +9,7 @@ library(MASS)
 library(plm)
 library(dplyr)
 library(texreg)
-
+library(robustlmm)
 
 
 
@@ -252,6 +252,80 @@ plotreg(rreg.ex, omit.coef = "(Intercept)|(lag.ln.milex)")
 
 
 
+
+# Try to mix robust regression with country and year-specific intercept terms
+# Robustlmmm fits linear mixed effects models- could also say random effects
+
+# need to subset the data beforehand 
+state.char.nonmaj <- filter(state.char.full, majpower == 0)
+
+# Estimate model with binary indicators of presence as IVs
+system.time(
+rb.pres <- rlmer(ln.milex ~ prob.det.pres + cond.det.pres + uncond.det.pres + comp.pres  + avg.dem.prop + lag.ln.milex +
+                   atwar + civilwar + polity + ln.GDP + avg.num.mem +
+                   ls.threatenv + cold.war + total.ally.expend + (1|ccode) + (1|year),
+                  state.char.nonmaj, verbose = 2)
+)
+
+summary(rb.pres)
+plot(rb.pres)
+
+# Re-tune the presence fit to improve efficiency
+system.time(
+  rb.pres.update <- update(rb.pres, rho.sigma.e = psi2propII(smoothPsi, k = 2.28),
+                           rho.sigma.b = psi2propII(smoothPsi, k = 2.28))
+)
+summary(rb.pres.update)
+
+# Compare initial and tuned presence fits
+compare(rb.pres, rb.pres.update, show.rho.functions = FALSE)
+
+
+
+# Estimate model with shares as the independent variables
+system.time(
+  rb.share <- rlmer(ln.milex ~ prob.det.share + cond.det.share + uncond.det.share + comp.share  + avg.dem.prop + lag.ln.milex +
+                     atwar + civilwar + polity + ln.GDP + avg.num.mem +
+                     ls.threatenv + cold.war + total.ally.expend + (1|ccode) + (1|year),
+                   state.char.nonmaj, verbose = 2)
+)
+
+summary(rb.share)
+plot(rb.share)
+
+# re-tune the shares fit
+system.time(
+  rb.share.update <- update(rb.share, rho.sigma.e = psi2propII(smoothPsi, k = 2.28),
+                            rho.sigma.b = psi2propII(smoothPsi, k = 2.28))
+)
+summary(rb.share.update)
+
+# Compare the initial and tuned shares fits
+compare(rb.share, rb.share.update, show.rho.functions = FALSE)
+
+
+
+# estimate model with total expenditure of allies from each pact
+system.time(
+  rb.expend <- rlmer(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend  + avg.dem.prop + lag.ln.milex +
+                      atwar + civilwar + polity + ln.GDP + avg.num.mem +
+                      ls.threatenv + cold.war + (1|ccode) + (1|year),
+                    state.char.nonmaj, verbose = 2)
+)
+
+summary(rb.expend)
+plot(rb.expend)
+
+# re-tune the expenditure fit
+system.time(
+  rb.expend.update <- update(rb.expend, rho.sigma.e = psi2propII(smoothPsi, k = 2.28),
+                            rho.sigma.b = psi2propII(smoothPsi, k = 2.28))
+)
+summary(rb.expend.update)
+
+
+# Compare the initial and tuned expenditure fits
+compare(rb.expend, rb.expend.update, show.rho.functions = FALSE)
 
 
 
