@@ -34,6 +34,7 @@ state.ally.year <- full.data.rnonagg %>%
     uncond.expend = sum(total.expend[unconditional == 1], na.rm = TRUE),
     prob.det.expend = sum(total.expend[prob_det == 1], na.rm = TRUE),
     comp.expend = sum(total.expend[compellent == 1], na.rm = TRUE),
+    mixed.expend = sum(total.expend[mixed == 1], na.rm = TRUE),
     
     prob.det.pres = max(prob_det, na.rm = TRUE),
     prob.det.total = sum(prob_det, na.rm = TRUE),
@@ -66,7 +67,10 @@ state.ally.year <- full.data.rnonagg %>%
     new.prob.det10 = max(new.prob.det10, na.rm = TRUE),
     new.conditional10 = max(new.conditional10, na.rm = TRUE),
     new.unconditional10 = max(new.unconditional10, na.rm = TRUE), 
-    new.compellent10 = max(new.compellent10, na.rm = TRUE)
+    new.compellent10 = max(new.compellent10, na.rm = TRUE),
+    
+    mixed.pres = max(mixed, na.rm = TRUE),
+    mixed.total = sum(mixed, na.rm = TRUE)
   )
 
 # State-year characteristics including alliance portfolio summaries
@@ -97,7 +101,8 @@ state.char.full <- state.char.full %>%
     defense.pres = ifelse((defense.total >= 1), 1 , 0),
     defense.share = defense.total / treaty.count,
     discret.inter.share = discret.inter.total / treaty.count,
-    discret.mils.share = discret.mils.total / treaty.count
+    discret.mils.share = discret.mils.total / treaty.count,
+    mixed.share = mixed.total / treaty.count
   )
 
 state.char.full <- state.char.full[complete.cases(state.char.full$ccode), ]
@@ -108,7 +113,7 @@ state.char.full <- state.char.full[complete.cases(state.char.full$ccode), ]
 # otherwise, states with no alliances enter the base category, which may alter comparisons
 
 # Start with a simple linear model 
-m1.reg <- plm(ln.milex ~ prob.det.pres + cond.det.pres + uncond.det.pres + comp.pres  + avg.dem.prop + lag.ln.milex +
+m1.reg <- plm(ln.milex ~ prob.det.pres + cond.det.pres + uncond.det.pres + comp.pres + mixed.pres + avg.dem.prop + lag.ln.milex +
                atwar + civilwar + polity + ln.GDP + avg.num.mem +
                ls.threatenv + cold.war + total.ally.expend,
              data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0),
@@ -118,7 +123,7 @@ summary(m1.reg)
 plot(density(m1.reg$residuals))
 
 # Hausman test
-m1.reg.re <- plm(ln.milex ~ prob.det.pres  + cond.det.pres + uncond.det.pres + comp.pres + avg.dem.prop + lag.ln.milex +
+m1.reg.re <- plm(ln.milex ~ prob.det.pres  + cond.det.pres + uncond.det.pres + comp.pres + mixed.pres + avg.dem.prop + lag.ln.milex +
                 atwar + civilwar + polity + ln.GDP + avg.num.mem + 
                 ls.threatenv +  cold.war + total.ally.expend,
               data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0),
@@ -130,7 +135,7 @@ phtest(m1.reg, m1.reg.re, method = "aux")
 
 
 # Use shares instead
-m2.reg <- plm(ln.milex ~ prob.det.share + cond.det.share + uncond.det.share + comp.share + avg.dem.prop + lag.ln.milex +
+m2.reg <- plm(ln.milex ~ prob.det.share + cond.det.share + uncond.det.share + comp.share + mixed.share + avg.dem.prop + lag.ln.milex +
                atwar + civilwar + polity + ln.GDP + avg.num.mem + 
                ls.threatenv + cold.war + total.ally.expend, 
              data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0),
@@ -142,7 +147,7 @@ plot(density(m2.reg$residuals))
 
 
 # Hausman test
-m2.reg.re <- plm(ln.milex ~  prob.det.share + cond.det.share + uncond.det.share + comp.share + avg.dem.prop + lag.ln.milex +
+m2.reg.re <- plm(ln.milex ~  prob.det.share + cond.det.share + uncond.det.share + comp.share + mixed.share + avg.dem.prop + lag.ln.milex +
                    atwar + civilwar + polity + ln.GDP + avg.num.mem +
                    ls.threatenv + cold.war + total.ally.expend,
                  data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0),
@@ -163,7 +168,7 @@ phtest(m2.reg, m2.reg.re, method = "aux")
 
 
 # Start with binary indicators
-m1r.reg <- rlm(ln.milex ~ prob.det.pres + cond.det.pres + uncond.det.pres + comp.pres  + avg.dem.prop + lag.ln.milex +
+m1r.reg <- rlm(ln.milex ~ prob.det.pres + cond.det.pres + uncond.det.pres + comp.pres + mixed.pres  + avg.dem.prop + lag.ln.milex +
                  atwar + civilwar + polity + ln.GDP + avg.num.mem +
                  ls.threatenv + total.ally.expend,
                data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0))
@@ -175,7 +180,7 @@ plotreg(m1r.reg, omit.coef = "(Intercept)|(lag.ln.milex)")
 
 
 # Use shares instead
-m2r.reg <- rlm(ln.milex ~ prob.det.share + cond.det.share + uncond.det.share + comp.share  + avg.dem.prop + lag.ln.milex +
+m2r.reg <- rlm(ln.milex ~ prob.det.share + cond.det.share + uncond.det.share + comp.share + mixed.share  + avg.dem.prop + lag.ln.milex +
                  atwar + civilwar + polity + ln.GDP + avg.num.mem +
                  ls.threatenv + total.ally.expend, 
                data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0))
@@ -219,7 +224,7 @@ plot(density(m1.reg10$residuals))
 
 ### Another option is to consider the role of the total capabilities aggregated by each alliance type
 # This is a crude approximation of the multilevel model with capability in the membership matrix
-reg.ex <- plm(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend  + avg.dem.prop + lag.ln.milex +
+reg.ex <- plm(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend + mixed.expend + avg.dem.prop + lag.ln.milex +
                 atwar + civilwar + polity + ln.GDP + avg.num.mem +
                 ls.threatenv + cold.war,
               data = state.char.full, subset = (majpower == 0),
@@ -229,7 +234,7 @@ summary(reg.ex)
 plot(density(reg.ex$residuals))
 
 # Hausman test
-reg.ex.re <- plm(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend  + avg.dem.prop + lag.ln.milex +
+reg.ex.re <- plm(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend + mixed.expend + avg.dem.prop + lag.ln.milex +
                    atwar + civilwar + polity + ln.GDP + avg.num.mem +
                    ls.threatenv + cold.war,
                  data = state.char.full, subset = (majpower == 0),
@@ -240,7 +245,7 @@ phtest(reg.ex, reg.ex.re, method = "aux")
 
 
 # Robust regression
-rreg.ex <- rlm(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend  + avg.dem.prop + lag.ln.milex +
+rreg.ex <- rlm(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend + mixed.expend  + avg.dem.prop + lag.ln.milex +
                  atwar + civilwar + polity + ln.GDP + avg.num.mem +
                  ls.threatenv + cold.war,
                data = state.char.full, subset = (majpower == 0))
@@ -261,7 +266,7 @@ state.char.nonmaj <- filter(state.char.full, majpower == 0)
 
 # Estimate model with binary indicators of presence as IVs
 system.time(
-rb.pres <- rlmer(ln.milex ~ prob.det.pres + cond.det.pres + uncond.det.pres + comp.pres  + avg.dem.prop + lag.ln.milex +
+rb.pres <- rlmer(ln.milex ~ prob.det.pres + cond.det.pres + uncond.det.pres + comp.pres + mixed.pres  + avg.dem.prop + lag.ln.milex +
                    atwar + civilwar + polity + ln.GDP + avg.num.mem +
                    ls.threatenv + cold.war + total.ally.expend + (1|ccode) + (1|year),
                   state.char.nonmaj, verbose = 2)
@@ -284,7 +289,7 @@ compare(rb.pres, rb.pres.update, show.rho.functions = FALSE)
 
 # Estimate model with shares as the independent variables
 system.time(
-  rb.share <- rlmer(ln.milex ~ prob.det.share + cond.det.share + uncond.det.share + comp.share  + avg.dem.prop + lag.ln.milex +
+  rb.share <- rlmer(ln.milex ~ prob.det.share + cond.det.share + uncond.det.share + comp.share + mixed.share + avg.dem.prop + lag.ln.milex +
                      atwar + civilwar + polity + ln.GDP + avg.num.mem +
                      ls.threatenv + cold.war + total.ally.expend + (1|ccode) + (1|year),
                    state.char.nonmaj, verbose = 2)
@@ -307,7 +312,7 @@ compare(rb.share, rb.share.update, show.rho.functions = FALSE)
 
 # estimate model with total expenditure of allies from each pact
 system.time(
-  rb.expend <- rlmer(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend  + avg.dem.prop + lag.ln.milex +
+  rb.expend <- rlmer(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend + mixed.expend + avg.dem.prop + lag.ln.milex +
                       atwar + civilwar + polity + ln.GDP + avg.num.mem +
                       ls.threatenv + cold.war + (1|ccode) + (1|year),
                     state.char.nonmaj, verbose = 2)
