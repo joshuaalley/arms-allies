@@ -77,9 +77,9 @@ model {
   alpha_year_std ~ normal(0, 1);
   alpha_state_std ~ normal(0, 1); 
   lambda_std ~ normal(0, 1);
-  sigma_state ~ cauchy(0, 1);
-  sigma_year ~ cauchy(0, 1); 
-  sigma_all ~ cauchy(0, 1); 
+  sigma_state ~ normal(0, 1);
+  sigma_year ~ normal(0, 1); 
+  sigma_all ~ normal(0, 1); 
   beta ~  normal(0, 1);
   gamma ~ normal(0, 1); 
   nu ~ gamma(2, 0.1); // Prior for degrees of freedom in t-dist

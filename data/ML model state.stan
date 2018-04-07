@@ -1,6 +1,6 @@
 // Joshua Alley
 // Texas A&M University
-// Multilevel Model: Non-alliance intercepts and state-level covariates
+// Multilevel Model: All Non-alliance intercepts and state-level covariates
 // For comparison with full model via loo and PPC
 
 
@@ -49,11 +49,11 @@ model {
   
   
   alpha ~ normal(0, 3);
-  sigma ~ cauchy(0, 1);
+  sigma ~ normal(0, 1);
   alpha_year_std ~ normal(0, 1);
   alpha_state_std ~ normal(0, 1); 
-  sigma_state ~ cauchy(0, 1); // boundary avoiding prior
-  sigma_year ~ cauchy(0, 1); // boundary avoiding prior 
+  sigma_state ~ normal(0, 1); 
+  sigma_year ~ normal(0, 1); 
   gamma ~ normal(0, 1); 
   nu ~ gamma(2, 0.1); // Prior for degrees of freedom in t-dist
 
