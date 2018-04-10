@@ -217,10 +217,12 @@ ggplot(beta.melt, aes(x=value, fill = Var2)) +
 
 # Summarize intervals
 beta.summary <- summary(ml.model, pars = c("beta", "sigma_all"), probs = c(0.05, 0.95))$summary
+beta.summary <- beta.summary[, -2]
 rownames(beta.summary) <- c("Constant", "Probabilistic Deterrent", "Conditional", "Unconditional Deterrent", 
                             "Compellent", "Bilateral", "Arms Requirement", "Share Dem. Members", 
                             "Wartime", "Institutionalization", "Military aid",
                             "US Member", "Russia Member", "sigma Alliances")
+
 print(beta.summary)
 xtable(beta.summary, digits = 3)
 
@@ -248,6 +250,7 @@ ggplot(gamma.melt, aes(x=value,  fill = Var2)) +
 
 # summarize posterior intervals
 gamma.summary <- summary(ml.model, pars = c("gamma", "sigma_state", "alpha"), probs = c(0.05, 0.95))$summary
+gamma.summary <- gamma.summary[, -2]
 rownames(gamma.summary) <- c("Lagged Expenditures", "Wartime", "Civil War", "Rival Mil. Expenditure", 
                             "ln(GDP)", "Polity", "Cold War", "Sigma State", "Constant")
 print(gamma.summary)
@@ -290,7 +293,9 @@ summary(lrm.uncond)
 plot(density(lrm.uncond))
 positive.check(lrm.uncond)
 
-
+lrm.dem <- ml.model.sum$gamma[, 6] / (1 - ml.model.sum$gamma[, 1])
+summary(lrm.dem)
+mean(lrm.uncond > lrm.dem)
 
 
 
@@ -399,7 +404,7 @@ lambda.probs <- cbind.data.frame(alliance.char.model$atopid, round(lambda_df$lam
 colnames(lambda.probs) <- c("atopid", "lambda.mean", "alliance.type", "pos.post.prob")
 # binary indicator if posterior probability is greater than 90$ for positive or negative
 lambda.probs$non.zero <- ifelse(lambda.probs$pos.post.prob >= .89 | lambda.probs$pos.post.prob <= .11, 1, 0)
-sum(lambda.probs$non.zero) # 13 alliances have an impact on spending that can be reliably differentiated from zero
+sum(lambda.probs$non.zero) # 11 alliances have an impact on spending that can be reliably differentiated from zero
 
 
 # Plot posterior probabilities
@@ -418,7 +423,7 @@ ggplot(mapping = aes(x = atopid, y = pos.post.prob, fill = alliance.type)) +
   coord_flip()
 
 # For non-zero alliances 
-lambda.probs %>% 
+ lambda.probs %>% 
   filter(non.zero == 1) %>% 
   ggplot(mapping = aes(x = atopid, y = pos.post.prob, fill = alliance.type)) + 
   geom_col() +
@@ -430,20 +435,30 @@ lambda.probs$atopid <- reorder(lambda.probs$atopid, lambda.probs$lambda.mean)
 ggplot(lambda.probs, aes(x = atopid, y = lambda.mean, fill = alliance.type)) + 
   geom_col() 
 
+# remove the none category
+lambda.probs %>% 
+  filter(alliance.type != "None") %>%
+ggplot(aes(x = atopid, y = lambda.mean, fill = alliance.type)) + 
+  geom_col() 
+
+
 
 
 
 ### 
 # Plot posterior densities of variance parameters
-sigma_df <- cbind.data.frame(ml.model.sum$sigma_year, ml.model.sum$sigma_state, ml.model.sum$sigma_all)
-colnames(sigma_df) <- c("sigma_year", "sigma_state", "sigma_all")
+sigma.df <- cbind(ml.model.sum$sigma_year, ml.model.sum$sigma_state, ml.model.sum$sigma_all)
+colnames(sigma.df) <- c("sigma.year", "sigma.state", "sigma.all")
+sigma.df <- as.data.frame(sigma.df)
 
-ggplot(sigma_df, aes(x = sigma_year)) + geom_density() + ggtitle("Posterior Density of Year Variance Parameter")
-ggplot(sigma_df, aes(x = sigma_state)) + geom_density() + ggtitle("Posterior Density of State Variance Parameter")
-ggplot(sigma_df, aes(x = sigma_all)) + geom_density() + ggtitle("Posterior Density of Alliance Variance Parameter")
+ggplot(sigma.df, aes(x = sigma.year)) + geom_density() + ggtitle("Posterior Density of Year Variance Parameter")
+ggplot(sigma.df, aes(x = sigma.state)) + geom_density() + ggtitle("Posterior Density of State Variance Parameter")
+ggplot(sigma.df, aes(x = sigma.all)) + geom_density() + ggtitle("Posterior Density of Alliance Variance Parameter")
 
+# plot all three variance parameters together
+sigma.df.melt <- melt(sigma.df) 
 
-
+ggplot(sigma.df.melt, aes(x = value, fg = variable)) + geom_density() + ggtitle("Posterior Densities of Variance Hyperparameters")
 
 
 
