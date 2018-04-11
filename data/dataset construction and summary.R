@@ -328,7 +328,8 @@ full.data <- mutate(full.data, nonagg.only = ifelse((nonagg == 1 & offense != 1 
 summary(full.data$nonagg.only)
 
 full.data.rnonagg <- filter(full.data, nonagg.only != 1)
-
+# restrict sample to minor powers
+full.data.rnonagg <- filter(full.data.rnonagg, majpower == 0)
 
 
 # Create a dataset of state-year alliance membership:
