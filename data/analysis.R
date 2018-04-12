@@ -399,8 +399,7 @@ lambda.probs <- cbind.data.frame(alliance.char.model$atopid, round(lambda_df$lam
 colnames(lambda.probs) <- c("atopid", "lambda.mean", "alliance.type", "pos.post.prob")
 # binary indicator if posterior probability is greater than 90$ for positive or negative
 lambda.probs$non.zero <- ifelse(lambda.probs$pos.post.prob >= .89 | lambda.probs$pos.post.prob <= .11, 1, 0)
-sum(lambda.probs$non.zero) # 11 alliances have an impact on spending that can be reliably differentiated from zero
-
+sum(lambda.probs$non.zero) # total number of non-zero alliances
 
 # Plot posterior probabilities
 lambda.probs$atopid <- reorder(lambda.probs$atopid, lambda.probs$pos.post.prob)
@@ -446,7 +445,7 @@ lambda.probs %>%
   geom_text(aes(label = lambda.mean), nudge_y = 0.01, size = 4) +
   labs(y = "Posterior Mean of Alliance Weight Parameter") +
   coord_flip()
-
+ggsave("figures/non-zero alliances.png", height = 6, width = 8)
 
 
 
@@ -461,13 +460,18 @@ ggplot(sigma.df, aes(x = sigma.year)) + geom_density() + ggtitle("Posterior Dens
 ggplot(sigma.df, aes(x = sigma.state)) + geom_density() + ggtitle("Posterior Density of State Variance Parameter")
 ggplot(sigma.df, aes(x = sigma.all)) + geom_density() + ggtitle("Posterior Density of Alliance Variance Parameter")
 
+# check the extent of overlap
+mean(sigma.df$sigma.state > sigma.df$sigma.all)
+mean(sigma.df$sigma.year > sigma.df$sigma.all)
+mean(sigma.df$sigma.year > sigma.df$sigma.state)
+
 # plot all three variance parameters together
 sigma.df.melt <- melt(sigma.df) 
 
 ggplot(sigma.df.melt, aes(x = value, fill = variable)) + geom_density() +
  scale_fill_brewer(palette = "Greys") +
  ggtitle("Posterior Densities of Variance Hyperparameters")
-
+ggsave("figures/variance-hyperparam-plot.png", height = 6, width = 8)
 
 
 
