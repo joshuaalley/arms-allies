@@ -218,7 +218,7 @@ ggplot(beta.melt, aes(x=value, fill = Var2)) +
 beta.summary <- summary(ml.model, pars = c("beta", "sigma_all"), probs = c(0.05, 0.95))$summary
 beta.summary <- beta.summary[, -2]
 rownames(beta.summary) <- c("Constant", "Probabilistic Deterrent", "Conditional", "Unconditional Deterrent", 
-                            "Compellent", "Bilateral", "Share Dem. Members", 
+                            "Compellent", "Num. Members", "Share Dem. Members", 
                             "Wartime", "Institutionalization", "Military aid",
                             "US Member", "Russia Member", "sigma Alliances")
 
@@ -226,8 +226,12 @@ print(beta.summary)
 xtable(beta.summary, digits = 3)
 
 
+### Compare alliance coefficients
 # Compare unconditional and conditional coefficients
 mean(ml.model.sum$beta[, 4] < ml.model.sum$beta[, 3])
+# Compare unconditional and probabilistic deterrent coefs
+mean(ml.model.sum$beta[, 4] < ml.model.sum$beta[, 2])
+
 
 
 # Similar calculations for the state-level variables
@@ -295,11 +299,13 @@ ggsave("figures/post-prob.png", height = 6, width = 8)
 lrm.uncond <- ml.model.sum$beta[, 4] / (1 - ml.model.sum$gamma[, 1])
 summary(lrm.uncond)
 plot(density(lrm.uncond))
+
 positive.check(lrm.uncond)
 
 lrm.dem <- ml.model.sum$gamma[, 6] / (1 - ml.model.sum$gamma[, 1])
 summary(lrm.dem)
-mean(lrm.uncond > lrm.dem)
+mean(lrm.dem < 0)
+mean(lrm.uncond < lrm.dem)
 
 
 
@@ -311,7 +317,7 @@ lambda_df <- data_frame(lambda = lambda_means[, 5]) %>%  # add lambdas to df
   mutate(alliance.type = ifelse(prob_det == 1, "Probabilistic Deterrent", 
                                 ifelse(unconditional == 1, "Unconditional",
                                        ifelse(conditional == 1, "Conditional Deterrent", 
-                                          ifelse(compellent == 1, "Compellent", "None")))))
+                                          ifelse(compellent == 1, "Compellent", "No Support")))))
 
 # check the validity of the type variable
 count(lambda_df, alliance.type)
@@ -411,13 +417,13 @@ ggplot(lambda.probs, aes(x = atopid, y = pos.post.prob, fill = alliance.type)) +
 
 # Remove the none category from these alliances
 lambda.probs %>% 
-  filter(alliance.type != "None") %>% 
+  filter(alliance.type != "No Support") %>% 
 ggplot(mapping = aes(x = atopid, y = pos.post.prob, fill = alliance.type)) + 
   geom_col() +
   coord_flip()
 
 # For non-zero alliances 
- lambda.probs %>% 
+lambda.probs %>% 
   filter(non.zero == 1) %>% 
   ggplot(mapping = aes(x = atopid, y = pos.post.prob, fill = alliance.type)) + 
   geom_col() +
@@ -432,7 +438,7 @@ ggplot(lambda.probs, aes(x = atopid, y = lambda.mean, fill = alliance.type)) +
 
 # remove the none category
 lambda.probs %>% 
-  filter(alliance.type != "None") %>%
+  filter(alliance.type != "No Support") %>%
 ggplot(aes(x = atopid, y = lambda.mean, fill = alliance.type)) + 
   geom_col() 
 
