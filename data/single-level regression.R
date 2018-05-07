@@ -50,7 +50,7 @@ state.ally.year <- full.data.rnonagg %>%
     cond.det.pres = max(cond_det, na.rm = TRUE),
     cond.det.total = sum(cond_det, na.rm = TRUE),
     avg.dem.prop = mean(dem.prop, na.rm = TRUE),
-    armred = max(armred, na.rm = TRUE),
+    armred.rc = max(armred.rc, na.rm = TRUE),
     avg.num.mem = mean(num.mem, na.rm = TRUE),
     defense.total = sum(defense, na.rm = TRUE),
     offense.total = sum(offense, na.rm = TRUE),
@@ -107,12 +107,72 @@ state.char.full <- state.char.full %>%
 
 state.char.full <- state.char.full[complete.cases(state.char.full$ccode), ]
 
+### Look at states that are in each type of alliance
+library(countrycode)
+state.char.full$country.name <- countrycode(state.char.full$ccode, "cown", "country.name")
+
+
+unconditional.members <- state.char.full %>% 
+  filter(uncond.det.pres == 1 & majpower == 0) %>%
+  group_by(country.name) %>% 
+  summarize(
+    n = n()
+  )
+View(unconditional.members)
+# Probabilistic deterrent alliance members  
+prob.det.members <- state.char.full %>% 
+  filter(prob.det.pres == 1 & majpower == 0) %>%
+  group_by(country.name) %>% 
+  summarize(
+    n = n()
+  )
+View(prob.det.members)
+# Conditional deterrent alliance members
+cond.det.members <- state.char.full %>% 
+  filter(cond.det.pres == 1 & majpower == 0) %>%
+  group_by(country.name) %>% 
+  summarize(
+    n = n()
+  )
+View(cond.det.members)
+
+# IV1: Probabilistic Alliances
+summary(state.char.full$prob.det.pres)
+summary(state.char.full$prob.det.total)
+# Differences in expenditure
+t.test(state.char.full$ln.milex ~ state.char.full$prob.det.pres, alternative = "less")
+t.test(state.char.full$change.ln.milex ~ state.char.full$prob.det.pres, alternative = "less")
+# Split data and plot
+state.char.full %>% 
+  select(change.ln.milex, prob.det.pres) %>%
+  ggplot(mapping = aes(x = prob.det.pres, y = change.ln.milex)) +
+  geom_boxplot(mapping = aes(group = prob.det.pres))
+
+# IV2: Unconditional alliances
+summary(state.char.full$uncond.det.pres)
+summary(state.char.full$uncond.det.total)
+# Differences in expenditure
+t.test(state.char.full$ln.milex ~ state.char.full$uncond.det.pres, alternative = "less")
+t.test(state.char.full$change.ln.milex ~ state.char.full$uncond.det.pres, alternative = "less")
+# Split data and plot
+state.char.full %>% 
+  select(change.ln.milex, uncond.det.pres) %>%
+  ggplot(mapping = aes(x = uncond.det.pres, y = change.ln.milex)) +
+  geom_boxplot(mapping = aes(group = uncond.det.pres))
+
 
 
 # Sample is non-major powers only, and those states that have at least one alliances
 # otherwise, states with no alliances enter the base category, which may alter comparisons
 
 # Start with a simple linear model 
+m1 <- lm(ln.milex ~ prob.det.pres + cond.det.pres + uncond.det.pres + comp.pres + mixed.pres + avg.dem.prop + lag.ln.milex +
+           atwar + civilwar + polity + ln.GDP + avg.num.mem +
+           ls.threatenv + cold.war + total.ally.expend,
+         data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0))
+summary(m1)
+
+# Add state and year fixed effects (Nickell bias applies)
 m1.reg <- plm(ln.milex ~ prob.det.pres + cond.det.pres + uncond.det.pres + comp.pres + mixed.pres + avg.dem.prop + lag.ln.milex +
                atwar + civilwar + polity + ln.GDP + avg.num.mem +
                ls.threatenv + cold.war + total.ally.expend,
@@ -190,7 +250,7 @@ plot(m2r.reg$residuals, m2r.reg$w)
 
 plotreg(m2r.reg, omit.coef = "(Intercept)|(lag.ln.milex)")
 
-# probablistic deterrent effects here are probably driven by the US. 
+
 
 
 
@@ -224,14 +284,21 @@ plot(density(m1.reg10$residuals))
 
 ### Another option is to consider the role of the total capabilities aggregated by each alliance type
 # This is a crude approximation of the multilevel model with capability in the membership matrix
-reg.ex <- plm(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend + mixed.expend + avg.dem.prop + lag.ln.milex +
+reg.ex <- lm(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend + mixed.expend + avg.dem.prop + lag.ln.milex +
                 atwar + civilwar + polity + ln.GDP + avg.num.mem +
                 ls.threatenv + cold.war,
-              data = state.char.full, subset = (majpower == 0),
+              data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0))
+summary(reg.ex)
+
+
+reg.ex.fe <- plm(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend + mixed.expend + avg.dem.prop + lag.ln.milex +
+                atwar + civilwar + polity + ln.GDP + avg.num.mem +
+                ls.threatenv + cold.war,
+              data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0),
               effect = "twoways",  model = "within")
 
-summary(reg.ex)
-plot(density(reg.ex$residuals))
+summary(reg.ex.fe)
+plot(density(reg.ex.fe$residuals))
 
 # Hausman test
 reg.ex.re <- plm(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend + mixed.expend + avg.dem.prop + lag.ln.milex +
@@ -241,14 +308,14 @@ reg.ex.re <- plm(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp
                  effect = "twoways",  model = "random")
 summary(reg.ex.re)
 
-phtest(reg.ex, reg.ex.re, method = "aux")
+phtest(reg.ex.fe, reg.ex.re, method = "aux")
 
 
 # Robust regression
 rreg.ex <- rlm(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend + mixed.expend  + avg.dem.prop + lag.ln.milex +
                  atwar + civilwar + polity + ln.GDP + avg.num.mem +
                  ls.threatenv + cold.war,
-               data = state.char.full, subset = (majpower == 0))
+               data = state.char.full, subset = (majpower == 0  & avg.num.mem != 0))
 
 summary(rreg.ex)
 plot(rreg.ex$residuals, rreg.ex$w)
@@ -333,62 +400,6 @@ summary(rb.expend.update)
 compare(rb.expend, rb.expend.update, show.rho.functions = FALSE)
 
 
-
-
-
-### Consultation variable: Was Hypothesis 3, but no longer in the paper to simplify presentation of the results
-
-########
-
-# Use consultation variable 
-m3.cons <- plm(ln.milex ~ consul.only.pres + offense.pres + defense.pres + avg.dem.prop + lag.ln.milex +
-                atwar + civilwar + polity + ln.GDP +
-                ls.threatenv + cold.war + total.ally.expend, 
-              data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0),
-              effect = c("twoways"))
-
-summary(m3.cons)
-plot(density(m3.cons$residuals))
-
-
-
-# Use consultation only as a share of total treaties 
-m4.cons <- plm(ln.milex ~ consul.only.share + offense.share + defense.share + avg.dem.prop + lag.ln.milex +
-                atwar + civilwar + polity + ln.GDP +
-                ls.threatenv + cold.war + total.ally.expend, 
-              data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0),
-              effect = c("twoways"))
-
-summary(m4.cons)
-plot(density(m4.cons$residuals))
-
-
-
-
-### robust regression
-
-# Use consultation variable 
-m3r.cons <- rlm(ln.milex ~ consul.only.pres + offense.pres + defense.pres + avg.dem.prop + lag.ln.milex +
-                  atwar + civilwar + polity + ln.GDP +
-                  ls.threatenv + total.ally.expend, 
-                data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0))
-
-summary(m3r.cons)
-plot(m3r.cons$residuals, m3r.cons$w)
-
-plotreg(m3r.cons, omit.coef = "Intercept")
-
-
-# Use consultation only as a share of total treaties 
-m4r.cons <- rlm(ln.milex ~ consul.only.share + offense.share + defense.share + avg.dem.prop + lag.ln.milex +
-                  atwar + civilwar + polity + ln.GDP +
-                  ls.threatenv + total.ally.expend, 
-                data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0))
-
-summary(m4r.cons)
-plot(m4r.cons$residuals, m4r.cons$w)
-
-plotreg(m4r.cons, omit.coef = "Intercept")
 
 
 
