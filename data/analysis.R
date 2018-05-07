@@ -227,10 +227,18 @@ xtable(beta.summary, digits = 3)
 
 
 ### Compare alliance coefficients
+sd(ml.model.sum$beta[, 4])
 # Compare unconditional and conditional coefficients
+sd(ml.model.sum$beta[, 3])
 mean(ml.model.sum$beta[, 4] < ml.model.sum$beta[, 3])
 # Compare unconditional and probabilistic deterrent coefs
+sd(ml.model.sum$beta[, 2])
 mean(ml.model.sum$beta[, 4] < ml.model.sum$beta[, 2])
+# Differences in posterior overlap are a function of greater uncertainty in the probabilistic deterrent estimate
+# Posterior means
+mean(ml.model.sum$beta[, 4]) # unconditional 
+mean(ml.model.sum$beta[, 3]) # conditional
+mean(ml.model.sum$beta[, 2]) # probabilistic deterrent
 
 
 
@@ -480,6 +488,13 @@ ggplot(sigma.df.melt, aes(x = value, fill = variable)) + geom_density() +
 ggsave("figures/variance-hyperparam-plot.png", height = 6, width = 8)
 
 
+# Calculate the R^2 of the alliance level model
+theta_means <- get_posterior_mean(ml.model, pars = "theta")
+1 - (mean(ml.model.sum$sigma_all)^2 / var(theta_means[, 5]))
+
+# Calculate the R^2 of the state level model
+yhat_means <- get_posterior_mean(ml.model, pars = "y_hat")
+1 - (mean(ml.model.sum$sigma)^2 / var(yhat_means[, 5]))
 
 ###
 # Check what types of alliances the US and Russia are part of in the estimation sample
@@ -501,6 +516,39 @@ filter(alliance.char.model, russ.mem == 1) %>%
     russ.bilat = sum(bilat, na.rm = TRUE)
   )
 
+# Plot differences in control variables across alliances
+# Group by alliance type variables and calculate means
+alliance.reg.summary <- alliance.char.model %>%
+  mutate(
+  alliance.type = ifelse(prob_det == 1, "Probabilistic Deterrent", 
+                         ifelse(unconditional == 1, "Unconditional",
+                                ifelse(conditional == 1, "Conditional Deterrent", "No Support"))),
+  num.mem = num.mem / (2 * sd(num.mem)) # rescale the number of members by 2 sd 
+  ) %>%
+  group_by(alliance.type) %>%
+  summarize(
+    compellent = mean(compellent, na.rm = TRUE),
+    num.mem = mean(num.mem, na.rm = TRUE), 
+    dem.prop = mean(dem.prop, na.rm = TRUE),
+    wartime = mean(wartime, na.rm = TRUE), 
+    organ1 = mean(organ1, na.rm = TRUE),
+    milaid.rc = mean(milaid.rc, na.rm = TRUE),
+    us.mem = mean(us.mem, na.rm = TRUE), 
+    russ.mem = mean(russ.mem, na.rm = TRUE)
+    )
+
+# Melt for use with ggplot2
+alliance.reg.summary <- melt(alliance.reg.summary, 
+id.vars = c("alliance.type"))
+
+# Heatmap
+ggplot(data = alliance.reg.summary, aes(x= alliance.type, y = variable, fill=value)) + 
+  geom_tile(color = "white") + 
+  scale_fill_gradient(low = "white", high = "black", name = "Mean") +
+  labs(x = "Alliance Type", y = "Variable") +
+  scale_y_discrete(labels = c("Compellent", "Number of Members", "Share Democ.",
+                              "Wartime", "Institutionalization", "Military Aid", "US member", "Russia Member")) +
+  theme_classic() 
 
 
 # summarize session info
