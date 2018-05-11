@@ -37,16 +37,16 @@ set.seed(12)
 reg.state.data <- state.char %>%
   select(ccode, year, ln.milex, lag.ln.milex,
                       atwar, civilwar, rival.mil, ln.GDP, polity, 
-                      cold.war, majpower) 
+                      cold.war, disputes, majpower) 
 
 # Add state membership in alliances to this data
 reg.state.data <-  left_join(reg.state.data, state.mem.cap) 
 
-# Replace missing alliance values with zero 
-reg.state.data[, 12: ncol(reg.state.data)][is.na(reg.state.data[, 12: ncol(reg.state.data)])] <- 0
-
 # remove major powers from the sample
 reg.state.data <- filter(reg.state.data, majpower == 0)
+
+# Replace missing alliance values with zero 
+reg.state.data[, 13: ncol(reg.state.data)][is.na(reg.state.data[, 13: ncol(reg.state.data)])] <- 0
 
 # Remove observations with missing values
 reg.state.comp <- reg.state.data[complete.cases(reg.state.data), ]
@@ -55,7 +55,7 @@ reg.state.comp <- reg.state.data[complete.cases(reg.state.data), ]
 reg.state.comp <- select(reg.state.comp, -majpower)
 
 # Rescale the state-level regressors- but not the LDV
- reg.state.comp[, 5:10] <- lapply(reg.state.comp[, 5:10], 
+ reg.state.comp[, 5:11] <- lapply(reg.state.comp[, 5:11], 
        function(x) rescale(x, binary.inputs = "0/1"))
 
  
@@ -67,7 +67,7 @@ ggplot(reg.state.comp, aes(ln.milex)) + geom_density()
 
 
 # Create a matrix of state membership in alliances (Z in STAN model)
-state.mem.mat <- as.matrix(reg.state.comp[, 11: ncol(reg.state.comp)])
+state.mem.mat <- as.matrix(reg.state.comp[, 12: ncol(reg.state.comp)])
 
 
 # create a state index variable
@@ -84,6 +84,7 @@ reg.all.data <- alliance.char.model %>%
   select(atopid, prob_det, conditional, unconditional, compellent, num.mem, 
           dem.prop, wartime, organ1, milaid.rc, us.mem, russ.mem)
 
+
 # Create an alliance index variable
 alliance.id <- reg.all.data %>% group_indices(atopid)
 
@@ -94,7 +95,7 @@ reg.all.data[is.na(reg.all.data)] <- 0
 
 ### transform data into matrices for STAN
 # State-level characeristics
-reg.state.mat <- as.matrix(reg.state.comp[, 4:10])
+reg.state.mat <- as.matrix(reg.state.comp[, 4:11])
 
 # check correlations among state-level regressors
 cor(reg.state.mat, method = "pearson")

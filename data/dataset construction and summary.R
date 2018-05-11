@@ -62,6 +62,7 @@ rm(us.mem)
 
 
 
+
 # Create a datasets with essential ATOP variables
 atop.key <- select(atop, atopid, 
                    offense, defense, neutral, consul, nonagg,           
@@ -69,6 +70,7 @@ atop.key <- select(atop, atopid,
                    armred, organ1, milaid, us.mem, russ.mem)
 
 summary(atop.key$atopid)
+
 
 # merge with Benson data
 alliance.char.full <- left_join(atop.key, d.benson)
@@ -132,7 +134,7 @@ summary(atop.mem$atopid)
 
 
 # Merge the two alliance data types using ATOP ID and starting year
-alliance.comp <- left_join(atop.mem, alliance.char)
+alliance.comp <- left_join(atop.mem, alliance.char, by = "atopid")
 
 
 # Create a frequency variable to expand data to country-alliance-year data form
@@ -159,10 +161,6 @@ alliance.comp.expand <- alliance.comp.expand %>%
 
 
 alliance.comp.expand$year = alliance.comp.expand$startyear + alliance.comp.expand$count
-
-# Check the missing data issue by ATOPID
-# Major chunk of missing data for some alliances, including ATOPIDs = 
-# 1160, 1165, 1260, 1355, 2015, 2375, 2550, 3075, 3130, 3015, 3180, 3205
 
 
 # Sort by country code to fill in missing data from these alliances
@@ -267,7 +265,7 @@ full.data[order(full.data$ccode, full.data$year, full.data$atopid), ]
 full.data$atopid[is.na(full.data$atopid)] <- 0
 
 # If no ATOP alliance, fill all other alliance characteristic variables with a zero.
-full.data[6:29][is.na(full.data[, 6:29] & full.data$atopid == 0)] <- 0
+full.data[6:36][is.na(full.data[, 6:36] & full.data$atopid == 0)] <- 0
 
 # States with no alliances in a year are given an alliance ID of zero, grouping them all together
 
@@ -298,10 +296,10 @@ ggplot(alliance.year, aes(x = total.expend)) + geom_density()
 full.data <- left_join(full.data, alliance.year)
 
 # Fill in totals with zero for state-years with no alliance
-full.data[48:50][is.na(full.data[, 48:50] & full.data$atopid == 0)] <- 0
+full.data[65: 67][is.na(full.data[, 65: 67] & full.data$atopid == 0)] <- 0
 
 # Fill in alliance characteristics with zero if no alliance is present
-full.data[30:39][is.na(full.data[, 30:39] & full.data$atopid == 0)] <- 0
+full.data[27: 36][is.na(full.data[, 27: 36] & full.data$atopid == 0)] <- 0
 
 ### Add a couple more variables to the full data
 # binary indicator of compellent alliances
@@ -358,7 +356,7 @@ state.mem <- subset(state.mem, select = -(3))
 
 
 # Using total capability of an alliance, create a dataset of state-year alliance membership:
-full.data.rnonagg <- group_by(full.data.rnonagg, atopid, ccode, year)
+full.data.rnonagg <- group_by(full.data, atopid, ccode, year)
 
 state.mem.cap <- full.data.rnonagg %>% 
                 select(atopid, ccode, year, ln.milex) %>% 
@@ -376,10 +374,12 @@ state.mem.cap <- state.mem.cap[complete.cases(state.mem.cap$ally.spend), ]
 library(arm)
 state.mem.cap$ally.spend <- rescale(state.mem.cap$ally.spend)
 
+# filter to ensure alliances match: 
+state.mem.cap <- filter(state.mem.cap, atopid %in% alliance.char$atopid)
+
 
 # This dataframe  contains the spending for the alliances states are a member of in a given year
 state.mem.cap <- spread(state.mem.cap, key = atopid, value = ally.spend, fill = 0)
-
 
 
 
