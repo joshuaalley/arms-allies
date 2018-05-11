@@ -107,6 +107,9 @@ state.char.full <- state.char.full %>%
 
 state.char.full <- state.char.full[complete.cases(state.char.full$ccode), ]
 
+# Subset data with nonmajor powers
+state.char.nonmaj <- filter(state.char.full, majpower == 0)
+
 ### Look at states that are in each type of alliance
 library(countrycode)
 state.char.full$country.name <- countrycode(state.char.full$ccode, "cown", "country.name")
@@ -137,101 +140,78 @@ cond.det.members <- state.char.full %>%
 View(cond.det.members)
 
 # IV1: Probabilistic Alliances
-summary(state.char.full$prob.det.pres)
-summary(state.char.full$prob.det.total)
+summary(state.char.nonmaj$prob.det.pres)
+summary(state.char.nonmaj$prob.det.total)
 # Differences in expenditure
-t.test(state.char.full$ln.milex ~ state.char.full$prob.det.pres, alternative = "less")
-t.test(state.char.full$change.ln.milex ~ state.char.full$prob.det.pres, alternative = "less")
-# Split data and plot
-state.char.full %>% 
-  select(change.ln.milex, prob.det.pres) %>%
-  ggplot(mapping = aes(x = prob.det.pres, y = change.ln.milex)) +
-  geom_boxplot(mapping = aes(group = prob.det.pres))
+t.test(ln.milex ~ prob.det.pres, alternative = "less", data = state.char.nonmaj)
+t.test(change.ln.milex ~ prob.det.pres, alternative = "less", data = state.char.nonmaj)
+
 
 # IV2: Unconditional alliances
-summary(state.char.full$uncond.det.pres)
-summary(state.char.full$uncond.det.total)
+summary(state.char.nonmaj$uncond.det.pres)
+summary(state.char.nonamj$uncond.det.total)
 # Differences in expenditure
-t.test(state.char.full$ln.milex ~ state.char.full$uncond.det.pres, alternative = "less")
-t.test(state.char.full$change.ln.milex ~ state.char.full$uncond.det.pres, alternative = "less")
-# Split data and plot
-state.char.full %>% 
-  select(change.ln.milex, uncond.det.pres) %>%
-  ggplot(mapping = aes(x = uncond.det.pres, y = change.ln.milex)) +
-  geom_boxplot(mapping = aes(group = uncond.det.pres))
-
-
+t.test(ln.milex ~ uncond.det.pres, alternative = "less", data = state.char.nonmaj)
+t.test(change.ln.milex ~ uncond.det.pres, alternative = "less", data = state.char.nonmaj)
 
 # Sample is non-major powers only, and those states that have at least one alliances
 # otherwise, states with no alliances enter the base category, which may alter comparisons
 
+
+
 # Start with a simple linear model 
-m1 <- lm(ln.milex ~ prob.det.pres + cond.det.pres + uncond.det.pres + comp.pres + mixed.pres + avg.dem.prop + lag.ln.milex +
-           atwar + civilwar + polity + ln.GDP + avg.num.mem +
+m1 <- plm(ln.milex ~ uncond.det.pres + comp.pres + lag.ln.milex +
+           atwar + civilwar + polity + ln.GDP + avg.num.mem + disputes +
            ls.threatenv + cold.war + total.ally.expend,
-         data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0))
+         data = state.char.full, subset = (majpower == 0),
+         model = "pooling")
+plmtest(m1, effect = "twoways", type = "ghm")
 summary(m1)
 
-# Add state and year fixed effects (Nickell bias applies)
-m1.reg <- plm(ln.milex ~ prob.det.pres + cond.det.pres + uncond.det.pres + comp.pres + mixed.pres + avg.dem.prop + lag.ln.milex +
-               atwar + civilwar + polity + ln.GDP + avg.num.mem +
-               ls.threatenv + cold.war + total.ally.expend,
-             data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0),
-            effect = "twoways",  model = "within")
 
-summary(m1.reg)
-plot(density(m1.reg$residuals))
-
-# Hausman test
-m1.reg.re <- plm(ln.milex ~ prob.det.pres  + cond.det.pres + uncond.det.pres + comp.pres + mixed.pres + avg.dem.prop + lag.ln.milex +
-                atwar + civilwar + polity + ln.GDP + avg.num.mem + 
-                ls.threatenv +  cold.war + total.ally.expend,
-              data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0),
-              effect = "twoways",  model = "random")
-summary(m1.reg.re)
-
-phtest(m1.reg, m1.reg.re, method = "aux")
+# FGLS: "random effects" robust to intragroup heteroskedasticity and serial correlation 
+m1.fgls <- pggls(ln.milex ~ uncond.det.pres + comp.pres + lag.ln.milex +
+           atwar + civilwar + polity + ln.GDP + avg.num.mem + disputes +
+           ls.threatenv + cold.war + total.ally.expend,
+         data = state.char.full, subset = (majpower == 0),
+         effect = "individual", # unrestricted error covariance
+         model = "pooling")
+summary(m1.fgls)
 
 
+# Add state and year fixed effects and estimate in differences (otherwise Nickell bias applies)
+m1.reg.fe <- pggls(change.ln.milex ~ uncond.det.pres + comp.pres +
+                  atwar + civilwar + polity + ln.GDP + avg.num.mem + disputes +
+                  ls.threatenv + cold.war + total.ally.expend,
+                index = c("ccode"),
+                effect = "individual", # unrestricted error covariance
+                data = state.char.full, subset = (majpower == 0),
+                model = "within")
 
-# Use shares instead
-m2.reg <- plm(ln.milex ~ prob.det.share + cond.det.share + uncond.det.share + comp.share + mixed.share + avg.dem.prop + lag.ln.milex +
-               atwar + civilwar + polity + ln.GDP + avg.num.mem + 
-               ls.threatenv + cold.war + total.ally.expend, 
-             data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0),
-             effect = "twoways", model = "within")
+summary(m1.reg.fe)
+plot(density(m1.reg.fe$residuals))
 
-summary(m2.reg)
-plot(density(m2.reg$residuals))
-
-
-
-# Hausman test
-m2.reg.re <- plm(ln.milex ~  prob.det.share + cond.det.share + uncond.det.share + comp.share + mixed.share + avg.dem.prop + lag.ln.milex +
-                   atwar + civilwar + polity + ln.GDP + avg.num.mem +
+# FGLS with changes instead of levels
+m1.fgls.change <- pggls(change.ln.milex ~ uncond.det.pres + comp.pres +
+                   atwar + civilwar + polity + ln.GDP + avg.num.mem + disputes +
                    ls.threatenv + cold.war + total.ally.expend,
-                 data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0),
-                 effect = "twoways",  model = "random")
-summary(m2.reg.re)
-
-phtest(m2.reg, m2.reg.re, method = "aux")
-
-
-
+                 data = state.char.full, subset = (majpower == 0),
+                 effect = "individual", # unrestricted error covariance
+                 model = "pooling")
+summary(m1.fgls.change)
 
 
 # Robust Regression 
 ###### 
 # Residuals in the early models have some really heavy tails. Robust regression weights observations as 
 # a function of their residual, ensuring least squares is still efficient
-# Had trouble getting fixed effects into these models
 
 
 # Start with binary indicators
-m1r.reg <- rlm(ln.milex ~ prob.det.pres + cond.det.pres + uncond.det.pres + comp.pres + mixed.pres  + avg.dem.prop + lag.ln.milex +
-                 atwar + civilwar + polity + ln.GDP + avg.num.mem +
+m1r.reg <- rlm(ln.milex ~ uncond.det.pres + comp.pres  + avg.dem.prop + lag.ln.milex +
+                 atwar + civilwar + polity + ln.GDP + avg.num.mem + borders +
                  ls.threatenv + total.ally.expend,
-               data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0))
+               data = state.char.full, subset = (majpower == 0))
 
 summary(m1r.reg)
 plot(m1r.reg$residuals, m1r.reg$w)
@@ -239,44 +219,55 @@ plot(m1r.reg$residuals, m1r.reg$w)
 plotreg(m1r.reg, omit.coef = "(Intercept)|(lag.ln.milex)")
 
 
-# Use shares instead
-m2r.reg <- rlm(ln.milex ~ prob.det.share + cond.det.share + uncond.det.share + comp.share + mixed.share  + avg.dem.prop + lag.ln.milex +
-                 atwar + civilwar + polity + ln.GDP + avg.num.mem +
-                 ls.threatenv + total.ally.expend, 
-               data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0))
-
-summary(m2r.reg)
-plot(m2r.reg$residuals, m2r.reg$w)
-
-plotreg(m2r.reg, omit.coef = "(Intercept)|(lag.ln.milex)")
-
-
-
-
 
 
 
 ### Test whether new alliances are what matters- this variable only encodes an alliance effect
 # during with the first 5 years of an alliance 
-m1.reg5 <- plm(ln.milex ~ new.prob.det5 + new.conditional5 + new.unconditional5 + new.compellent5  + avg.dem.prop + lag.ln.milex +
+m1.reg5 <- pggls(ln.milex ~  new.unconditional5 + new.compellent5 + avg.dem.prop + lag.ln.milex +
                 atwar + civilwar + polity + ln.GDP + avg.num.mem +
                 ls.threatenv + cold.war + total.ally.expend,
-              data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0),
-              effect = "twoways",  model = "within")
+              data = state.char.full, subset = (majpower == 0),
+              effect = "individual", # unrestricted error covariance
+              model = "pooling")
 
 summary(m1.reg5)
 plot(density(m1.reg5$residuals))
 
 
+# Robust regression
+m1r.reg5 <- rlm(ln.milex ~ new.unconditional5 + new.compellent5 + avg.dem.prop + lag.ln.milex +
+                 atwar + civilwar + polity + ln.GDP + avg.num.mem +
+                 ls.threatenv + total.ally.expend,
+               data = state.char.full, subset = (majpower == 0))
+
+summary(m1r.reg5)
+plot(m1r.reg5$residuals, m1r.reg5$w)
+
+plotreg(m1r.reg5, omit.coef = "(Intercept)|(lag.ln.milex)")
+
+
 # First 10 years 
-m1.reg10 <- plm(ln.milex ~ new.prob.det10 + new.conditional10 + new.unconditional10 + new.compellent10  + avg.dem.prop + lag.ln.milex +
+m1.reg10 <- pggls(ln.milex ~ new.unconditional10 + new.compellent10  + avg.dem.prop + lag.ln.milex +
                   atwar + civilwar + polity + ln.GDP + nato +
                   ls.threatenv + cold.war + total.ally.expend,
-                data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0),
-                effect = "twoways",  model = "within")
+                data = state.char.full, subset = (majpower == 0),
+                effect = "individual", # unrestricted error covariance
+                model = "pooling")
 
 summary(m1.reg10)
 plot(density(m1.reg10$residuals))
+
+# Robust regression
+m1r.reg10 <- rlm(ln.milex ~ new.unconditional10 + new.compellent10 + avg.dem.prop + lag.ln.milex +
+                  atwar + civilwar + polity + ln.GDP + avg.num.mem +
+                  ls.threatenv + total.ally.expend,
+                data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0))
+
+summary(m1r.reg10)
+plot(m1r.reg10$residuals, m1r.reg10$w)
+
+plotreg(m1r.reg10, omit.coef = "(Intercept)|(lag.ln.milex)")
 
 
 
@@ -290,32 +281,23 @@ reg.ex <- lm(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.exp
               data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0))
 summary(reg.ex)
 
-
-reg.ex.fe <- plm(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend + mixed.expend + avg.dem.prop + lag.ln.milex +
+# Use fgls to acocunt for autoregressive component of the errors
+reg.ex.re <- pggls(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend + mixed.expend + avg.dem.prop + lag.ln.milex +
                 atwar + civilwar + polity + ln.GDP + avg.num.mem +
                 ls.threatenv + cold.war,
               data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0),
-              effect = "twoways",  model = "within")
+              effect = "individual", # unrestricted error covariance
+              model = "pooling")
 
-summary(reg.ex.fe)
-plot(density(reg.ex.fe$residuals))
-
-# Hausman test
-reg.ex.re <- plm(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend + mixed.expend + avg.dem.prop + lag.ln.milex +
-                   atwar + civilwar + polity + ln.GDP + avg.num.mem +
-                   ls.threatenv + cold.war,
-                 data = state.char.full, subset = (majpower == 0),
-                 effect = "twoways",  model = "random")
 summary(reg.ex.re)
-
-phtest(reg.ex.fe, reg.ex.re, method = "aux")
+plot(density(reg.ex.re$residuals))
 
 
 # Robust regression
 rreg.ex <- rlm(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend + mixed.expend  + avg.dem.prop + lag.ln.milex +
                  atwar + civilwar + polity + ln.GDP + avg.num.mem +
                  ls.threatenv + cold.war,
-               data = state.char.full, subset = (majpower == 0  & avg.num.mem != 0))
+               data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0))
 
 summary(rreg.ex)
 plot(rreg.ex$residuals, rreg.ex$w)
@@ -328,12 +310,9 @@ plotreg(rreg.ex, omit.coef = "(Intercept)|(lag.ln.milex)")
 # Try to mix robust regression with country and year-specific intercept terms
 # Robustlmmm fits linear mixed effects models- could also say random effects
 
-# need to subset the data beforehand 
-state.char.nonmaj <- filter(state.char.full, majpower == 0)
-
 # Estimate model with binary indicators of presence as IVs
 system.time(
-rb.pres <- rlmer(ln.milex ~ prob.det.pres + cond.det.pres + uncond.det.pres + comp.pres + mixed.pres  + avg.dem.prop + lag.ln.milex +
+rb.pres <- rlmer(ln.milex ~ uncond.det.pres + comp.pres  + avg.dem.prop + lag.ln.milex +
                    atwar + civilwar + polity + ln.GDP + avg.num.mem +
                    ls.threatenv + cold.war + total.ally.expend + (1|ccode) + (1|year),
                   state.char.nonmaj, verbose = 2)
@@ -351,29 +330,6 @@ summary(rb.pres.update)
 
 # Compare initial and tuned presence fits
 compare(rb.pres, rb.pres.update, show.rho.functions = FALSE)
-
-
-
-# Estimate model with shares as the independent variables
-system.time(
-  rb.share <- rlmer(ln.milex ~ prob.det.share + cond.det.share + uncond.det.share + comp.share + mixed.share + avg.dem.prop + lag.ln.milex +
-                     atwar + civilwar + polity + ln.GDP + avg.num.mem +
-                     ls.threatenv + cold.war + total.ally.expend + (1|ccode) + (1|year),
-                   state.char.nonmaj, verbose = 2)
-)
-
-summary(rb.share)
-plot(rb.share)
-
-# re-tune the shares fit
-system.time(
-  rb.share.update <- update(rb.share, rho.sigma.e = psi2propII(smoothPsi, k = 2.28),
-                            rho.sigma.b = psi2propII(smoothPsi, k = 2.28))
-)
-summary(rb.share.update)
-
-# Compare the initial and tuned shares fits
-compare(rb.share, rb.share.update, show.rho.functions = FALSE)
 
 
 

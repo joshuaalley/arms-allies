@@ -220,6 +220,18 @@ state.char <- subset(state.char, state.char$year <= 2001)
 # Add a Cold War variable 
 state.char$cold.war <- ifelse(state.char$year >= 1949 & state.char$year <= 1990, 1, 0)
 
+# Add some proxies for entrapment risk
+entrapment.vars <- read.csv("data/conflict-risk-data.csv")
+# Turn leader-level data intro state-level data
+entrapment.vars <- group_by(entrapment.vars, ccode, year) %>%
+            summarize(
+              rebel = max(rebel, na.rm = FALSE),
+              borders = max(borders, na.rm = FALSE),
+              disputes = max(disputes, na.rm = FALSE)
+            )
+
+state.char <- left_join(state.char, entrapment.vars)
+
 # Create a differences in military expenditure variable
 # Start by taking the military expenditures data and reversing the log transformation
 state.char$milex <- exp(state.char$ln.milex)
@@ -361,6 +373,7 @@ state.mem.cap <- full.data.rnonagg %>%
 state.mem.cap <- state.mem.cap[complete.cases(state.mem.cap$ally.spend), ]
 
 # rescale the ally expenditures variable by two standard deviations
+library(arm)
 state.mem.cap$ally.spend <- rescale(state.mem.cap$ally.spend)
 
 
@@ -399,6 +412,23 @@ state.char %>%
 state.char %>% 
   filter(majpower == 0) %>%
   ggplot(mapping = aes(ln.milex)) + geom_density()
+
+
+# Split data and plot: probabilistic
+state.char.full %>% 
+  select(change.ln.milex, prob.det.pres) %>%
+  ggplot(mapping = aes(x = prob.det.pres, y = change.ln.milex)) +
+  geom_boxplot(mapping = aes(group = prob.det.pres))
+
+# Split data and plot: unconditional
+state.char.full %>% 
+  select(change.ln.milex, uncond.det.pres) %>%
+  ggplot(mapping = aes(x = uncond.det.pres, y = change.ln.milex)) +
+  geom_boxplot(mapping = aes(group = uncond.det.pres))
+
+
+
+
 
 # Which states have the smallest military expenditures? 
 # At least one has democratic alliances
