@@ -404,6 +404,12 @@ state.mem.cap <- spread(state.mem.cap, key = atopid, value = ally.spend, fill = 
 ggplot(state.char, aes(milex)) + geom_density()
 ggplot(state.char, aes(ln.milex)) + geom_density()
 
+# Fancy Plot
+ggplot(state.char, aes(ln.milex)) + geom_histogram(bins = 45) +
+  ggtitle("Histogram of Natural Log of Military Spending") +
+  labs(x = "Natural Log of Military Spending") +
+  theme_classic()
+
 # Minor powers only 
 state.char %>% 
   filter(majpower == 0) %>%
