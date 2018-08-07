@@ -262,7 +262,7 @@ plot(density(m1.reg10$residuals))
 m1r.reg10 <- rlm(ln.milex ~ new.unconditional10 + new.compellent10 + avg.dem.prop + lag.ln.milex +
                   atwar + civilwar + polity + ln.GDP + avg.num.mem +
                   ls.threatenv + total.ally.expend,
-                data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0))
+                data = state.char.full, subset = (majpower == 0))
 
 summary(m1r.reg10)
 plot(m1r.reg10$residuals, m1r.reg10$w)
@@ -275,17 +275,17 @@ plotreg(m1r.reg10, omit.coef = "(Intercept)|(lag.ln.milex)")
 
 ### Another option is to consider the role of the total capabilities aggregated by each alliance type
 # This is a crude approximation of the multilevel model with capability in the membership matrix
-reg.ex <- lm(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend + mixed.expend + avg.dem.prop + lag.ln.milex +
+reg.ex <- lm(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend + avg.dem.prop + lag.ln.milex +
                 atwar + civilwar + polity + ln.GDP + avg.num.mem +
                 ls.threatenv + cold.war,
-              data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0))
+              data = state.char.full, subset = (majpower == 0))
 summary(reg.ex)
 
 # Use fgls to acocunt for autoregressive component of the errors
-reg.ex.re <- pggls(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend + mixed.expend + avg.dem.prop + lag.ln.milex +
+reg.ex.re <- pggls(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend + avg.dem.prop + lag.ln.milex +
                 atwar + civilwar + polity + ln.GDP + avg.num.mem +
                 ls.threatenv + cold.war,
-              data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0),
+              data = state.char.full, subset = (majpower == 0),
               effect = "individual", # unrestricted error covariance
               model = "pooling")
 
@@ -294,10 +294,10 @@ plot(density(reg.ex.re$residuals))
 
 
 # Robust regression
-rreg.ex <- rlm(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend + mixed.expend  + avg.dem.prop + lag.ln.milex +
+rreg.ex <- rlm(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend + avg.dem.prop + lag.ln.milex +
                  atwar + civilwar + polity + ln.GDP + avg.num.mem +
                  ls.threatenv + cold.war,
-               data = state.char.full, subset = (majpower == 0 & avg.num.mem != 0))
+               data = state.char.full, subset = (majpower == 0))
 
 summary(rreg.ex)
 plot(rreg.ex$residuals, rreg.ex$w)
