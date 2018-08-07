@@ -193,7 +193,14 @@ alliance.comp.expand <- unique(alliance.comp.expand)
 
 
 
+#######
+### This section creates a state-year dataset from 1815 to 2003. 
+ 
 
-### This section creates a state-year dataset from 1816 to 2002. 
-####### 
+# Import correlates of war national capabilities data. 
+cinc.data <- read.csv("data/NMC_5_0.csv")
+head(cinc.data)
+cinc.data <- select(cinc.data, -c(version))
 
+
+# Merge in polity data
