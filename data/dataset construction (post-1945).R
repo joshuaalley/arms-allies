@@ -1,7 +1,7 @@
 # Joshua Alley
 # Texas A&M University
 # Constructing Dataset for Prelim Paper on arms-alliances tradeoff
-
+# Covers military spending from 1945 to 2001 
 
 # Load packages
 library(here)
