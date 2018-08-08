@@ -204,3 +204,17 @@ cinc.data <- select(cinc.data, -c(version))
 
 
 # Merge in polity data
+polity.data <- read.csv("data/polity4v2015.csv")
+head(polity.data)
+polity.data <- select(polity.data, ccode, year, democ, autoc, polity)
+sum(is.na(polity.data$polity))
+
+# Merge with a left join
+state.vars <- left_join(cinc.data, polity.data)
+head(state.vars)
+sum(is.na(state.vars$polity))
+
+# Generate a democracy variable if polity score > 5
+state.vars$democracy <- ifelse(state.vars$polity > 5, 1, 0)
+
+
