@@ -12,6 +12,7 @@ library(dplyr)
 library(zoo)
 library(ggplot2)
 library(tidyr)
+library(countrycode)
 
 
 
@@ -209,6 +210,7 @@ head(polity.data)
 polity.data <- select(polity.data, ccode, year, democ, autoc, polity)
 sum(is.na(polity.data$polity))
 
+
 # Merge with a left join
 state.vars <- left_join(cinc.data, polity.data)
 head(state.vars)
@@ -216,5 +218,33 @@ sum(is.na(state.vars$polity))
 
 # Generate a democracy variable if polity score > 5
 state.vars$democracy <- ifelse(state.vars$polity > 5, 1, 0)
+
+
+# Load Maddison Project GDP data
+maddison.gdp <- read.csv("data/maddison-data.csv")
+maddison.gdp <- select(maddison.gdp, country, countrycode, year, cgdppc, pop)
+
+# Population is in thousands- create an indicator of population to create 
+# a crude measure of GDP
+maddison.gdp$population <- maddison.gdp$pop*1000
+maddison.gdp$gdp <- maddison.gdp$population * maddison.gdp$cgdppc
+maddison.gdp$ln.gdp <- log(maddison.gdp$gdp)
+
+# Create cow codes from the ISO codes
+maddison.gdp$ccode <- countrycode(maddison.gdp$country, origin = "country.name",
+                                  destination = "cown")
+
+# Fix Serbia/Yugoslavia country code problem
+# First remove extrapolated Yugolav values
+maddison.gdp <- filter(maddison.gdp, !(countrycode == "YUG" & year >= 1992))
+# then remove serbia values prior to 1992
+maddison.gdp <- filter(maddison.gdp, !(countrycode == "SRB" & year <= 1992))
+# last, give serbia country code 345
+maddison.gdp$ccode[maddison.gdp$countrycode == "SRB"] <- 345
+  
+# Left join state characteristics and gdp data
+gdp.data <- select(maddison.gdp, ccode, year, cgdppc, ln.gdp)
+
+state.vars <- left_join(state.vars, gdp.data)
 
 
