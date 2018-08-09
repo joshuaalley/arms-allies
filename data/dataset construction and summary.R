@@ -278,3 +278,60 @@ summary(interstate.war$year)
 state.vars <- left_join(state.vars, interstate.war)
 # Replace missing var values with zero (only merged 1s)
 state.vars$atwar[is.na(state.vars$atwar)] <- 0
+
+
+
+
+# Add data on civil war: Using COW because UCDP only covers 1946-present
+# There is no succint way to capture the state facing a rebel group: COW includes external interveners 
+cow.civilwar <- read.csv("data/Intra-StateWarData_v4.1.csv")
+
+# Pull ccode for states on side B into a single vector that will become the ccode variable
+for(i in 1:nrow(cow.civilwar)){
+cow.civilwar$CcodeA[i][cow.civilwar$CcodeA[i] == -8 & cow.civilwar$CcodeB[i] != -8] <- cow.civilwar$CcodeB[i]  
+}
+# Remove observations with no states involved
+cow.civilwar <- filter(cow.civilwar, CcodeA != -8)
+
+# replace missing end years with last year of observed state data
+cow.civilwar$EndYear1[cow.civilwar$EndYear1 == -7] <- 2012
+# fix a small data issue
+cow.civilwar$EndYear1[cow.civilwar$WarName == "Yellow Cliff Revolt"] <- 1866
+
+# Similar process to constructing interstate war variable 
+# Create a war duration variable
+cow.civilwar$war.dur <- (cow.civilwar$EndYear1 - cow.civilwar$StartYear1) + 1
+summary(cow.civilwar$war.dur)
+
+# Expand the dataset, copying each observation by the number of years at war
+cow.civilwar <- untable(cow.civilwar, cow.civilwar$war.dur)
+
+
+# Create a year variable by using the number of exanded observations
+# group data by country and ATOP alliance and count rows 
+cow.civilwar <- cow.civilwar %>%
+  rename(ccode = CcodeA) %>%
+  group_by(WarNum, ccode, StartYear1, EndYear1) %>%
+  mutate(
+    count = row_number() - 1,
+    year = count + StartYear1,
+    civilwar.part = 1)
+
+# Select key vars, check years variables, and merge
+civil.war <- cow.civilwar %>%
+  group_by(ccode, year) %>% 
+  select(ccode, year, civilwar.part)
+
+summary(civil.war$year)
+civil.war <- unique(civil.war)
+
+# Merge conflict data with other state variables
+state.vars <- left_join(state.vars, civil.war)
+# Replace missing var values with zero (only merged 1s)
+state.vars$civilwar.part[is.na(state.vars$civilwar.part)] <- 0
+
+summary(state.vars$civilwar.part)
+
+
+
+
