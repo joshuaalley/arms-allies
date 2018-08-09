@@ -248,3 +248,33 @@ gdp.data <- select(maddison.gdp, ccode, year, cgdppc, ln.gdp)
 state.vars <- left_join(state.vars, gdp.data)
 
 
+
+# Add data on participation in inter-state war
+cow.interstate <- read.csv("data/Inter-StateWarData_v4.0.csv")
+
+# Duration using start and end years
+cow.interstate$war.dur <- (cow.interstate$EndYear1 - cow.interstate$StartYear1) + 1
+
+# Expand the dataset, copying each observation according to the frequency variable
+cow.interstate <- untable(cow.interstate, cow.interstate$war.dur)
+
+# Create a year variable by using the number of exanded observations
+# group data by country and ATOP alliance and count rows 
+cow.interstate <- cow.interstate %>%
+  group_by(WarNum, ccode, StartYear1, EndYear1) %>%
+  mutate(
+    count = row_number() - 1,
+    year = count + StartYear1,
+    atwar = 1)
+
+# Select key vars, check years variables, and merge
+interstate.war <- cow.interstate %>%
+      group_by(ccode, year) %>% 
+      select(ccode, year, atwar)
+
+summary(interstate.war$year)
+
+# Merge conflict data with other state variables
+state.vars <- left_join(state.vars, interstate.war)
+# Replace missing var values with zero (only merged 1s)
+state.vars$atwar[is.na(state.vars$atwar)] <- 0
