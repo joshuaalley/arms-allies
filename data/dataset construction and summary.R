@@ -181,6 +181,8 @@ alliance.comp.expand <- alliance.comp.expand[complete.cases(alliance.comp.expand
 # Make sure no duplicate observations from merging process
 alliance.comp.expand <- unique(alliance.comp.expand)
 
+# Filter data 
+alliance.comp.expand <- filter(alliance.comp.expand, year <= 2003)
 
 
 ### The alliance.comp.expand dataframe has alliance-year data for all ATOP alliances
@@ -321,7 +323,7 @@ cow.civilwar <- cow.civilwar %>%
 civil.war <- cow.civilwar %>%
   group_by(ccode, year) %>% 
   select(ccode, year, civilwar.part)
-
+civil.war <- data.frame(civil.war)
 summary(civil.war$year)
 civil.war <- unique(civil.war)
 
@@ -331,6 +333,14 @@ state.vars <- left_join(state.vars, civil.war)
 state.vars$civilwar.part[is.na(state.vars$civilwar.part)] <- 0
 
 summary(state.vars$civilwar.part)
+
+
+
+# Add data on external threat 
+# Leeds and Savun measure relies on S-score, so runs from 1816 to 2000
+ls.threat.data <- read.csv("data/leeds-savun-threat.csv")
+
+state.vars <- left_join(state.vars, ls.threat.data)
 
 
 
