@@ -200,23 +200,16 @@ alliance.comp.expand <- filter(alliance.comp.expand, year <= 2003)
 ### This section creates a state-year dataset from 1815 to 2003. 
  
 
-# Import correlates of war national capabilities data. 
-cinc.data <- read.csv("data/NMC_5_0.csv")
-head(cinc.data)
-cinc.data <- select(cinc.data, -c(version))
+# The base national capability data starts with Brenton Kenkel's merger of 
+# CINC and Polity https://github.com/brentonk/merge-cow-polity 
 
-
-# Merge in polity data
-polity.data <- read.csv("data/polity4v2015.csv")
-head(polity.data)
-polity.data <- select(polity.data, ccode, year, democ, autoc, polity)
-sum(is.na(polity.data$polity))
-
-
-# Merge with a left join
-state.vars <- left_join(cinc.data, polity.data)
+# Import that csv file: 
+state.vars <- read.csv("data/cinc-polity.csv")
 head(state.vars)
-sum(is.na(state.vars$polity))
+summary(state.vars$milex)
+
+# Filter out component polity indicators
+state.vars <- select(state.vars, -c(xrreg, xrcomp, xropen, xconst, parreg, parcomp, exrec, exconst, polcomp))
 
 # Generate a democracy variable if polity score > 5
 state.vars$democracy <- ifelse(state.vars$polity > 5, 1, 0)
@@ -354,3 +347,38 @@ state.vars <- state.vars %>%
           )
 
 
+
+
+# Code whether a state is a major power by Correlates of War criteria
+
+# relevant country codes and years
+# US- 2 from 1899
+# Germany- 255 | 260, 1816  to 1918, 1925 through 1945, and 1991 to present
+# UK- 200 
+# Russia- 365 1816 to 1917, 1922 to present
+# France- 220 1816 to 1940, and 1945 to present
+# China- 710 from 1950
+# Austria-Hungary- 300 1816 to 1918
+# Italy- 325 1860 to 1943
+# Japan- 740 1895 through 1945 and 1991 to 
+
+state.vars <- state.vars %>%
+              mutate(majpower = ifelse( 
+                        (ccode == 2 & year > 1898) | # US 
+                        (ccode == 255 & year <= 1918)  | # Germany: 1816 to 1918
+                        (ccode == 255 & year >= 1925 & year <= 1945) | # Germany 1925 to 1945
+                        (ccode == 255 & year >= 1991) | # Germany 1991 to present  
+                        (ccode == 200) | # UK
+                        (ccode == 365 & year <= 1917) | # Russia: 1816 to 1917
+                        (ccode == 365 & year >= 1922) | # Russia: 1992 to present
+                        (ccode == 220 & year <= 1940) | # France 1816 to 1940
+                        (ccode == 220 & year >= 1945) | # France 1945 to present 
+                        (ccode == 710 & year >= 1950) | # China
+                        (ccode == 300 & year <= 1918) | # Austria-Hungary
+                        (ccode == 325 & year >= 1860 & year <= 1943) | # Italy
+                        (ccode == 740 & year <= 1945 & year >= 1895) | # Japan 1895 to 1940
+                        (ccode == 740 & year >= 1991), # Japan 1991 to present
+                        1, 0) 
+                    )
+
+major.powers <- filter(state.vars, majpower == 1)
