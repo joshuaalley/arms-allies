@@ -311,7 +311,7 @@ cow.civilwar <- untable(cow.civilwar, cow.civilwar$war.dur)
 
 # Create a year variable by using the number of exanded observations
 # group data by country and ATOP alliance and count rows 
-cow.civilwar <- cow.civilwar %>%
+cow.civilwar.annual <- cow.civilwar %>%
   rename(ccode = CcodeA) %>%
   group_by(WarNum, ccode, StartYear1, EndYear1) %>%
   mutate(
@@ -320,7 +320,7 @@ cow.civilwar <- cow.civilwar %>%
     civilwar.part = 1)
 
 # Select key vars, check years variables, and merge
-civil.war <- cow.civilwar %>%
+civil.war <- cow.civilwar.annual %>%
   group_by(ccode, year) %>% 
   select(ccode, year, civilwar.part)
 civil.war <- data.frame(civil.war)
@@ -343,5 +343,14 @@ ls.threat.data <- read.csv("data/leeds-savun-threat.csv")
 state.vars <- left_join(state.vars, ls.threat.data)
 
 
+
+
+#  Code contextual variables
+state.vars <- state.vars %>%
+          mutate(
+            ww1 = ifelse((year >= 1914 & year <= 1918), 1, 0), # world war 1
+            ww2 = ifelse((year >= 1939 & year <= 1945), 1, 0), # world war 2
+            cold.war = ifelse((year >= 1947 & state.char$year <= 1990), 1, 0) # cold war
+          )
 
 
