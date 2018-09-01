@@ -477,6 +477,14 @@ state.mem.cap$ally.spend <- rescale(state.mem.cap$ally.spend)
 state.mem.cap <- filter(state.mem.cap, atopid %in% alliance.char$atopid)
 
 
+# Create a state-year dataset of alliance characteristics and military spending
+# This will go into paper on alliance spending and conflict risk
+state.ally.year <- left_join(state.mem.cap, alliance.char)
+# Export as CSV to another directory
+write.csv(state.ally.year, 
+file = "C:/Users/Josh/Dropbox/Research/alliances-conflict-dyads/Benson 2011/state-ally-year.csv",
+row.names = FALSE)
+
 # This dataframe  contains the spending for the alliances states are a member of in a given year
 state.mem.cap <- spread(state.mem.cap, key = atopid, value = ally.spend, fill = 0)
 
