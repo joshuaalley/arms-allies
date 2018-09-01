@@ -8,6 +8,7 @@
 # Load packages
 library(here)
 library(reshape)
+library(arm)
 library(dplyr)
 library(zoo)
 library(ggplot2)
@@ -343,9 +344,8 @@ state.vars <- state.vars %>%
           mutate(
             ww1 = ifelse((year >= 1914 & year <= 1918), 1, 0), # world war 1
             ww2 = ifelse((year >= 1939 & year <= 1945), 1, 0), # world war 2
-            cold.war = ifelse((year >= 1947 & state.char$year <= 1990), 1, 0) # cold war
+            cold.war = ifelse((year >= 1947 & year <= 1990), 1, 0) # cold war
           )
-
 
 
 
@@ -382,3 +382,104 @@ state.vars <- state.vars %>%
                     )
 
 major.powers <- filter(state.vars, majpower == 1)
+
+# Add log-transformed military expenditure variable
+summary(state.vars$milex)
+state.vars <- mutate(state.vars,
+                     ln.milex = log(milex + 1)
+                     )
+summary(state.vars$ln.milex)
+ggplot(state.vars, aes(x = ln.milex)) + geom_density()
+
+
+### This Section combines state characteristics and alliance data
+#####
+# Needed for a state-year measure of allied capability and to create the matrix of state membership in alliances
+
+# Merge the state characteristics and alliance data
+atop.cow.year <- right_join(alliance.comp.expand, state.vars)
+
+# Change order of variables for ease in viewing
+atop.cow.year <- atop.cow.year %>% 
+  select(atopid, ccode, year, everything())
+
+# Ensure no duplicate observations are present after merging- not an issue here
+atop.cow.year <- unique(atop.cow.year)
+
+# Sort data 
+atop.cow.year[order(atop.cow.year$ccode, atop.cow.year$year, atop.cow.year$atopid), ]
+
+
+# Some missing alliance characteristics data for states that are not members of an ATOP alliance
+# Replace ATOP indicator with zero if missing
+atop.cow.year$atopid[is.na(atop.cow.year$atopid)] <- 0
+
+# If no ATOP alliance, fill all other alliance characteristic variables with a zero.
+atop.cow.year[4:38][is.na(atop.cow.year[, 4:38] & atop.cow.year$atopid == 0)] <- 0
+
+
+# restrict sample to minor powers
+atop.cow.year <- filter(atop.cow.year, majpower == 0)
+
+
+# Create a dataset of state-year alliance membership:
+atop.cow.year <- group_by(atop.cow.year, atopid, ccode, year)
+state.mem <- atop.cow.year %>% select(atopid, ccode, year)
+state.mem <-  mutate(state.mem, member = 1)
+state.mem <- distinct(state.mem, atopid, ccode, year, .keep_all = TRUE)
+
+# This matrix has a binary indicator of which alliances states are a member of in a given year
+state.mem <- spread(state.mem, key = atopid, value = member, fill = 0)
+
+# Remove the zero or no alliance category
+state.mem <- subset(state.mem, select = -(3))
+
+
+
+# The full dataset can be used to create an alliance characteristics-year dataset
+alliance.year <- atop.cow.year %>%
+  filter(atopid > 0) %>%
+  group_by(atopid, year) %>%
+  summarize(
+    avg.democ = mean(polity, na.rm = TRUE),
+    total.cap = sum(cinc, na.rm = TRUE),
+    total.expend = sum(ln.milex, na.rm = TRUE),
+    num.mem = n()
+  )
+
+alliance.year[order(alliance.year$atopid, alliance.year$year), ]
+
+# With na.rm = TRUE, all missing values have a sum of zero.
+# I filter out all of these alliance-year observations
+alliance.year <- filter(alliance.year, total.expend != 0)
+
+ggplot(alliance.year, aes(x = total.expend)) + geom_density()
+
+
+# Create a membership matrix with the spending of all 
+# other alliance members in place of 1s 
+state.mem.cap <- atop.cow.year %>% 
+  select(atopid, ccode, year, ln.milex) %>% 
+  left_join(alliance.year) %>%
+  mutate(ally.spend = total.expend - ln.milex) %>%
+  distinct(state.mem.cap, atopid, ccode, year, .keep_all = TRUE) %>%
+  select(ccode, atopid, year, ally.spend)
+
+# Drop missing values of the expenditure variable
+# Necessary because spread will fill all missing values with zero,
+# not just absent combinations as in the above membership matrix
+state.mem.cap <- state.mem.cap[complete.cases(state.mem.cap$ally.spend), ]
+
+# rescale the ally expenditures variable by two standard deviations
+state.mem.cap$ally.spend <- rescale(state.mem.cap$ally.spend)
+
+# filter to ensure alliances match: 
+state.mem.cap <- filter(state.mem.cap, atopid %in% alliance.char$atopid)
+
+
+# This dataframe  contains the spending for the alliances states are a member of in a given year
+state.mem.cap <- spread(state.mem.cap, key = atopid, value = ally.spend, fill = 0)
+
+
+
+
