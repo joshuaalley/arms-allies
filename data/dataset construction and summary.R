@@ -230,6 +230,18 @@ maddison.gdp$ln.gdp <- log(maddison.gdp$gdp)
 maddison.gdp$ccode <- countrycode(maddison.gdp$country, origin = "country.name",
                                   destination = "cown")
 
+# Problems with Maddison Data
+# 1. Austria-Hungary is just Austria: Maddison code 305 for COW code 300 (AUH)
+maddison.gdp$ccode[maddison.gdp$country == "Austria" & maddison.gdp$year <= 1918] <- 300
+# 2. Has both Russia and Former USSR. Code (SUN): Drop Russian Fed before 1989 and former USSR afterwards
+maddison.gdp <- filter(maddison.gdp, !(countrycode == "SUN" & year > 1989)) # Remove USSR
+maddison.gdp <- filter(maddison.gdp, !(countrycode == "RUS" & year <= 1989)) # Remove RUS FED
+# 3. Doesn't split Germany into East and West
+# 4. No Somalia or Eritrea data
+# 5. Nothing on Yemen Arab republic or Yemen People's Republic. 
+# 6. Nothing for Bhutan
+
+
 # Fix Serbia/Yugoslavia country code problem
 # First remove extrapolated Yugolav values
 maddison.gdp <- filter(maddison.gdp, !(countrycode == "YUG" & year >= 1992))
@@ -243,6 +255,11 @@ gdp.data <- select(maddison.gdp, ccode, year, cgdppc, ln.gdp)
 
 state.vars <- left_join(state.vars, gdp.data)
 
+
+# To solve missing GDP data from state splits in post-45 era, get GDP data from DiGiuseppe and Poast. 
+state.vars <- left_join(state.vars, select(dg.poast, ccode, year, LNRGDP)) 
+state.vars$ln.gdp[is.na(state.vars$ln.gdp)] <- state.vars$LNRGDP[is.na(state.vars$ln.gdp)]
+state.vars <- select(state.vars, -c(LNRGDP))
 
 
 # Add data on participation in inter-state war
@@ -383,13 +400,30 @@ state.vars <- state.vars %>%
 
 major.powers <- filter(state.vars, majpower == 1)
 
-# Add log-transformed military expenditure variable
+# Add log-transformed military expenditure variable and its lag. 
 summary(state.vars$milex)
+ggplot(state.vars, aes(x = milex)) + geom_density()
 state.vars <- mutate(state.vars,
                      ln.milex = log(milex + 1)
                      )
 summary(state.vars$ln.milex)
 ggplot(state.vars, aes(x = ln.milex)) + geom_density()
+
+# Create a lagged expenditures variable within each panel 
+state.vars <- state.vars %>%
+              group_by(ccode) %>% 
+              mutate(lag.ln.milex = lag(ln.milex),
+                     lag.milex = lag(milex)
+              ) %>%
+              group_by()
+
+
+### TODO(JOSH)
+# Look at patterns in missing data and filter out Pacific Island states 
+# Lots of big blocks with no spending or GDP data for some countries, which seems dangerous. 
+
+
+
 
 
 ### This Section combines state characteristics and alliance data
@@ -470,9 +504,6 @@ state.mem.cap <- atop.cow.year %>%
 # not just absent combinations as in the above membership matrix
 state.mem.cap <- state.mem.cap[complete.cases(state.mem.cap$ally.spend), ]
 
-# rescale the ally expenditures variable by two standard deviations
-state.mem.cap$ally.spend <- rescale(state.mem.cap$ally.spend)
-
 # filter to ensure alliances match: 
 state.mem.cap <- filter(state.mem.cap, atopid %in% alliance.char$atopid)
 
@@ -482,8 +513,13 @@ state.mem.cap <- filter(state.mem.cap, atopid %in% alliance.char$atopid)
 state.ally.year <- left_join(state.mem.cap, alliance.char)
 # Export as CSV to another directory
 write.csv(state.ally.year, 
-file = "C:/Users/Josh/Dropbox/Research/alliances-conflict-dyads/Benson 2011/state-ally-year.csv",
-row.names = FALSE)
+          file = "C:/Users/Josh/Dropbox/Research/alliances-conflict-dyads/Benson 2011/state-ally-year.csv",
+          row.names = FALSE)
+
+
+# rescale the ally expenditures variable by two standard deviations
+state.mem.cap$ally.spend <- rescale(state.mem.cap$ally.spend)
+
 
 # This dataframe  contains the spending for the alliances states are a member of in a given year
 state.mem.cap <- spread(state.mem.cap, key = atopid, value = ally.spend, fill = 0)
