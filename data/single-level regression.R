@@ -24,17 +24,16 @@ getwd()
 # with some summary variables for the alliance portfolio
 # Can then merge this with the state characteristics dataset to create a dataset for 
 # single-level regressions
-state.ally.year <- full.data.rnonagg %>%
+state.ally.year <- state.ally.year %>%
   group_by(ccode, year) %>%
   summarize(
     treaty.count = n(),
-    total.ally.expend = sum(total.expend, na.rm = TRUE),
-    total.ally.cap = sum(total.cap, na.rm = TRUE),
-    cond.expend = sum(total.expend[conditional == 1], na.rm = TRUE),
-    uncond.expend = sum(total.expend[unconditional == 1], na.rm = TRUE),
-    prob.det.expend = sum(total.expend[prob_det == 1], na.rm = TRUE),
-    comp.expend = sum(total.expend[compellent == 1], na.rm = TRUE),
-    mixed.expend = sum(total.expend[mixed == 1], na.rm = TRUE),
+    total.ally.expend = sum(ally.spend, na.rm = TRUE),
+    cond.det.expend = sum(ally.spend[cond_det == 1], na.rm = TRUE),
+    uncond.det.expend = sum(ally.spend[uncond_det == 1], na.rm = TRUE),
+    prob.det.expend = sum(ally.spend[prob_det == 1], na.rm = TRUE),
+    uncond.comp.expend = sum(ally.spend[uncond_comp == 1], na.rm = TRUE),
+    cond.comp.expend = sum(ally.spend[cond_comp == 1], na.rm = TRUE),
     
     prob.det.pres = max(prob_det, na.rm = TRUE),
     prob.det.total = sum(prob_det, na.rm = TRUE),
@@ -59,53 +58,29 @@ state.ally.year <- full.data.rnonagg %>%
     discret.mils.pres = max(discret_milsupport, na.rm = TRUE),
     discret.mils.total = sum(discret_milsupport, na.rm = TRUE),
     
-    new.prob.det5 = max(new.prob.det5, na.rm = TRUE),
-    new.conditional5 = max(new.conditional5, na.rm = TRUE),
-    new.unconditional5 = max(new.unconditional5, na.rm = TRUE), 
-    new.compellent5 = max(new.compellent5, na.rm = TRUE),
-    
-    new.prob.det10 = max(new.prob.det10, na.rm = TRUE),
-    new.conditional10 = max(new.conditional10, na.rm = TRUE),
-    new.unconditional10 = max(new.unconditional10, na.rm = TRUE), 
-    new.compellent10 = max(new.compellent10, na.rm = TRUE),
-    
-    mixed.pres = max(mixed, na.rm = TRUE),
-    mixed.total = sum(mixed, na.rm = TRUE)
+    comp.pres = ifelse((cond.comp.pres == 1 | uncond.comp.pres == 1), 1, 0),
+    det.pres = ifelse((uncond.det.pres == 1 | cond.det.pres == 1 | prob.det.pres == 1), 1, 0),
+    treaty.pres = ifelse((comp.pres == 1 | det.pres == 1), 1, 0)
+
   )
 
 # State-year characteristics including alliance portfolio summaries
-state.char.full <- left_join(state.char, state.ally.year)
+state.char.full <- left_join(state.vars, state.ally.year)
+
+# Fill missing values of alliance variables with zero
+state.char.full[, 28: ncol(state.char.full)][is.na(state.char.full[,28: ncol(state.char.full)])] <- 0
+
 
 # Check sums of expenditure and capability
 summary(state.char.full$total.ally.expend)
-summary(state.char.full$total.ally.cap)
-
-# Compare new alliance variables with presence variables
-summary(state.char.full$prob.det.pres)
-summary(state.char.full$new.prob.det5)
-summary(state.char.full$new.prob.det10)
-
-# Create a couple new variables: shares of each treaty type
-state.char.full <- state.char.full %>%
-  mutate(
-    treaty.count = treaty.count - 1,
-    prob.det.share = prob.det.total / treaty.count,
-    cond.det.share = cond.det.total / treaty.count, 
-    comp.share = (uncond.comp.total + cond.comp.total) / treaty.count,
-    uncond.det.share = uncond.det.total / treaty.count, 
-    comp.pres = ifelse((uncond.comp.pres == 1 | cond.comp.pres == 1), 1 , 0),
-    ln.rival.mil = log(rival.mil),
-    consul.only.share = consul.only.total / treaty.count,
-    offense.pres = ifelse((offense.total >= 1), 1 , 0),
-    offense.share = offense.total / treaty.count, 
-    defense.pres = ifelse((defense.total >= 1), 1 , 0),
-    defense.share = defense.total / treaty.count,
-    discret.inter.share = discret.inter.total / treaty.count,
-    discret.mils.share = discret.mils.total / treaty.count,
-    mixed.share = mixed.total / treaty.count
-  )
 
 state.char.full <- state.char.full[complete.cases(state.char.full$ccode), ]
+state.char.full <- unique(state.char.full)
+# Check for duplicate ccode year pairs
+duplicates <- state.char.full %>% group_by(ccode, year) %>% filter(n() > 1)
+View(duplicates)
+rm(duplicates)
+
 
 # Subset data with nonmajor powers
 state.char.nonmaj <- filter(state.char.full, majpower == 0)
@@ -139,31 +114,57 @@ cond.det.members <- state.char.full %>%
   )
 View(cond.det.members)
 
-# IV1: Probabilistic Alliances
-summary(state.char.nonmaj$prob.det.pres)
-summary(state.char.nonmaj$prob.det.total)
-# Differences in expenditure
-t.test(ln.milex ~ prob.det.pres, alternative = "less", data = state.char.nonmaj)
-t.test(change.ln.milex ~ prob.det.pres, alternative = "less", data = state.char.nonmaj)
 
-
-# IV2: Unconditional alliances
+# IV: Unconditional alliances
 summary(state.char.nonmaj$uncond.det.pres)
-summary(state.char.nonamj$uncond.det.total)
+summary(state.char.nonmaj$uncond.det.total)
 # Differences in expenditure
 t.test(ln.milex ~ uncond.det.pres, alternative = "less", data = state.char.nonmaj)
 t.test(change.ln.milex ~ uncond.det.pres, alternative = "less", data = state.char.nonmaj)
 
-# Sample is non-major powers only, and those states that have at least one alliances
+# Sample is non-major powers only
 # otherwise, states with no alliances enter the base category, which may alter comparisons
 
 
+# Super blunt comparison: presence of alliance, and presence of deterrent and compellent alliances
+# Any alliance: dummy
+m1.all <- plm(ln.milex ~ treaty.pres + lag.ln.milex +
+            atwar + civilwar.part + polity + ln.gdp + 
+            lsthreat + cold.war,
+          data = state.char.nonmaj, 
+          index = c("ccode", "year"),
+          model = "pooling")
+summary(m1.all)
 
-# Start with a simple linear model 
+
+# Total allied spending
+m1.all.ex <- plm(ln.milex ~ total.ally.expend + lag.ln.milex +
+                atwar + civilwar.part + polity + ln.gdp + 
+                lsthreat + cold.war,
+              data = state.char.nonmaj, 
+              index = c("ccode", "year"),
+              model = "pooling")
+summary(m1.all.ex)
+
+
+
+# Deterrent and compellent treaty dummties
+m1.cd <- plm(ln.milex ~ det.pres + comp.pres + lag.ln.milex +
+            atwar + civilwar.part + polity + ln.gdp +  
+            lsthreat + cold.war,
+          data = state.char.full, subset = (majpower == 0),
+          index = c("ccode", "year"),
+          model = "pooling")
+summary(m1.cd)
+
+
+
+# simple linear model: focus on unconditional deterrent and compellent 
 m1 <- plm(ln.milex ~ uncond.det.pres + comp.pres + lag.ln.milex +
-           atwar + civilwar + polity + ln.GDP + avg.num.mem + disputes +
-           ls.threatenv + cold.war + total.ally.expend,
+           atwar + civilwar.part + polity + ln.gdp + avg.num.mem +
+           lsthreat + cold.war + total.ally.expend,
          data = state.char.full, subset = (majpower == 0),
+         index = c("ccode", "year"),
          model = "pooling")
 plmtest(m1, effect = "twoways", type = "ghm")
 summary(m1)
@@ -171,9 +172,10 @@ summary(m1)
 
 # FGLS: "random effects" robust to intragroup heteroskedasticity and serial correlation 
 m1.fgls <- pggls(ln.milex ~ uncond.det.pres + comp.pres + lag.ln.milex +
-           atwar + civilwar + polity + ln.GDP + avg.num.mem + disputes +
-           ls.threatenv + cold.war + total.ally.expend,
+           atwar + civilwar.part + polity + ln.gdp + avg.num.mem +
+           lsthreat + cold.war + total.ally.expend,
          data = state.char.full, subset = (majpower == 0),
+         index = c("ccode", "year"),
          effect = "individual", # unrestricted error covariance
          model = "pooling")
 summary(m1.fgls)
@@ -181,9 +183,9 @@ summary(m1.fgls)
 
 # Add state and year fixed effects and estimate in differences (otherwise Nickell bias applies)
 m1.reg.fe <- pggls(change.ln.milex ~ uncond.det.pres + comp.pres +
-                  atwar + civilwar + polity + ln.GDP + avg.num.mem + disputes +
-                  ls.threatenv + cold.war + total.ally.expend,
-                index = c("ccode"),
+                  atwar + civilwar.part + polity + ln.gdp + avg.num.mem + 
+                  lsthreat + cold.war + total.ally.expend,
+                index = c("ccode", "year"),
                 effect = "individual", # unrestricted error covariance
                 data = state.char.full, subset = (majpower == 0),
                 model = "within")
@@ -193,9 +195,10 @@ plot(density(m1.reg.fe$residuals))
 
 # FGLS with changes instead of levels
 m1.fgls.change <- pggls(change.ln.milex ~ uncond.det.pres + comp.pres +
-                   atwar + civilwar + polity + ln.GDP + avg.num.mem + disputes +
-                   ls.threatenv + cold.war + total.ally.expend,
+                   atwar + civilwar.part + polity + ln.gdp + avg.num.mem +
+                   lsthreat + cold.war + total.ally.expend,
                  data = state.char.full, subset = (majpower == 0),
+                 index = c("ccode", "year"),
                  effect = "individual", # unrestricted error covariance
                  model = "pooling")
 summary(m1.fgls.change)
@@ -209,8 +212,8 @@ summary(m1.fgls.change)
 
 # Start with binary indicators
 m1r.reg <- rlm(ln.milex ~ uncond.det.pres + comp.pres  + avg.dem.prop + lag.ln.milex +
-                 atwar + civilwar + polity + ln.GDP + avg.num.mem + borders +
-                 ls.threatenv + total.ally.expend,
+                 atwar + civilwar.part + polity + ln.gdp + avg.num.mem +
+                 lsthreat + total.ally.expend,
                data = state.char.full, subset = (majpower == 0))
 
 summary(m1r.reg)
@@ -222,70 +225,17 @@ plotreg(m1r.reg, omit.coef = "(Intercept)|(lag.ln.milex)")
 
 
 
-### Test whether new alliances are what matters- this variable only encodes an alliance effect
-# during with the first 5 years of an alliance 
-m1.reg5 <- pggls(ln.milex ~  new.unconditional5 + new.compellent5 + avg.dem.prop + lag.ln.milex +
-                atwar + civilwar + polity + ln.GDP + avg.num.mem +
-                ls.threatenv + cold.war + total.ally.expend,
-              data = state.char.full, subset = (majpower == 0),
-              effect = "individual", # unrestricted error covariance
-              model = "pooling")
-
-summary(m1.reg5)
-plot(density(m1.reg5$residuals))
-
-
-# Robust regression
-m1r.reg5 <- rlm(ln.milex ~ new.unconditional5 + new.compellent5 + avg.dem.prop + lag.ln.milex +
-                 atwar + civilwar + polity + ln.GDP + avg.num.mem +
-                 ls.threatenv + total.ally.expend,
-               data = state.char.full, subset = (majpower == 0))
-
-summary(m1r.reg5)
-plot(m1r.reg5$residuals, m1r.reg5$w)
-
-plotreg(m1r.reg5, omit.coef = "(Intercept)|(lag.ln.milex)")
-
-
-# First 10 years 
-m1.reg10 <- pggls(ln.milex ~ new.unconditional10 + new.compellent10  + avg.dem.prop + lag.ln.milex +
-                  atwar + civilwar + polity + ln.GDP + nato +
-                  ls.threatenv + cold.war + total.ally.expend,
-                data = state.char.full, subset = (majpower == 0),
-                effect = "individual", # unrestricted error covariance
-                model = "pooling")
-
-summary(m1.reg10)
-plot(density(m1.reg10$residuals))
-
-# Robust regression
-m1r.reg10 <- rlm(ln.milex ~ new.unconditional10 + new.compellent10 + avg.dem.prop + lag.ln.milex +
-                  atwar + civilwar + polity + ln.GDP + avg.num.mem +
-                  ls.threatenv + total.ally.expend,
-                data = state.char.full, subset = (majpower == 0))
-
-summary(m1r.reg10)
-plot(m1r.reg10$residuals, m1r.reg10$w)
-
-plotreg(m1r.reg10, omit.coef = "(Intercept)|(lag.ln.milex)")
-
-
-
-
 
 ### Another option is to consider the role of the total capabilities aggregated by each alliance type
 # This is a crude approximation of the multilevel model with capability in the membership matrix
-reg.ex <- lm(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend + avg.dem.prop + lag.ln.milex +
-                atwar + civilwar + polity + ln.GDP + avg.num.mem +
-                ls.threatenv + cold.war,
-              data = state.char.full, subset = (majpower == 0))
-summary(reg.ex)
-
 # Use fgls to acocunt for autoregressive component of the errors
-reg.ex.re <- pggls(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend + avg.dem.prop + lag.ln.milex +
-                atwar + civilwar + polity + ln.GDP + avg.num.mem +
-                ls.threatenv + cold.war,
+reg.ex.re <- pggls(ln.milex ~ prob.det.expend + cond.det.expend + uncond.det.expend +
+                  uncond.comp.expend + cond.comp.expend +
+                  avg.dem.prop + lag.ln.milex +
+                atwar + civilwar.part + polity + ln.gdp + avg.num.mem +
+                lsthreat + cold.war,
               data = state.char.full, subset = (majpower == 0),
+              index = c("ccode", "year"),
               effect = "individual", # unrestricted error covariance
               model = "pooling")
 
@@ -294,9 +244,11 @@ plot(density(reg.ex.re$residuals))
 
 
 # Robust regression
-rreg.ex <- rlm(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend + avg.dem.prop + lag.ln.milex +
-                 atwar + civilwar + polity + ln.GDP + avg.num.mem +
-                 ls.threatenv + cold.war,
+rreg.ex <- rlm(ln.milex ~ prob.det.expend + cond.det.expend + uncond.det.expend +
+                 uncond.comp.expend + cond.comp.expend +
+                 avg.dem.prop + lag.ln.milex +
+                 atwar + civilwar.part + polity + ln.gdp + avg.num.mem +
+                 lsthreat + cold.war,
                data = state.char.full, subset = (majpower == 0))
 
 summary(rreg.ex)
@@ -313,8 +265,8 @@ plotreg(rreg.ex, omit.coef = "(Intercept)|(lag.ln.milex)")
 # Estimate model with binary indicators of presence as IVs
 system.time(
 rb.pres <- rlmer(ln.milex ~ uncond.det.pres + comp.pres  + avg.dem.prop + lag.ln.milex +
-                   atwar + civilwar + polity + ln.GDP + avg.num.mem +
-                   ls.threatenv + cold.war + total.ally.expend + (1|ccode) + (1|year),
+                   atwar + civilwar.part + polity + ln.gdp + avg.num.mem +
+                   lsthreatenv + cold.war + total.ally.expend + (1|ccode) + (1|year),
                   state.char.nonmaj, verbose = 2)
 )
 
@@ -335,8 +287,10 @@ compare(rb.pres, rb.pres.update, show.rho.functions = FALSE)
 
 # estimate model with total expenditure of allies from each pact
 system.time(
-  rb.expend <- rlmer(ln.milex ~ prob.det.expend + cond.expend + uncond.expend + comp.expend + mixed.expend + avg.dem.prop + lag.ln.milex +
-                      atwar + civilwar + polity + ln.GDP + avg.num.mem +
+  rb.expend <- rlmer(ln.milex ~ prob.det.expend + cond.det.expend + uncond.det.expend +
+                       uncond.comp.expend + cond.comp.expend +
+                      avg.dem.prop + lag.ln.milex +
+                      atwar + civilwar.part + polity + ln.gdp + avg.num.mem +
                       ls.threatenv + cold.war + (1|ccode) + (1|year),
                     state.char.nonmaj, verbose = 2)
 )
