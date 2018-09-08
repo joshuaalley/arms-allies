@@ -409,6 +409,12 @@ state.vars <- mutate(state.vars,
 summary(state.vars$ln.milex)
 ggplot(state.vars, aes(x = ln.milex)) + geom_density()
 
+# check for duplicate group indicators 
+state.vars <- unique(state.vars)
+duplicates <- state.vars[which(duplicated(state.vars[,c('ccode', 'year')])==T),] # this should be empty
+rm(duplicates)
+
+
 # Create a lagged expenditures variable within each panel 
 state.vars <- state.vars %>%
               group_by(ccode) %>% 
@@ -416,6 +422,12 @@ state.vars <- state.vars %>%
                      lag.milex = lag(milex)
               ) %>%
               group_by()
+
+# create a differenced expenditure variable 
+state.vars$change.milex <- state.vars$milex - state.vars$lag.milex
+state.vars$change.ln.milex <- state.vars$ln.milex - state.vars$lag.ln.milex
+
+
 
 
 ### TODO(JOSH)
