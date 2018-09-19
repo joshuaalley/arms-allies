@@ -37,7 +37,6 @@ d.benson <- d.benson %>%
   group_by(atopid) %>% 
   summarize(
     phases = n(),
-    startyear = min(startyear, na.rm = TRUE),
     uncond_comp = max(uncond_comp, na.rm = TRUE), 
     cond_comp = max(cond_comp, na.rm = TRUE), 
     uncond_det = max(uncond_det, na.rm = TRUE),
@@ -463,6 +462,10 @@ atop.cow.year$atopid[is.na(atop.cow.year$atopid)] <- 0
 # If no ATOP alliance, fill all other alliance characteristic variables with a zero.
 atop.cow.year[4:38][is.na(atop.cow.year[, 4:38] & atop.cow.year$atopid == 0)] <- 0
 
+# Export to another folder for alliances, capability and conflict paper
+write.csv(atop.cow.year, 
+          "C:/Users/Josh/Dropbox/Research/alliances-conflict-dyads/Benson 2011/atop-cow-year.csv", 
+          row.names = F)
 
 # restrict sample to minor powers
 atop.cow.year <- filter(atop.cow.year, majpower == 0)
@@ -504,6 +507,12 @@ ggplot(alliance.year, aes(x = total.expend)) + geom_density()
 
 # Create a membership matrix with the spending of all 
 # other alliance members in place of 1s 
+
+# Replace missing NA values with 0 in atop.cow.year data
+# This means mutate below won't produce missing values when state military spending is missing. 
+atop.cow.year$ln.milex[is.na(atop.cow.year$ln.milex)] <- 0
+
+# Create the dataset
 state.mem.cap <- atop.cow.year %>% 
   select(atopid, ccode, year, ln.milex) %>% 
   left_join(alliance.year) %>%
@@ -511,22 +520,19 @@ state.mem.cap <- atop.cow.year %>%
   distinct(state.mem.cap, atopid, ccode, year, .keep_all = TRUE) %>%
   select(ccode, atopid, year, ally.spend)
 
+# Replace missing values with zero if atopid = 0 (no alliance)
+state.mem.cap$ally.spend[is.na(state.mem.cap$ally.spend) & state.mem.cap$atopid == 0] <- 0
+
 # Drop missing values of the expenditure variable
 # Necessary because spread will fill all missing values with zero,
 # not just absent combinations as in the above membership matrix
+summary(state.mem.cap$ally.spend)
 state.mem.cap <- state.mem.cap[complete.cases(state.mem.cap$ally.spend), ]
 
 # filter to ensure alliances match: 
 state.mem.cap <- filter(state.mem.cap, atopid %in% alliance.char$atopid)
 
 
-# Create a state-year dataset of alliance characteristics and military spending
-# This will go into paper on alliance spending and conflict risk
-state.ally.year <- left_join(state.mem.cap, alliance.char)
-# Export as CSV to another directory
-write.csv(state.ally.year, 
-          file = "C:/Users/Josh/Dropbox/Research/alliances-conflict-dyads/Benson 2011/state-ally-year.csv",
-          row.names = FALSE)
 
 
 # rescale the ally expenditures variable by two standard deviations
