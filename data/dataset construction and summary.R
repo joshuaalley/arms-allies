@@ -262,34 +262,21 @@ state.vars <- select(state.vars, -c(LNRGDP))
 
 
 # Add data on participation in inter-state war
-cow.interstate <- read.csv("data/Inter-StateWarData_v4.0.csv")
+interstate.war <- read.csv("data/interstate-war-rev.csv")
 
-# Duration using start and end years
-cow.interstate$war.dur <- (cow.interstate$EndYear1 - cow.interstate$StartYear1) + 1
 
-# Expand the dataset, copying each observation according to the frequency variable
-cow.interstate <- untable(cow.interstate, cow.interstate$war.dur)
+# Select key vars
+interstate.war <- interstate.war %>%
+      mutate(atwar = 1) %>%
+      select(init_ccode, target_ccode, year, init_war_id, atwar) %>%
+      gather(initiator, ccode, c(init_ccode, target_ccode)) %>%
+      mutate(initiator = ifelse(initiator == "init_ccode", 1, 0))
 
-# Create a year variable by using the number of exanded observations
-# group data by country and ATOP alliance and count rows 
-cow.interstate <- cow.interstate %>%
-  group_by(WarNum, ccode, StartYear1, EndYear1) %>%
-  mutate(
-    count = row_number() - 1,
-    year = count + StartYear1,
-    atwar = 1)
-
-# Select key vars, check years variables, and merge
-interstate.war <- cow.interstate %>%
-      group_by(ccode, year) %>% 
-      select(ccode, year, atwar)
-
-summary(interstate.war$year)
 
 # Merge conflict data with other state variables
 state.vars <- left_join(state.vars, interstate.war)
 # Replace missing var values with zero (only merged 1s)
-state.vars$atwar[is.na(state.vars$atwar)] <- 0
+state.vars[, 18:20][is.na(state.vars[, 18:20])] <- 0
 
 
 
@@ -427,11 +414,6 @@ state.vars$change.milex <- state.vars$milex - state.vars$lag.milex
 state.vars$change.ln.milex <- state.vars$ln.milex - state.vars$lag.ln.milex
 
 
-
-
-### TODO(JOSH)
-# Look at patterns in missing data and filter out Pacific Island states 
-# Lots of big blocks with no spending or GDP data for some countries, which seems dangerous. 
 
 
 
