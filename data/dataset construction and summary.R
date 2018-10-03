@@ -25,28 +25,19 @@ getwd()
 ### This First section creates data on state-membership in alliances,
 #   and incorporates both ATOP and the Benson's alliance classifications. 
 ########
-# Load Benson's 2011 Data
-d.benson <- read.csv("data/alliance-types-benson.csv")
-# clean: turn phases into regular ATOPids- necessary to match with member matrix
-d.benson$atopid <- trunc(d.benson$atopidphase)
-d.benson <- select(d.benson, -atopidphase)
-d.benson <- d.benson[!duplicated(d.benson[7:15]), ]
+# Load my combination of Benson's 2012 data and ATOP v4
+alliance.char.full <- read.csv("data/alliance-types-benson.csv")
 
-# Can merge on ATOPid and beginning year
-
-
-# Load the ATOP data on alliance-level characteristics
-atop <- read.csv("data/atop-alliancephase-level.csv")
 
 # Create variables for US and USSR membership
-russ.mem <- apply(atop[, 74:130], 1, function(x) ifelse(x == 365, 1, 0))
+russ.mem <- apply(alliance.char.full[, 73:129], 1, function(x) ifelse(x == 365, 1, 0))
 russ.mem <- t(russ.mem)
-atop$russ.mem <- rowSums(russ.mem, na.rm = TRUE)
+alliance.char.full$russ.mem <- rowSums(russ.mem, na.rm = TRUE)
 
 # US
-us.mem <- apply(atop[, 74:130], 1, function(x) ifelse(x == 2, 1, 0))
+us.mem <- apply(alliance.char.full[, 73:129], 1, function(x) ifelse(x == 2, 1, 0))
 us.mem <- t(us.mem)
-atop$us.mem <- rowSums(us.mem, na.rm = TRUE)
+alliance.char.full$us.mem <- rowSums(us.mem, na.rm = TRUE)
 
 # Remove the US and Russian membership matrices from the environment
 rm(russ.mem)
@@ -54,22 +45,10 @@ rm(us.mem)
 
 
 # count number of members: non-missing membership variables
-atop$num.mem <-  apply(atop[, 74:130], 1, function(x) sum(!is.na(x)))
+alliance.char.full$num.mem <-  apply(alliance.char.full[, 73:129], 1, function(x) sum(!is.na(x)))
 
 
-# Create a datasets with essential ATOP variables
-atop.key <- select(atop, atopid, 
-                   bilat, wartime, conditio,
-                   armred, organ1, milaid, us.mem, russ.mem,
-                   num.mem, begyr, endyr)
-
-
-
-# merge with Benson data
-alliance.char.full <- left_join(atop.key, d.benson, by = c("atopid", "begyr", "endyr"))
-alliance.char.full <- unique(alliance.char.full)
-
-# remove non-aggression only pacts
+# identify non-aggression only pacts
 alliance.char.full <- mutate(alliance.char.full, nonagg.only = ifelse((nonagg == 1 & 
                                                 offense != 1 & defense != 1 & 
                                                 consul != 1 & neutral != 1), 1 , 0))
@@ -99,25 +78,97 @@ table(alliance.char.full$none, alliance.char.full$neutral)
 sum(alliance.char.full$compellent)
 table(alliance.char.full$uncond_comp, alliance.char.full$uncond_det)
 
+# truncate atopidphase to get regular atopid
+alliance.char.full$atopid <- trunc(alliance.char.full$atopidphase)
+
+# select key variables
+alliance.char <- select(alliance.char.full, atopid, atopidphase,
+                    begyr, endyr,
+                    uncond_comp, cond_comp, 
+                    uncond_det, cond_det, 
+                    prob_det, pure_cond_det,
+                    discret_intervene, discret_milsupport,
+                    bilat, wartime, conditio,
+                    armred.rc, organ1, milaid.rc, us.mem, russ.mem,
+                    num.mem)
+# Recode ATOP phaseid: take away the decimal point. 
+alliance.char$atopidphase.rc <- alliance.char$atopidphase*10
+
+
+# Expand alliance characteristics data to make it alliance characteristic-year data
+# Don't care about truncation here, just need to know if alliance is operational
+alliance.char$endyr[alliance.char$endyr == 0] <- 2016
+
+
+alliance.char$freq <- alliance.char$endyr - alliance.char$begyr
+# Alliances that end in the same year have a value of 0, given those a value of 1
+# and add one year to the other alliance years
+alliance.char$freq <- alliance.char$freq +  1
+
+
+
+# Expand the dataset, copying each observation according to the frequency variable
+alliance.char.expand <- untable(alliance.char, alliance.char$freq)
+
+# Create a year variable by using the number of exanded observations
+# group data by country and ATOP alliance and count rows 
+alliance.char.expand <- alliance.char.expand %>%
+  group_by(atopidphase) %>%
+  mutate(count = row_number() - 1)
+
+
+alliance.char.expand$year = alliance.char.expand$begyr + alliance.char.expand$count
+
 
 
 
 ####
 # load the ATOP alliance-member data (This provides the basis for the alliance member matrix)
 atop.mem <- read.csv("data/atop-member-level.csv")
-
+atop.mem$atopidphase.rc <- (atop.mem$atopid*10) + atop.mem$phase 
 
 # Create a datasets with observation identifiers
-atop.mem <- cbind.data.frame(atop.mem$atopid, atop.mem$member, atop.mem$yrent, atop.mem$yrexit)
+atop.mem <- select(atop.mem, atopid, atopidphase.rc, member, yrent, yrexit)
 
-colnames(atop.mem) <- c("atopid", "ccode", "begyr", "endyr")
+colnames(atop.mem) <- c("atopid", "atopidphase.rc", "ccode", "yrent", "yrexit")
 
-summary(atop.mem$atopid)
+# Expand atop-member-level data to make it alliance member -year data
+# Don't care about truncation here, just need to know if alliance is operational
+atop.mem$yrexit[atop.mem$yrexit == 0] <- 2016
 
 
-# Merge the two alliance data types using ATOP ID and starting year
-alliance.comp <- left_join(atop.mem, alliance.char.full, by = c("atopid", "begyr", "endyr"))
+atop.mem$freq <- atop.mem$yrexit - atop.mem$yrent
+# Alliances that end in the same year have a value of 0, given those a value of 1
+# and add one year to the other alliance years
+atop.mem$freq <- atop.mem$freq +  1
+
+
+
+# Expand the dataset, copying each observation according to the frequency variable
+atop.mem.expand <- untable(atop.mem, atop.mem$freq)
+
+# Create a year variable by using the number of exanded observations
+# group data by country, ATOP alliance and year of entry and count rows 
+# Year of entry addresses cases like when Egypt is let back into the Arab League in 
+atop.mem.expand <- atop.mem.expand %>%
+  group_by(atopidphase.rc, ccode, yrent) %>%
+  mutate(count = row_number() - 1)
+
+
+atop.mem.expand$year = atop.mem.expand$yrent + atop.mem.expand$count
+
+
+
+
+
+
+# Merge the two alliance data types using ATOP ID and year
+alliance.comp <- left_join(atop.mem.expand, alliance.char.expand, by = c("atopid", "year"))
 alliance.comp <- unique(alliance.comp)
+ 
+
+
+# Remove non-aggression pacts only
 alliance.comp <- filter(alliance.comp, nonagg.only != 1)
 alliance.comp <- select(alliance.comp, -nonagg.only)
 
