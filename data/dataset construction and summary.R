@@ -90,7 +90,7 @@ alliance.char <- select(alliance.char.full, atopid, atopidphase,
                     discret_intervene, discret_milsupport,
                     bilat, wartime, conditio,
                     armred.rc, organ1, milaid.rc, us.mem, russ.mem,
-                    num.mem)
+                    num.mem, none, nonagg.only, number.types)
 # Recode ATOP phaseid: take away the decimal point. 
 alliance.char$atopidphase.rc <- alliance.char$atopidphase*10
 
@@ -161,7 +161,6 @@ atop.mem.expand$year = atop.mem.expand$yrent + atop.mem.expand$count
 
 
 
-
 # Merge the two alliance data types using ATOP ID and year
 alliance.comp <- left_join(atop.mem.expand, alliance.char.expand, by = c("atopid", "year"))
 alliance.comp <- unique(alliance.comp)
@@ -169,52 +168,18 @@ alliance.comp <- unique(alliance.comp)
 
 
 # Remove non-aggression pacts only
+summary(alliance.comp$nonagg.only)
 alliance.comp <- filter(alliance.comp, nonagg.only != 1)
 alliance.comp <- select(alliance.comp, -nonagg.only)
 
 
-# Create a frequency variable to expand data to country-alliance-year data form
-# Alliances that are still operational have 0 for an end year- replace that with 2003
-# Don't care about truncation here, just need to know if alliance is operational
-alliance.comp$endyr[alliance.comp$endyr == 0] <- 2016
 
-
-alliance.comp$freq <- alliance.comp$endyr - alliance.comp$begyr
-# Alliances that end in the same year have a value of 0, given those a value of 1
-# and add one year to the other alliance years
-alliance.comp$freq <- alliance.comp$freq +  1
+# Fill in missing alliance information (ATOP characteristics) with zeros
+alliance.comp[is.na(alliance.comp)] <- 0
 
 
 
-# Expand the dataset, copying each observation according to the frequency variable
-alliance.comp.expand <- untable(alliance.comp, alliance.comp$freq)
-
-# Create a year variable by using the number of exanded observations
-# group data by country and ATOP alliance and count rows 
-alliance.comp.expand <- alliance.comp.expand %>%
-  group_by(atopid, ccode, begyr) %>%
-  mutate(count = row_number() - 1)
-
-
-alliance.comp.expand$year = alliance.comp.expand$begyr + alliance.comp.expand$count
-
-
-# Sort by country code to fill in missing data from these alliances
-# Missing data is the result of a start-date merger issue
-alliance.comp.expand <- alliance.comp.expand[
-  order(alliance.comp.expand$ccode, alliance.comp.expand$atopid, 
-        alliance.comp.expand$year), ]
-
-
-# Fill in missing alliance information with zeros
-alliance.comp.expand[is.na(alliance.comp.expand)] <- 0
-
-# Make sure no duplicate observations from merging process
-alliance.comp.expand <- unique(alliance.comp.expand)
-
-
-
-### The alliance.comp.expand dataframe has alliance-year data for all ATOP alliances
+### The alliance.comp dataframe has alliance-year data for all ATOP alliances
 # Countries appear in multiple years, so states are multiple members within alliances
 # This next section of code brings in country-level data
 
@@ -226,7 +191,7 @@ alliance.comp.expand <- unique(alliance.comp.expand)
 
 
 #######
-### This section creates a state-year dataset from 1815 to 2003. 
+### This section creates a state-year dataset from 1815 to 2012. 
  
 
 # The base national capability data starts with Brenton Kenkel's merger of 
@@ -453,7 +418,7 @@ state.vars$change.ln.milex <- state.vars$ln.milex - state.vars$lag.ln.milex
 # Needed for a state-year measure of allied capability and to create the matrix of state membership in alliances
 
 # Merge the state characteristics and alliance data
-atop.cow.year <- right_join(alliance.comp.expand, state.vars)
+atop.cow.year <- right_join(alliance.comp, state.vars)
 
 # Change order of variables for ease in viewing
 atop.cow.year <- atop.cow.year %>% 
