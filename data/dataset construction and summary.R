@@ -380,6 +380,35 @@ state.vars <- state.vars %>%
 
 major.powers <- filter(state.vars, majpower == 1)
 
+
+
+# Add data on annual MIDs participation
+# Load Gibler, Miller and Little's recoding of the MID data: directed-dyad data
+gml.mid.part <- read.csv("data/gml-ddy-disputes-2.03.csv")
+
+# Group data, collapse and get total disputes by year
+gml.mid.part <- gml.mid.part %>%
+                mutate(mid = 1) %>%
+                select(ccode1, ccode2, year, dispnum, mid) %>% 
+                gather(side, ccode, c(ccode1, ccode2)) %>%
+                select(-side)
+
+gml.mid.part <- unique(gml.mid.part) 
+gml.mid.part <- gml.mid.part %>%
+                group_by(ccode, year) %>%
+                summarize(
+                  mid.pres = 1,
+                  disputes = n()
+                )
+
+# merge with state variables 
+state.vars <- left_join(state.vars, gml.mid.part)
+# Replace missing with zeros
+state.vars[, 27:28][is.na(state.vars[, 27:28])] <- 0
+
+
+
+
 # Add log-transformed military expenditure variable and its lag. 
 summary(state.vars$milex)
 ggplot(state.vars, aes(x = milex)) + geom_density()
