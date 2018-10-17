@@ -10,6 +10,7 @@
 # Load packages if using as stand-alone file
 library(dplyr)
 library(ggplot2)
+library(ggcarly)
 
 # Set working directory to current folder 
 setwd(here::here())
@@ -26,7 +27,8 @@ lambda.probs %>%
   ggplot(aes(x = lambda.mean, fill = alliance.type)) + 
   scale_fill_brewer(palette = "Dark2") +
   geom_col() +
-  labs(x = "Alliance", y = "Posterior Mean of Lambda Parameter")
+  labs(x = "Alliance", y = "Posterior Mean of Lambda Parameter")  + 
+  theme_carly_presents()
 
 # compare unconditional and nones
 lambda.probs %>% 
@@ -34,8 +36,10 @@ lambda.probs %>%
   ggplot(aes(x = lambda.mean, fill = alliance.type)) + 
   scale_fill_brewer(palette = "Dark2") +
   geom_density() +
-  labs(x = "Posterior Mean of Lambda Parameter") 
-ggsave("presentation/lambdac none-uncond.png", height = 6, width = 8)
+  labs(x = "Posterior Mean of Lambda Parameter")  + 
+  theme_carly_presents()
+ggsave("presentation/lambdac none-uncond.png", height = 6, width = 8)  + 
+  theme_carly_presents()
 
 
 ### Violin plots
@@ -44,16 +48,18 @@ lambda_df %>%
 ggplot(aes(x = alliance.type, y = lambda, fill = alliance.type)) +
   geom_violin() +  # add violin
   scale_fill_brewer(palette = "Dark2") +
-  labs(x = "Posterior Mean of Lambda Parameter") 
-ggsave("presentation/lambda-box-presentation.png", height = 6, width = 8)
+  labs(x = "Posterior Mean of Lambda Parameter")  + 
+  theme_carly_presents()
+ggsave("presentation/lambda-box-presentation.png", height = 6, width = 8) 
 
 # Include all alliance types for an appendix slide
 lambda_df %>%
   ggplot(aes(x = alliance.type, y = lambda, fill = alliance.type)) +
   geom_violin() +  # add violin
   scale_fill_brewer(palette = "Dark2") +
-  labs(x = "Posterior Mean of Lambda Parameter") 
-ggsave("presentation/lambda-box-presentation-full.png", height = 6, width = 8)
+  labs(x = "Posterior Mean of Lambda Parameter") + 
+  theme_carly_presents()
+ggsave("presentation/lambda-box-presentation-full.png", height = 6, width = 8)  
 
 
  
@@ -74,7 +80,8 @@ uncond.dens <- ggplot(data = beta.pars, mapping = aes(x = unconditional)) +
 d <- ggplot_build(uncond.dens)$data[[1]] # build the density plot for filling
 
 uncond.dens + geom_area(data = subset(d, x < 0), aes(x=x, y=y), fill="#d95f02") +
-   annotate("text", x = -.06, y = 22, label = ".934", size = 15, parse = TRUE)
+   annotate("text", x = -.06, y = 22, label = ".934", size = 15, parse = TRUE)  + 
+  theme_carly_presents()
 ggsave("presentation/uncond post_prob.png", height = 6, width = 8)
 
 # probabilisitc deterrent treaties
@@ -86,7 +93,8 @@ probdet.dens <- ggplot(data = beta.pars, mapping = aes(x = prob_det)) +
 d.pd <- ggplot_build(probdet.dens)$data[[1]]
 
 probdet.dens + geom_area(data = subset(d.pd, x < 0), aes(x=x, y=y), fill="#d95f02") +
-  annotate("text", x = -.06, y = 17, label = ".724", size = 15, parse = TRUE)
+  annotate("text", x = -.06, y = 17, label = ".724", size = 15, parse = TRUE)  + 
+  theme_carly_presents()
 ggsave("presentation/probdet post_prob.png", height = 6, width = 8)
 
 
@@ -148,6 +156,23 @@ ppc_hist(y, yrep.full[1:5, ])
 ggsave("presentation/ppc.png", height = 6, width = 8)
 
 
-### TODO(JOSH):
-# 2: Compare US unconditional alliance with Israel to other treaties
-# Use %in% to get non-zero alliances and plot full posteriors. 
+
+
+#### Figures for Prospectus defense slides
+
+# Distribution of compellent alliance duration
+alliance.char %>% filter(uncond_comp == 1) %>%
+  ggplot(alliance.char, mapping = aes(x = freq)) + 
+  geom_histogram(bins = 20) + 
+  labs(x = "Active Alliance Years") +
+  theme_carly_presents()
+
+
+# Distribution of unconditional deterrent alliance duration
+alliance.char %>% filter(uncond_det == 1) %>%
+  ggplot(alliance.char, mapping = aes(x = freq)) + 
+  geom_histogram(bins = 20) + 
+  labs(x = "Active Alliance Years") +
+  theme_carly_presents()
+
+
