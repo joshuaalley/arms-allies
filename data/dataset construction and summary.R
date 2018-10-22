@@ -264,13 +264,19 @@ interstate.war <- interstate.war %>%
       mutate(atwar = 1) %>%
       select(init_ccode, target_ccode, year, init_war_id, atwar) %>%
       gather(initiator, ccode, c(init_ccode, target_ccode)) %>%
-      mutate(initiator = ifelse(initiator == "init_ccode", 1, 0))
+      mutate(initiator = ifelse(initiator == "init_ccode", 1, 0)) %>%
+      group_by(ccode, year) %>%
+      summarize(
+        atwar = max(atwar),
+        initiator = max(initiator) # whether state initiated any conflict in a given year
+      )
 
 
 # Merge conflict data with other state variables
 state.vars <- left_join(state.vars, interstate.war)
 # Replace missing var values with zero (only merged 1s)
-state.vars[, 18:20][is.na(state.vars[, 18:20])] <- 0
+state.vars$atwar[is.na(state.vars$atwar)] <- 0
+state.vars$initiator[is.na(state.vars$initiator)] <- 0
 
 
 
@@ -324,7 +330,7 @@ state.vars <- left_join(state.vars, civil.war)
 state.vars$civilwar.part[is.na(state.vars$civilwar.part)] <- 0
 
 summary(state.vars$civilwar.part)
-
+table(state.vars$atwar, state.vars$civilwar.part)
 
 
 # Add data on external threat 
@@ -437,7 +443,9 @@ state.vars$change.milex <- state.vars$milex - state.vars$lag.milex
 state.vars$change.ln.milex <- state.vars$ln.milex - state.vars$lag.ln.milex
 
 
-
+## TODO(JOSH)
+# Figure out if I want those tiny pacific island states
+# Get a state variables dataset with key stuff, and run multiple imputation
 
 
 
@@ -465,11 +473,11 @@ atop.cow.year[order(atop.cow.year$ccode, atop.cow.year$year, atop.cow.year$atopi
 atop.cow.year$atopid[is.na(atop.cow.year$atopid)] <- 0
 
 # If no ATOP alliance, fill all other alliance characteristic variables with a zero.
-atop.cow.year[4:38][is.na(atop.cow.year[, 4:38] & atop.cow.year$atopid == 0)] <- 0
+atop.cow.year[4:33][is.na(atop.cow.year[, 4:33] & atop.cow.year$atopid == 0)] <- 0
 
 # Export to another folder for alliances, capability and conflict paper
 write.csv(atop.cow.year, 
-          "C:/Users/Josh/Dropbox/Research/alliances-conflict-dyads/Benson 2011/atop-cow-year.csv", 
+          "C:/Users/jkalley14/Dropbox/Research/alliances-conflict-dyads/Benson 2011/atop-cow-year.csv", 
           row.names = F)
 
 # restrict sample to minor powers
@@ -522,11 +530,15 @@ state.mem.cap <- atop.cow.year %>%
   select(atopid, ccode, year, ln.milex) %>% 
   left_join(alliance.year) %>%
   mutate(ally.spend = total.expend - ln.milex) %>%
-  distinct(state.mem.cap, atopid, ccode, year, .keep_all = TRUE) %>%
-  select(ccode, atopid, year, ally.spend)
+  distinct(atopid, ccode, year, .keep_all = TRUE) %>%
+  select(ccode, atopid, year, ally.spend, avg.democ)
 
 # Replace missing values with zero if atopid = 0 (no alliance)
 state.mem.cap$ally.spend[is.na(state.mem.cap$ally.spend) & state.mem.cap$atopid == 0] <- 0
+
+
+# Add allied spending to state-alliance-year data: single level regressions
+state.ally.year <- left_join(atop.cow.year, state.mem.cap)
 
 # Drop missing values of the expenditure variable
 # Necessary because spread will fill all missing values with zero,
