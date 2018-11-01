@@ -22,7 +22,7 @@ setwd(here::here())
 getwd()
 
 
-### This First section creates data on state-membership in alliances,
+### This First section creates data on state membership in alliances,
 #   and incorporates both ATOP and the Benson's alliance classifications. 
 ########
 # Load my combination of Benson's 2012 data and ATOP v4
@@ -443,8 +443,11 @@ state.vars$change.milex <- state.vars$milex - state.vars$lag.milex
 state.vars$change.ln.milex <- state.vars$ln.milex - state.vars$lag.ln.milex
 
 
+# Remove pacific micro-states (comprehensive missing data, not random)
+state.vars <- filter(state.vars, ccode <= 920) # New Zealand is ccode 920. 
+
+
 ## TODO(JOSH)
-# Figure out if I want those tiny pacific island states
 # Get a state variables dataset with key stuff, and run multiple imputation
 
 
