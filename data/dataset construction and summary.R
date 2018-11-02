@@ -410,7 +410,8 @@ gml.mid.part <- gml.mid.part %>%
 # merge with state variables 
 state.vars <- left_join(state.vars, gml.mid.part)
 # Replace missing with zeros
-state.vars[, 27:28][is.na(state.vars[, 27:28])] <- 0
+state.vars$mid.pres[is.na(state.vars$mid.pres)] <- 0
+state.vars$disputes[is.na(state.vars$disputes)] <- 0
 
 
 
@@ -443,12 +444,45 @@ state.vars$change.milex <- state.vars$milex - state.vars$lag.milex
 state.vars$change.ln.milex <- state.vars$ln.milex - state.vars$lag.ln.milex
 
 
+
+# Add data on rival military spending. 
+# Coded rivalry in directed dyad data
+td.rivalry <- read.csv("data/thompson-dreyer-rivalry.csv")
+
+# Merge in data on military spending to second state in rivalry. 
+td.rivalry <- td.rivalry %>%
+  rename(ccode = ccode2) %>%
+  group_by(ccode1, ccode) %>%
+  left_join(select(state.vars, ccode, year, ln.milex)) 
+
+td.rivalry.annual <- td.rivalry %>%
+  filter(rivalry == 1) %>% 
+  group_by(ccode1, year) %>%
+  summarize(
+    total.rivals = sum(rivalry, na.rm = TRUE),
+    rival.milex = sum(ln.milex, na.rm = TRUE),
+    avg.rival.milex = rival.milex / total.rivals
+  ) %>%
+  group_by() 
+colnames(td.rivalry.annual)[1] <- "ccode"
+
+
+# Merge rival spending data in state variables 
+state.vars <- left_join(state.vars, td.rivalry.annual)  
+# fill missing rivalry data  with 0s
+state.vars$total.rivals[is.na(state.vars$total.rivals)] <- 0
+state.vars$rival.milex[is.na(state.vars$rival.milex)] <- 0
+state.vars$avg.rival.milex[is.na(state.vars$avg.rival.milex)] <- 0
+
+
 # Remove pacific micro-states (comprehensive missing data, not random)
 state.vars <- filter(state.vars, ccode <= 920) # New Zealand is ccode 920. 
 
 
 ## TODO(JOSH)
 # Get a state variables dataset with key stuff, and run multiple imputation
+
+
 
 
 
