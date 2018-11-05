@@ -29,6 +29,27 @@ getwd()
 alliance.char.full <- read.csv("data/alliance-types-benson.csv")
 
 
+# Noteworthy alliance conditions
+table(alliance.char.full$asymm) # asymmmetric
+table(alliance.char.full$conditio) # condititional
+table(alliance.char.full$specthrt) # specific threat
+table(alliance.char.full$contrib) # specific contribution
+table(alliance.char.full$divgains) # specific division of gains
+table(alliance.char.full$base) # basing rights
+table(alliance.char.full$organ1) # international organizations
+table(alliance.char.full$terrres) # make territory or resources available
+table(alliance.char.full$thirdcom) # restrictions on third-party commitments 
+table(alliance.char.full$notaiden) # promise not to aid enemy
+table(alliance.char.full$dipaid) # promise diplomatic aid
+table(alliance.char.full$noothall) # promise not to form competing alliances
+table(alliance.char.full$compag) # presence of companion agreements
+table(alliance.char.full$nomicoop) # non-military cooperation
+table(alliance.char.full$interv) # intervention in domestic affairs
+table(alliance.char.full$agprois) # commitment to negotiate additional treaties
+table(alliance.char.full$intcom) # integrated command (peace and war)
+table(alliance.char.full$subord) # subordination of forces in war
+
+
 # Create variables for US and USSR membership
 russ.mem <- apply(alliance.char.full[, 73:129], 1, function(x) ifelse(x == 365, 1, 0))
 russ.mem <- t(russ.mem)
@@ -566,16 +587,29 @@ atop.cow.year$ln.milex[is.na(atop.cow.year$ln.milex)] <- 0
 state.mem.cap <- atop.cow.year %>% 
   select(atopid, ccode, year, ln.milex) %>% 
   left_join(alliance.year) %>%
-  mutate(ally.spend = total.expend - ln.milex) %>%
+  mutate(alliance.contrib = ln.milex / total.expend) %>%
+   mutate( ally.spend = total.expend - ln.milex) %>%
   distinct(atopid, ccode, year, .keep_all = TRUE) %>%
-  select(ccode, atopid, year, ally.spend, avg.democ)
+  select(ccode, atopid, year, ally.spend, avg.democ, alliance.contrib)
 
 # Replace missing values with zero if atopid = 0 (no alliance)
 state.mem.cap$ally.spend[is.na(state.mem.cap$ally.spend) & state.mem.cap$atopid == 0] <- 0
+state.mem.cap$alliance.contrib[is.na(state.mem.cap$alliance.contrib) & state.mem.cap$atopid == 0] <- 0
+
+# export data to test of public goods theory
+write.csv(state.mem.cap, 
+          "C:/Users/jkalley14/Dropbox/Research/Dissertation/public-goods-test/data/state.mem.cap.csv", 
+          row.names = F)
 
 
 # Add allied spending to state-alliance-year data: single level regressions
 state.ally.year <- left_join(atop.cow.year, state.mem.cap)
+
+# Write to Olson and Zeckhauser summary paper
+write.csv(state.ally.year, 
+          "C:/Users/jkalley14/Dropbox/Research/Dissertation/public-goods-test/data/alliance-state-year.csv", 
+          row.names = F)
+
 
 # Drop missing values of the expenditure variable
 # Necessary because spread will fill all missing values with zero,
@@ -595,6 +629,8 @@ state.mem.cap$ally.spend <- rescale(state.mem.cap$ally.spend)
 
 # This dataframe  contains the spending for the alliances states are a member of in a given year
 state.mem.cap <- spread(state.mem.cap, key = atopid, value = ally.spend, fill = 0)
+
+
 
 
 
