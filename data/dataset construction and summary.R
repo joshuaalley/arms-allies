@@ -29,27 +29,6 @@ getwd()
 alliance.char.full <- read.csv("data/alliance-types-benson.csv")
 
 
-# Noteworthy alliance conditions
-table(alliance.char.full$asymm) # asymmmetric
-table(alliance.char.full$conditio) # condititional
-table(alliance.char.full$specthrt) # specific threat
-table(alliance.char.full$contrib) # specific contribution
-table(alliance.char.full$divgains) # specific division of gains
-table(alliance.char.full$base) # basing rights
-table(alliance.char.full$organ1) # international organizations
-table(alliance.char.full$terrres) # make territory or resources available
-table(alliance.char.full$thirdcom) # restrictions on third-party commitments 
-table(alliance.char.full$notaiden) # promise not to aid enemy
-table(alliance.char.full$dipaid) # promise diplomatic aid
-table(alliance.char.full$noothall) # promise not to form competing alliances
-table(alliance.char.full$compag) # presence of companion agreements
-table(alliance.char.full$nomicoop) # non-military cooperation
-table(alliance.char.full$interv) # intervention in domestic affairs
-table(alliance.char.full$agprois) # commitment to negotiate additional treaties
-table(alliance.char.full$intcom) # integrated command (peace and war)
-table(alliance.char.full$subord) # subordination of forces in war
-
-
 # Create variables for US and USSR membership
 russ.mem <- apply(alliance.char.full[, 73:129], 1, function(x) ifelse(x == 365, 1, 0))
 russ.mem <- t(russ.mem)
@@ -500,6 +479,13 @@ state.vars$avg.rival.milex[is.na(state.vars$avg.rival.milex)] <- 0
 state.vars <- filter(state.vars, ccode <= 920) # New Zealand is ccode 920. 
 
 
+# export data to test of public goods theory
+write.csv(state.vars, 
+          "C:/Users/jkalley14/Dropbox/Research/Dissertation/public-goods-test/data/state-vars.csv", 
+          row.names = F)
+
+
+
 ## TODO(JOSH)
 # Get a state variables dataset with key stuff, and run multiple imputation
 
@@ -595,10 +581,12 @@ state.mem.cap <- atop.cow.year %>%
 # Replace missing values with zero if atopid = 0 (no alliance)
 state.mem.cap$ally.spend[is.na(state.mem.cap$ally.spend) & state.mem.cap$atopid == 0] <- 0
 state.mem.cap$alliance.contrib[is.na(state.mem.cap$alliance.contrib) & state.mem.cap$atopid == 0] <- 0
+state.mem.cap$avg.democ[is.na(state.mem.cap$avg.democ) & state.mem.cap$atopid == 0] <- 0
+
 
 # export data to test of public goods theory
 write.csv(state.mem.cap, 
-          "C:/Users/jkalley14/Dropbox/Research/Dissertation/public-goods-test/data/state.mem.cap.csv", 
+          "C:/Users/jkalley14/Dropbox/Research/Dissertation/public-goods-test/data/state-mem-cap.csv", 
           row.names = F)
 
 
