@@ -10,6 +10,8 @@ library(zoo)
 library(ggplot2)
 library(tidyr)
 library(countrycode)
+library(bfa)
+library(coda)
 
 
 
@@ -63,6 +65,126 @@ table(atop.mem.full$def.cond.count, atop.mem.full$defense)
 table(atop.mem.full$off.cond.count, atop.mem.full$offense)
 
 
+# Generate an unconditional variable for defense and offense
+# Generate other dummy indicators to produce a cumulative indicator of alliance strength
+atop <- atop %>%
+  mutate(
+    uncond = ifelse(conditio == 0, 1, 0), # unconditional dummy
+    uncond.def = ifelse(defcon == 0 & defense == 1, 1, 0), # unconditional defense dummy
+    uncond.off = ifelse(offcon == 0 & offense == 1, 1, 0), # unconditional offense dummy 
+    agpro.mult = ifelse(agprois == 5, 1, 0), # promise for additional agreements on multiple issues
+    io.form = ifelse(organ1 > 0, 1, 0), # promise to form  an IO
+    ecaid.dum = ifelse(ecaid > 0, 1, 0), # dummy indicator of economic aid
+    milaid.dum = ifelse(milaid > 0, 1, 0), # dummy indicator of military aid
+    uncond.milsup = ifelse(uncond.def == 1 | uncond.def == 1, 1, 0) # unconditional military support
+ ) %>% 
+  rowwise() %>%
+  mutate(str.index = sum(uncond.milsup, milaid.dum, ecaid.dum, io.form, agpro.mult, na.rm = TRUE))
+
+
+
+# Check variables: 
+table(atop$uncond.def, atop$defcon)
+table(atop$uncond.off, atop$offcon)
+table(atop$uncond, atop$uncond.def) # 123/413 unconditional commitments are defense pacts
+table(atop$uncond, atop$uncond.off) # 13/413 unconditional commitments are offense pacts
+table(atop$uncond.milsup)
+table(atop$str.index, atop$uncond.milsup)
+
+
+# Look at strength of commitment
+table(atop$uncond) # unconditional
+table(atop$milaid) # military aid
+table(atop$base) # basing rights
+table(atop$ecaid) # economic aid
+table(atop$organ1) # international organization
+table(atop$organ2) # second IO
+table(atop$intcom) # integrated command
+table(atop$agpro.mult) # promise multiple agreements
+
+# aggregate index of strength
+table(atop$str.index)
+ggplot(atop, aes(x = str.index)) + geom_bar()
+
+
+# Turn dummy indicators into factors in a separate dataset
+atop.str <- select(atop, uncond.milsup, offense, defense, nonagg,
+                   neutral, consul, intcom, agpro.mult, 
+                   milaid, base, organ1, ecaid) 
+atop.str <- as.data.frame(atop.str)
+for(i in 1:ncol(atop.str)){
+  atop.str[, i] <- as.ordered(atop.str[, i])
+}
+
+# Use Murray BFA approach
+latent.strength <- bfa_mixed(~ uncond.milsup + offense + defense + 
+                                neutral + consul + nonagg +
+                                milaid + base + ecaid + organ1 + 
+                                intcom + agpro.mult, 
+                          data = atop.str, num.factor = 1,
+                         keep.scores = TRUE, loading.prior = "gdp", 
+                         px = TRUE, imh.iter = 500, imh.burn = 500,
+                         nburn = 10000, nsim = 20000, thin = 20, print.status = 2000)
+
+# Little bit of diagnosis
+plot(get_coda(latent.strength))
+plot(get_coda(latent.strength, loadings=F, scores=T))
+
+# Diagnosis of convergence with coda
+lcap.sam <- get_coda(latent.strength, scores = TRUE)
+effectiveSize(lcap.sam)
+diag.geweke  <- geweke.diag(lcap.sam)
+
+# Plot to see if Geweke Z-scores appear to be from Normal(0, 1) distribution
+par(mfrow=c(1, 1))
+plot(density(diag.geweke$z))
+lines(density(rnorm(10000, 0, 1)))
+
+
+# get posterior scores of latent factor: mean and variance
+post.score <- get_posterior_scores(latent.strength)
+atop$latent.str.mean <- as.numeric(t(latent.strength$post.scores.mean))
+atop$latent.str.var <- as.numeric(t(latent.strength$post.scores.var))
+atop$latent.str.sd <- sqrt(atop$latent.str.var)
+
+
+# Plot two measures by ATOPID
+ggplot(atop, aes(x = latent.str.mean)) + geom_histogram() + theme_classic()
+ggplot(atop, aes(x = atopid, y = latent.str.mean)) + geom_point()
+ggplot(atop, aes(x = atopid, y = str.index)) +
+  geom_point(position = position_dodge(2))
+
+
+# Strength by year of formation
+ggplot(atop, aes(x = begyr, y = latent.str.mean)) + geom_point()
+# Add error bars to plot
+ggplot(atop, aes(x = begyr, y = latent.str.mean)) +
+geom_errorbar(aes(ymin = latent.str.mean - latent.str.sd, 
+ymax = latent.str.mean + latent.str.sd,
+width=.01), position = position_dodge(0.1)) +
+  geom_point(position = position_dodge(0.1))
+
+# highlight NATO
+atop %>% 
+  mutate(NATO = ifelse(atopid == 3180, T, F)) %>% 
+  ggplot(aes(x = begyr, y = latent.str.mean, color = NATO)) +
+#  geom_errorbar(aes(ymin = latent.str.mean - latent.str.sd, 
+#                    ymax = latent.str.mean + latent.str.sd, width=.01)) +
+  geom_point() +
+  scale_color_manual(values = c('#595959', 'red'))
+
+
+
+# compare three different measures of strength
+commitment.str <- select(atop, atopid, 
+                         uncond.milsup, str.index,
+                         latent.str.mean)
+
+
+
+
+
+
 
 
 # Prevalence of restrictions on member autonomy 
@@ -84,4 +206,5 @@ table(atop$interv) # intervention in domestic affairs
 table(atop$agprois) # commitment to negotiate additional treaties
 table(atop$intcom) # integrated command (peace and war)
 table(atop$subord) # subordination of forces in war
+table(atop$medarb) # mediation and arbitration
 
