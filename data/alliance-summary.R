@@ -149,10 +149,13 @@ atop$latent.str.sd <- sqrt(atop$latent.str.var)
 
 
 # Plot two measures by ATOPID
-ggplot(atop, aes(x = latent.str.mean)) + geom_histogram() + theme_classic()
 ggplot(atop, aes(x = atopid, y = latent.str.mean)) + geom_point()
 ggplot(atop, aes(x = atopid, y = str.index)) +
   geom_point(position = position_dodge(2))
+
+
+# Histogram of latent strength 
+ggplot(atop, aes(x = latent.str.mean)) + geom_histogram() + theme_classic()
 
 
 # Strength by year of formation
@@ -168,8 +171,6 @@ width=.01), position = position_dodge(0.1)) +
 atop %>% 
   mutate(NATO = ifelse(atopid == 3180, T, F)) %>% 
   ggplot(aes(x = begyr, y = latent.str.mean, color = NATO)) +
-#  geom_errorbar(aes(ymin = latent.str.mean - latent.str.sd, 
-#                    ymax = latent.str.mean + latent.str.sd, width=.01)) +
   geom_point() +
   scale_color_manual(values = c('#595959', 'red'))
 
@@ -179,10 +180,7 @@ atop %>%
 commitment.str <- select(atop, atopid, 
                          uncond.milsup, str.index,
                          latent.str.mean)
-
-
-
-
+heatmap(as.matrix(commitment.str[, 2:4]), scale="column")
 
 
 
@@ -207,4 +205,44 @@ table(atop$agprois) # commitment to negotiate additional treaties
 table(atop$intcom) # integrated command (peace and war)
 table(atop$subord) # subordination of forces in war
 table(atop$medarb) # mediation and arbitration
+
+
+
+# Create variables for US and USSR membershipin Cold War treaties
+ussr.mem <- apply(atop[, 72:130], 1, function(x) ifelse(x == 365, 1, 0))
+ussr.mem <- t(ussr.mem)
+atop$ussr.mem <- rowSums(ussr.mem, na.rm = TRUE)
+
+# US
+us.mem <- apply(atop[, 72:130], 1, function(x) ifelse(x == 2, 1, 0))
+us.mem <- t(us.mem)
+atop$us.mem <- rowSums(us.mem, na.rm = TRUE)
+
+# Remove the US and Russian membership matrices from the environment
+rm(ussr.mem)
+rm(us.mem)
+
+# limit US and USSR to Cold War Treaties
+atop$us.mem[atop$begyr < 1945] <- 0
+atop$ussr.mem[atop$begyr < 1945] <- 0
+
+# count number of members: non-missing membership variables
+atop$num.mem <-  apply(atop[, 72:130], 1, function(x) sum(!is.na(x)))
+
+
+# identify non-aggression only pacts
+# Also, recode arms requirements and military aid variables from ATOP into dummy 
+# variables that capture conditions where increases in arms spending are likely
+atop <- mutate(atop, nonagg.only = ifelse((nonagg == 1 & offense != 1
+                                  & defense != 1 & 
+                                   consul != 1 & neutral != 1), 1 , 0),
+               armred.rc = ifelse(armred == 2, 1, 0),
+               milaid.rc = ifelse(milaid >= 2, 1, 0)
+               )
+
+# Export to public-goods-test paper
+write.csv(atop, 
+          "C:/Users/Josh/Dropbox/Research/Dissertation/public-goods-test/data/atop-additions.csv", 
+          row.names = F)
+
 

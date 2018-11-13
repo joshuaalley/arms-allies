@@ -22,78 +22,17 @@ setwd(here::here())
 getwd()
 
 
-### This First section creates data on state membership in alliances,
-#   and incorporates both ATOP and the Benson's alliance classifications. 
+### This First section creates data on state membership in alliances
+# Uses ATOP data from alliance-measures script
 ########
-# Load my combination of Benson's 2012 data and ATOP v4
-alliance.char.full <- read.csv("data/alliance-types-benson.csv")
-
-
-# Create variables for US and USSR membership
-russ.mem <- apply(alliance.char.full[, 73:129], 1, function(x) ifelse(x == 365, 1, 0))
-russ.mem <- t(russ.mem)
-alliance.char.full$russ.mem <- rowSums(russ.mem, na.rm = TRUE)
-
-# US
-us.mem <- apply(alliance.char.full[, 73:129], 1, function(x) ifelse(x == 2, 1, 0))
-us.mem <- t(us.mem)
-alliance.char.full$us.mem <- rowSums(us.mem, na.rm = TRUE)
-
-# Remove the US and Russian membership matrices from the environment
-rm(russ.mem)
-rm(us.mem)
-
-
-# count number of members: non-missing membership variables
-alliance.char.full$num.mem <-  apply(alliance.char.full[, 73:129], 1, function(x) sum(!is.na(x)))
-
-
-# identify non-aggression only pacts
-alliance.char.full <- mutate(alliance.char.full, nonagg.only = ifelse((nonagg == 1 & 
-                                                offense != 1 & defense != 1 & 
-                                                consul != 1 & neutral != 1), 1 , 0))
-
-
-# Create an indicator of compellent alliances and another for alliances with none of Benson's conditions
-# Further indicators of mixed alliances and general indicators of conditional/unconditional pacts
-# Also, recode arms requirements and military aid variables from ATOP into dummy 
-# variables that capture conditions where increases in arms spending are likely
-alliance.char.full <- mutate(alliance.char.full,
-                        compellent = ifelse((uncond_comp == 1 | cond_comp == 1), 1 , 0),
-                        none = ifelse(prob_det == 0 & uncond_det == 0 & cond_det == 0 & compellent == 0, 1, 0),
-                        number.types = prob_det + uncond_det + cond_det + compellent,
-                        mixed = ifelse(number.types > 1, 1, 0),
-                        conditional = ifelse(cond_det == 1 | cond_comp == 1 | pure_cond_det == 1, 1, 0),
-                        unconditional = ifelse(uncond_comp == 1 | uncond_det == 1, 1, 0),
-                        armred.rc = ifelse(armred == 2, 1, 0),
-                        milaid.rc = ifelse(milaid >= 2, 1, 0)
-                        )
-
-# Remove surplus variables 
-alliance.char.full <- select(alliance.char.full, - c(armred, milaid))
-
-# Check overlap between consultation only, neutrality and none variable 
-table(alliance.char.full$none, alliance.char.full$consul)
-table(alliance.char.full$none, alliance.char.full$neutral)
-sum(alliance.char.full$compellent)
-table(alliance.char.full$uncond_comp, alliance.char.full$uncond_det)
-
-# truncate atopidphase to get regular atopid
-alliance.char.full$atopid <- trunc(alliance.char.full$atopidphase)
 
 # select key variables
-alliance.char <- select(alliance.char.full, atopid, atopidphase,
+alliance.char <- select(atop, atopid,
                     begyr, endyr,
-                    uncond_comp, cond_comp, 
-                    uncond_det, cond_det, 
-                    prob_det, pure_cond_det,
-                    discret_intervene, discret_milsupport,
-                    bilat, wartime, conditio,
-                    armred.rc, organ1, milaid.rc, us.mem, russ.mem,
-                    num.mem, none, nonagg.only, number.types)
-# Recode ATOP phaseid: take away the decimal point. 
-alliance.char$atopidphase.rc <- alliance.char$atopidphase*10
-
+                    uncond.milsup, str.index, latent.str.mean,
+                    offense, defense, consul, neutral, nonagg,
+                    armred.rc, organ1, milaid.rc, us.mem, ussr.mem,
+                    num.mem, nonagg.only)
 
 # Expand alliance characteristics data to make it alliance characteristic-year data
 # Don't care about truncation here, just need to know if alliance is operational
@@ -113,7 +52,7 @@ alliance.char.expand <- untable(alliance.char, alliance.char$freq)
 # Create a year variable by using the number of exanded observations
 # group data by country and ATOP alliance and count rows 
 alliance.char.expand <- alliance.char.expand %>%
-  group_by(atopidphase) %>%
+  group_by(atopid) %>%
   mutate(count = row_number() - 1)
 
 
@@ -123,14 +62,10 @@ alliance.char.expand$year = alliance.char.expand$begyr + alliance.char.expand$co
 
 
 ####
-# load the ATOP alliance-member data (This provides the basis for the alliance member matrix)
-atop.mem <- read.csv("data/atop-member-level.csv")
-atop.mem$atopidphase.rc <- (atop.mem$atopid*10) + atop.mem$phase 
+# Create a datasets with observation identifiers: selecting key varaibles from 
+# atop member-level dataset
+atop.mem <- select(atop.mem.full, atopid, member, yrent, yrexit)
 
-# Create a datasets with observation identifiers
-atop.mem <- select(atop.mem, atopid, atopidphase.rc, member, yrent, yrexit)
-
-colnames(atop.mem) <- c("atopid", "atopidphase.rc", "ccode", "yrent", "yrexit")
 
 # Expand atop-member-level data to make it alliance member -year data
 # Don't care about truncation here, just need to know if alliance is operational
@@ -151,7 +86,7 @@ atop.mem.expand <- untable(atop.mem, atop.mem$freq)
 # group data by country, ATOP alliance and year of entry and count rows 
 # Year of entry addresses cases like when Egypt is let back into the Arab League in 
 atop.mem.expand <- atop.mem.expand %>%
-  group_by(atopidphase.rc, ccode, yrent) %>%
+  group_by(atopid, member, yrent) %>%
   mutate(count = row_number() - 1)
 
 
@@ -450,7 +385,7 @@ state.vars$change.ln.milex <- state.vars$ln.milex - state.vars$lag.ln.milex
 td.rivalry <- read.csv("data/thompson-dreyer-rivalry.csv")
 
 # Merge in data on military spending to second state in rivalry. 
-td.rivalry <- td.rivalry %>%
+td.rivalry <- td.rivalry %>%  
   rename(ccode = ccode2) %>%
   group_by(ccode1, ccode) %>%
   left_join(select(state.vars, ccode, year, ln.milex)) 
@@ -519,9 +454,9 @@ atop.cow.year$atopid[is.na(atop.cow.year$atopid)] <- 0
 # If no ATOP alliance, fill all other alliance characteristic variables with a zero.
 atop.cow.year[4:33][is.na(atop.cow.year[, 4:33] & atop.cow.year$atopid == 0)] <- 0
 
-# Export to another folder for alliances, capability and conflict paper
+# export data to test of public goods theory
 write.csv(atop.cow.year, 
-          "C:/Users/jkalley14/Dropbox/Research/alliances-conflict-dyads/Benson 2011/atop-cow-year.csv", 
+          "C:/Users/jkalley14/Dropbox/Research/Dissertation/public-goods-test/data/atop-cow-year.csv", 
           row.names = F)
 
 # restrict sample to minor powers
@@ -593,7 +528,7 @@ write.csv(state.mem.cap,
 # Add allied spending to state-alliance-year data: single level regressions
 state.ally.year <- left_join(atop.cow.year, state.mem.cap)
 
-# Write to Olson and Zeckhauser summary paper
+# Write to Olson and Zeckhauser reanalysis paper
 write.csv(state.ally.year, 
           "C:/Users/jkalley14/Dropbox/Research/Dissertation/public-goods-test/data/alliance-state-year.csv", 
           row.names = F)
