@@ -31,3 +31,7 @@
 
 # don't ignore the .gitignore file
 !.gitignore
+
+# Ignore Packrat library
+packrat/*
+packrat/lib*/
