@@ -64,7 +64,9 @@ alliance.char.expand$year = alliance.char.expand$begyr + alliance.char.expand$co
 ####
 # Create a datasets with observation identifiers: selecting key varaibles from 
 # atop member-level dataset
-atop.mem <- select(atop.mem.full, atopid, member, yrent, yrexit)
+atop.mem <- select(atop.mem.full, atopid, member, yrent, yrexit) 
+colnames(atop.mem)[2] <- "ccode"
+
 
 
 # Expand atop-member-level data to make it alliance member -year data
@@ -86,7 +88,7 @@ atop.mem.expand <- untable(atop.mem, atop.mem$freq)
 # group data by country, ATOP alliance and year of entry and count rows 
 # Year of entry addresses cases like when Egypt is let back into the Arab League in 
 atop.mem.expand <- atop.mem.expand %>%
-  group_by(atopid, member, yrent) %>%
+  group_by(atopid, ccode, yrent) %>%
   mutate(count = row_number() - 1)
 
 
@@ -100,13 +102,6 @@ atop.mem.expand$year = atop.mem.expand$yrent + atop.mem.expand$count
 alliance.comp <- left_join(atop.mem.expand, alliance.char.expand, by = c("atopid", "year"))
 alliance.comp <- unique(alliance.comp)
  
-
-
-# Remove non-aggression pacts only
-summary(alliance.comp$nonagg.only)
-alliance.comp <- filter(alliance.comp, nonagg.only != 1)
-alliance.comp <- select(alliance.comp, -nonagg.only)
-
 
 
 # Fill in missing alliance information (ATOP characteristics) with zeros
@@ -452,15 +447,12 @@ atop.cow.year[order(atop.cow.year$ccode, atop.cow.year$year, atop.cow.year$atopi
 atop.cow.year$atopid[is.na(atop.cow.year$atopid)] <- 0
 
 # If no ATOP alliance, fill all other alliance characteristic variables with a zero.
-atop.cow.year[4:33][is.na(atop.cow.year[, 4:33] & atop.cow.year$atopid == 0)] <- 0
+atop.cow.year[4:26][is.na(atop.cow.year[, 4:26] & atop.cow.year$atopid == 0)] <- 0
 
 # export data to test of public goods theory
 write.csv(atop.cow.year, 
           "C:/Users/jkalley14/Dropbox/Research/Dissertation/public-goods-test/data/atop-cow-year.csv", 
           row.names = F)
-
-# restrict sample to minor powers
-atop.cow.year <- filter(atop.cow.year, majpower == 0)
 
 
 # Create a dataset of state-year alliance membership:
@@ -552,7 +544,6 @@ state.mem.cap$ally.spend <- rescale(state.mem.cap$ally.spend)
 
 # This dataframe  contains the spending for the alliances states are a member of in a given year
 state.mem.cap <- spread(state.mem.cap, key = atopid, value = ally.spend, fill = 0)
-
 
 
 

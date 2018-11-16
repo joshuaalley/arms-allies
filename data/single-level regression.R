@@ -9,7 +9,6 @@ library(MASS)
 library(plm)
 library(dplyr)
 library(ggplot2)
-library(texreg)
 library(robustlmm)
 
 
@@ -29,8 +28,8 @@ state.char.full <- state.ally.year %>%
   group_by(ccode, year) %>%
   summarize(
     treaty.count = n(),
-    total.ally.expend = sum(ally.spend, na.rm = TRUE),
-    avg.treaty.contrib = mean(alliance.contrib, na.rm = TRUE),
+    total.ally.expend = sum(ally.spend[defense == 1 | offense == 1], na.rm = TRUE),
+    avg.treaty.contrib = mean(alliance.contrib[defense == 1 | offense == 1], na.rm = TRUE),
     
     uncond.milsup.pres = max(uncond.milsup, na.rm = TRUE),
     uncond.milsup.expend = sum(ally.spend[uncond.milsup == 1], na.rm = TRUE),
@@ -80,17 +79,18 @@ t.test(change.ln.milex ~ uncond.milsup.pres, data = state.char.full)
 # Start with a simple linear regression: presence of unconditional support
 m1.all <- lm(ln.milex ~ uncond.milsup.pres + lag.ln.milex +
             atwar + civilwar.part + polity + ln.gdp + majpower +
-            lsthreat + cold.war + avg.num.mem + ln.ally.expend,
+            lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
           data = state.char.full
           )
 summary(m1.all)
-
+qqnorm(m1.all$residuals)
+qqline(m1.all$residuals)
 
 
 # FGLS: "random effects" robust to intragroup heteroskedasticity and serial correlation 
 m1.fgls <- pggls(ln.milex ~ uncond.milsup.pres + lag.ln.milex +
                    atwar + civilwar.part + polity + ln.gdp + majpower +
-                 lsthreat + cold.war + avg.num.mem + ln.ally.expend,
+                 lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
          data = state.char.full,
          index = c("ccode", "year"),
          effect = "individual", # unrestricted error covariance
@@ -101,14 +101,13 @@ summary(m1.fgls)
 # Add state and year fixed effects and estimate in differences (otherwise Nickell bias applies)
 m1.reg.fe <- plm(change.ln.milex ~ uncond.milsup.pres + 
                    atwar + civilwar.part + polity + ln.gdp + majpower +
-                   lsthreat + cold.war + avg.num.mem + ln.ally.expend,
+                   lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
                 index = c("ccode", "year"),
                 effect = "individual", # unrestricted error covariance
                 data = state.char.full,
                 model = "within")
 
 summary(m1.reg.fe)
-plot(density(m1.reg.fe$residuals))
 
 
 
@@ -116,15 +115,13 @@ plot(density(m1.reg.fe$residuals))
 ###### 
 # Residuals in the above have extremely heavy tails. Robust regression weights observations as 
 # a function of their residual, ensuring least squares is still efficient
-m1r.reg <- rlm(ln.milex ~ ln.milex ~ uncond.milsup.pres + lag.ln.milex +
+m1r.reg <- rlm(ln.milex ~ uncond.milsup.pres + lag.ln.milex +
                  atwar + civilwar.part + polity + ln.gdp + majpower +
-                 lsthreat + cold.war + avg.num.mem + ln.ally.expend,
+                 lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
                data = state.char.full)
 
 summary(m1r.reg)
 plot(m1r.reg$residuals, m1r.reg$w)
-
-plotreg(m1r.reg, omit.coef = "(Intercept)|(lag.ln.milex)")
 
 
 
@@ -137,7 +134,7 @@ plotreg(m1r.reg, omit.coef = "(Intercept)|(lag.ln.milex)")
 # Standard regression: complete pooling
 reg.ex <- lm(ln.milex ~ uncond.milsup.expend + lag.ln.milex +
                atwar + civilwar.part + polity + ln.gdp + majpower +
-               lsthreat + cold.war + avg.num.mem + ln.ally.expend,
+               lsthreat + cold.war + avg.num.mem + avg.dem.prop,
              data = state.char.full
 )
 summary(reg.ex)
@@ -146,7 +143,7 @@ summary(reg.ex)
 # Use fgls to acocunt for autoregressive component of the errors
 reg.ex.gls <- pggls(ln.milex ~ uncond.milsup.expend + lag.ln.milex +
                       atwar + civilwar.part + polity + ln.gdp + majpower +
-                      lsthreat + cold.war + avg.num.mem + ln.ally.expend,
+                      lsthreat + cold.war + avg.num.mem + avg.dem.prop,
               data = state.char.full,
               index = c("ccode", "year"),
               effect = "individual", # unrestricted error covariance
@@ -156,28 +153,99 @@ plot(density(reg.ex.gls$residuals))
 
 
 # Use fixed effects
-reg.ex.re <- plm(change.ln.milex ~ uncond.milsup.expend + 
+reg.ex.fe <- plm(change.ln.milex ~ uncond.milsup.expend + 
                    atwar + civilwar.part + polity + ln.gdp + majpower +
-                   lsthreat + cold.war + avg.num.mem + ln.ally.expend,
+                   lsthreat + cold.war + avg.num.mem + avg.dem.prop,
                    data = state.char.full,
                    index = c("ccode", "year"),
                    effect = "individual", # unrestricted error covariance
                    model = "within")
-summary(reg.ex.re)
-plot(density(reg.ex.re$residuals))
+summary(reg.ex.fe)
 
 
 
 # Robust regression
 rreg.ex <- rlm(ln.milex ~ uncond.milsup.expend + lag.ln.milex +
                  atwar + civilwar.part + polity + ln.gdp + majpower +
-                 lsthreat + cold.war + avg.num.mem + ln.ally.expend,
+                 lsthreat + cold.war + avg.num.mem + avg.dem.prop,
                data = state.char.full)
 
 summary(rreg.ex)
 plot(rreg.ex$residuals, rreg.ex$w)
-plotreg(rreg.ex, omit.coef = "(Intercept)|(lag.ln.milex)")
 
 
+
+### Is the effect of unconditional military support conditional on ally size? 
+
+# Robust regression: absolute size
+m1.all.iabs <- rlm(ln.milex ~ uncond.milsup.pres + ln.gdp + uncond.milsup.pres:ln.gdp + lag.ln.milex +
+               atwar + civilwar.part + polity  + majpower +
+               lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
+             data = state.char.full
+)
+summary(m1.all.iabs)
+
+# Calculate marginal effects
+margins(m1.all.iabs)
+mplot.iabs <- cplot(m1.all.iabs, x = "ln.gdp", dx = "uncond.milsup.pres", what = "effect",
+      main = "Average Marginal Effect of Unconditional Military Support")
+mplot.iabs
+abline(h = 0)
+
+
+# Check results with interflex- continuous modifying variable
+state.char.full <- as.data.frame(state.char.full)
+# binning estimator
+bin.abs <- inter.binning(Y = "ln.milex", D = "uncond.milsup.pres", X = "ln.gdp", 
+                         Z = c("lag.ln.milex", "atwar", "civilwar.part", "polity",
+                               "majpower", "lsthreat", "cold.war", "avg.num.mem", 
+                               "ln.ally.expend", "avg.dem.prop"), 
+                         data = state.char.full, 
+                         na.rm = TRUE
+)
+bin.abs
+
+
+
+# Average Treaty contribution as another proxy for size
+# filter out cases with no alliances
+inter.data.rel <- filter(state.char.full, treaty.pres == 1)
+inter.data.rel <- as.data.frame(inter.data.rel)
+
+# Robust regression: average relative contribution
+m1.all.irel <- rlm(ln.milex ~ uncond.milsup.pres + avg.treaty.contrib + uncond.milsup.pres:avg.treaty.contrib + lag.ln.milex +
+                     atwar + civilwar.part + polity  + majpower + ln.gdp +
+                     lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
+                   data = inter.data.rel
+)
+summary(m1.all.irel)
+
+# Calculate marginal effects
+margins(m1.all.irel)
+mplot.irel <- cplot(m1.all.irel, x = "avg.treaty.contrib", dx = "uncond.milsup.pres", what = "effect",
+      main = "Average Marginal Effect of Unconditional Military Support")
+mplot.irel
+abline(h = 0)
+
+# Interflex check
+bin.rel <- inter.binning(Y = "ln.milex", D = "uncond.milsup.pres", X = "avg.treaty.contrib", 
+                         Z = c("lag.ln.milex", "atwar", "civilwar.part", "polity",
+                               "majpower", "lsthreat", "cold.war", "avg.num.mem", 
+                               "ln.ally.expend", "avg.dem.prop", "ln.gdp"), 
+                         data = inter.data.rel,
+                         na.rm = TRUE
+)
+bin.rel
+
+# Kernel: 10+ minute run time 
+kernel.rel <- inter.kernel(Y = "ln.milex", D = "uncond.milsup.pres", X = "avg.treaty.contrib", 
+                           Z = c("lag.ln.milex", "atwar", "civilwar.part", "polity",
+                                 "majpower", "lsthreat", "cold.war", "avg.num.mem", 
+                                 "ln.ally.expend", "avg.dem.prop", "ln.gdp"), 
+                           data = inter.data.rel,
+                           na.rm = TRUE,
+                           nboots = 200, parallel = TRUE, cores = 4
+)
+kernel.rel
 
 
