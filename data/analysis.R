@@ -34,16 +34,14 @@ set.seed(12)
 
 
 # Define a state-year level dataset with no missing observations
-reg.state.data <- state.char %>%
+reg.state.data <- state.vars %>%
   select(ccode, year, ln.milex, lag.ln.milex,
-                      atwar, civilwar, rival.mil, ln.GDP, polity, 
+                      atwar, civilwar.part, rival.milex, ln.gdp, polity, 
                       cold.war, disputes, majpower) 
 
 # Add state membership in alliances to this data
-reg.state.data <-  left_join(reg.state.data, state.mem.cap) 
+reg.state.data <-  left_join(reg.state.data, state.mem.contrib) 
 
-# remove major powers from the sample
-reg.state.data <- filter(reg.state.data, majpower == 0)
 
 # Replace missing alliance values with zero 
 reg.state.data[, 13: ncol(reg.state.data)][is.na(reg.state.data[, 13: ncol(reg.state.data)])] <- 0
@@ -51,8 +49,6 @@ reg.state.data[, 13: ncol(reg.state.data)][is.na(reg.state.data[, 13: ncol(reg.s
 # Remove observations with missing values
 reg.state.comp <- reg.state.data[complete.cases(reg.state.data), ]
 
-# Remove major powers variable (no variation present after subset)
-reg.state.comp <- select(reg.state.comp, -majpower)
 
 # Rescale the state-level regressors- but not the LDV
  reg.state.comp[, 5:11] <- lapply(reg.state.comp[, 5:11], 
@@ -67,7 +63,7 @@ ggplot(reg.state.comp, aes(ln.milex)) + geom_density()
 
 
 # Create a matrix of state membership in alliances (Z in STAN model)
-state.mem.mat <- as.matrix(reg.state.comp[, 12: ncol(reg.state.comp)])
+state.mem.mat <- as.matrix(reg.state.comp[, 13: ncol(reg.state.comp)])
 
 
 # create a state index variable
@@ -79,10 +75,9 @@ reg.state.comp$year.id <- reg.state.comp %>% group_indices(year)
 
 # Create the matrix of alliance-level variables
 # Make the alliance characteristics data match the membership matrix
-alliance.char.model <- filter(alliance.char, atopid %in% colnames(state.mem.mat))
-reg.all.data <- alliance.char.model %>%
-  select(atopid, prob_det, conditional, unconditional, compellent, num.mem, 
-          dem.prop, wartime, organ1, milaid.rc, us.mem, russ.mem)
+reg.all.data <- filter(alliance.char, atopid %in% colnames(state.mem.mat)) %>%
+  select(atopid, uncond.milsup, offense, num.mem, 
+          dem_prop, wartime, organ1, milaid.rc, asymm, us.mem, ussr.mem)
 
 
 # Create an alliance index variable
@@ -95,7 +90,7 @@ reg.all.data[is.na(reg.all.data)] <- 0
 
 ### transform data into matrices for STAN
 # State-level characeristics
-reg.state.mat <- as.matrix(reg.state.comp[, 4:11])
+reg.state.mat <- as.matrix(reg.state.comp[, 4:12])
 
 # check correlations among state-level regressors
 cor(reg.state.mat, method = "pearson")
@@ -112,6 +107,7 @@ alliance.reg.mat <- cbind(cons, alliance.reg.mat)
 
 # run model on the full sample
 # Define the data list 
+reg.state.comp <- as.data.frame(reg.state.comp)
 stan.data <- list(N = nrow(reg.state.comp), y = reg.state.comp[, 3],
                       state = reg.state.comp$state.id, S = length(unique(reg.state.comp$state.id)),
                       year = reg.state.comp$year.id, T = length(unique(reg.state.comp$year.id)),
@@ -134,7 +130,9 @@ y = reg.state.comp[, 3]
 vb.model.sum <- extract(ml.model.vb)
 ppc_dens_overlay(y, vb.model.sum$y_pred[1:100, ])
 
-
+# Remove vb model and associated summary
+rm(ml.model.vb)
+rm(vb.model.sum)
  
 # Regular STAN
 system.time(
@@ -485,7 +483,7 @@ sigma.df.melt <- melt(sigma.df)
 
 ggplot(sigma.df.melt, aes(x = value, fill = variable)) + geom_density() +
  scale_fill_brewer(palette = "Greys") +
- ggtitle("Posterior Densities of Variance Hyperparameters")
+ ggtitle("Posterior Densities of Variance Hyperparameters") + theme_classic()
 ggsave("figures/variance-hyperparam-plot.png", height = 6, width = 8)
 
 

@@ -32,7 +32,7 @@ alliance.char <- select(atop, atopid,
                     uncond.milsup, str.index, latent.str.mean,
                     offense, defense, consul, neutral, nonagg,
                     armred.rc, organ1, milaid.rc, us.mem, ussr.mem,
-                    num.mem, nonagg.only)
+                    num.mem, nonagg.only, dem_prop, wartime, asymm)
 
 # Expand alliance characteristics data to make it alliance characteristic-year data
 # Don't care about truncation here, just need to know if alliance is operational
@@ -455,17 +455,18 @@ write.csv(atop.cow.year,
           row.names = F)
 
 
-# Create a dataset of state-year alliance membership:
+# Create a dataset of state-year alliance membership in pacts with military suport:
 atop.cow.year <- group_by(atop.cow.year, atopid, ccode, year)
-state.mem <- atop.cow.year %>% select(atopid, ccode, year)
+state.mem <- atop.cow.year %>% 
+              filter(defense == 1 | offense == 1) %>%
+              select(atopid, ccode, year)
+
 state.mem <-  mutate(state.mem, member = 1)
 state.mem <- distinct(state.mem, atopid, ccode, year, .keep_all = TRUE)
 
 # This matrix has a binary indicator of which alliances states are a member of in a given year
 state.mem <- spread(state.mem, key = atopid, value = member, fill = 0)
 
-# Remove the zero or no alliance category
-state.mem <- subset(state.mem, select = -(3))
 
 
 
@@ -498,12 +499,13 @@ atop.cow.year$ln.milex[is.na(atop.cow.year$ln.milex)] <- 0
 
 # Create the dataset
 state.mem.cap <- atop.cow.year %>% 
+  filter(defense == 1 | offense == 1) %>%
   select(atopid, ccode, year, ln.milex) %>% 
   left_join(alliance.year) %>%
   mutate(alliance.contrib = ln.milex / total.expend) %>%
    mutate( ally.spend = total.expend - ln.milex) %>%
   distinct(atopid, ccode, year, .keep_all = TRUE) %>%
-  select(ccode, atopid, year, ally.spend, avg.democ, alliance.contrib)
+  select(ccode, atopid, year, ally.spend, avg.democ, alliance.contrib) 
 
 # Replace missing values with zero if atopid = 0 (no alliance)
 state.mem.cap$ally.spend[is.na(state.mem.cap$ally.spend) & state.mem.cap$atopid == 0] <- 0
@@ -526,6 +528,8 @@ write.csv(state.ally.year,
           row.names = F)
 
 
+
+
 # Drop missing values of the expenditure variable
 # Necessary because spread will fill all missing values with zero,
 # not just absent combinations as in the above membership matrix
@@ -536,11 +540,13 @@ state.mem.cap <- state.mem.cap[complete.cases(state.mem.cap$ally.spend), ]
 state.mem.cap <- filter(state.mem.cap, atopid %in% alliance.char$atopid)
 
 
-
-
 # rescale the ally expenditures variable by two standard deviations
 state.mem.cap$ally.spend <- rescale(state.mem.cap$ally.spend)
 
+# Create another membership matrix with contribution to the alliance
+state.mem.contrib <- select(state.mem.cap, atopid, ccode, year, alliance.contrib) %>%
+                  spread(key = atopid, 
+                            value = alliance.contrib, fill = 0)
 
 # This dataframe  contains the spending for the alliances states are a member of in a given year
 state.mem.cap <- spread(state.mem.cap, key = atopid, value = ally.spend, fill = 0)
