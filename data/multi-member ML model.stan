@@ -41,7 +41,7 @@ parameters {
   real<lower = 0> sigma_all; // variance hyperparameter of the alliances
   vector[L] beta; // vector of alliance-level coefficients
   vector[M] gamma; // vector of state-level coefficients 
-  real<lower = 4> nu; // degrees of freedom in t-distribution of outcome
+  real<lower = 5> nu; // degrees of freedom in t-distribution of outcome
 
 }
 
@@ -88,11 +88,11 @@ model {
 }
 
 generated quantities {
- vector[N] log_lik; // Log likelihood for loo and WAIC model comparisons
+// vector[N] log_lik; // Log likelihood for loo and WAIC model comparisons
  vector[N] y_pred; //  posterior predictive distribution
 
- for(i in 1:N)
- log_lik[i] = student_t_lpdf(y[i] | nu, y_hat[i], sigma);
+// for(i in 1:N)
+// log_lik[i] = student_t_lpdf(y[i] | nu, y_hat[i], sigma);
 
  for(i in 1:N)
  y_pred[i] = student_t_rng(nu, y_hat[i], sigma);

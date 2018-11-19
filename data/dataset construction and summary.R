@@ -549,7 +549,8 @@ state.mem.contrib <- select(state.mem.cap, atopid, ccode, year, alliance.contrib
                             value = alliance.contrib, fill = 0)
 
 # This dataframe  contains the spending for the alliances states are a member of in a given year
-state.mem.cap <- spread(state.mem.cap, key = atopid, value = ally.spend, fill = 0)
+state.mem.cap <- select(state.mem.cap, atopid, ccode, year, ally.spend) %>%
+  spread(key = atopid, value = ally.spend, fill = 0)
 
 
 
