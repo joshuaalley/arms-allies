@@ -77,7 +77,7 @@ t.test(change.ln.milex ~ uncond.milsup.pres, data = state.char.full)
 
 
 # Start with a simple linear regression: presence of unconditional support
-m1.all <- lm(ln.milex ~ uncond.milsup.pres + lag.ln.milex +
+m1.all <- lm(ln.milex ~ uncond.milsup.pres + cond.milsup.pres + lag.ln.milex +
             atwar + civilwar.part + polity + ln.gdp + majpower +
             lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
           data = state.char.full
@@ -115,7 +115,7 @@ summary(m1.reg.fe)
 ###### 
 # Residuals in the above have extremely heavy tails. Robust regression weights observations as 
 # a function of their residual, ensuring least squares is still efficient
-m1r.reg <- rlm(ln.milex ~ uncond.milsup.pres + lag.ln.milex +
+m1r.reg <- rlm(ln.milex ~ uncond.milsup.pres + cond.milsup.pres + lag.ln.milex +
                  atwar + civilwar.part + polity + ln.gdp + majpower +
                  lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
                data = state.char.full)
@@ -124,6 +124,24 @@ summary(m1r.reg)
 plot(m1r.reg$residuals, m1r.reg$w)
 
 
+# subset by major and minor powers
+# Major powers
+rreg.maj <- rlm(ln.milex ~ uncond.milsup.pres + cond.milsup.pres + lag.ln.milex +
+                     atwar + civilwar.part + polity + ln.gdp + 
+                     lsthreat + cold.war + avg.num.mem + avg.dem.prop,
+                   data = state.char.full, subset = (majpower == 1))
+
+summary(rreg.maj)
+plot(rreg.maj$residuals, rreg.maj$w)
+
+# minor powers
+rreg.min <- rlm(ln.milex ~ uncond.milsup.pres + cond.milsup.pres + lag.ln.milex +
+                     atwar + civilwar.part + polity + ln.gdp +
+                     lsthreat + cold.war + avg.num.mem + avg.dem.prop,
+                   data = state.char.full, subset = (majpower == 0))
+
+summary(rreg.min)
+plot(rreg.min$residuals, rreg.min$w)
 
 
 
@@ -187,9 +205,8 @@ summary(m1.all.iabs)
 
 # Calculate marginal effects
 margins(m1.all.iabs)
-mplot.iabs <- cplot(m1.all.iabs, x = "ln.gdp", dx = "uncond.milsup.pres", what = "effect",
+cplot(m1.all.iabs, x = "ln.gdp", dx = "uncond.milsup.pres", what = "effect",
       main = "Average Marginal Effect of Unconditional Military Support")
-mplot.iabs
 abline(h = 0)
 
 
@@ -222,9 +239,8 @@ summary(m1.all.irel)
 
 # Calculate marginal effects
 margins(m1.all.irel)
-mplot.irel <- cplot(m1.all.irel, x = "avg.treaty.contrib", dx = "uncond.milsup.pres", what = "effect",
+cplot(m1.all.irel, x = "avg.treaty.contrib", dx = "uncond.milsup.pres", what = "effect",
       main = "Average Marginal Effect of Unconditional Military Support")
-mplot.irel
 abline(h = 0)
 
 # Interflex check
