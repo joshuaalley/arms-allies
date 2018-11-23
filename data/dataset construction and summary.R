@@ -30,7 +30,7 @@ getwd()
 alliance.char <- select(atop, atopid,
                     begyr, endyr,
                     uncond.milsup, str.index, latent.str.mean,
-                    offense, defense, consul, neutral, nonagg,
+                    offense, defense, consul, neutral, nonagg, base,
                     armred.rc, organ1, milaid.rc, us.mem, ussr.mem,
                     num.mem, nonagg.only, dem_prop, wartime, asymm)
 

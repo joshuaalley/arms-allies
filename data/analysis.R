@@ -27,10 +27,7 @@ set.seed(12)
 
 
 # Environment is determined by use of projects and/or running this file in conjunction with
-# the script dataset construction and summary.R 
-
-# NOTE: To run the variational Bayes algorithm, must compile the model file on your machine 
-# In Windows, failure to compile the model on your machine will lead to a dynamic link library intitialization error
+# the scripts alliance-measures.R and dataset construction and summary.R 
 
 
 # Define a state-year level dataset with no missing observations
@@ -53,6 +50,12 @@ reg.state.comp <- reg.state.data[complete.cases(reg.state.data), ]
 # Rescale the state-level regressors- but not the LDV
  reg.state.comp[, 5:11] <- lapply(reg.state.comp[, 5:11], 
        function(x) rescale(x, binary.inputs = "0/1"))
+ 
+ 
+# Create separate dataset of major powers 
+reg.state.comp.maj <- filter(reg.state.comp, majpower == 1)
+reg.state.comp.min <- filter(reg.state.comp, majpower == 0)
+ 
 
  
 # Check the range and distribution of the DV
@@ -77,7 +80,7 @@ reg.state.comp$year.id <- reg.state.comp %>% group_indices(year)
 # Make the alliance characteristics data match the membership matrix
 reg.all.data <- filter(alliance.char, atopid %in% colnames(state.mem.mat)) %>%
   select(atopid, uncond.milsup, offense, num.mem, 
-          dem_prop, wartime, organ1, milaid.rc, asymm, us.mem, ussr.mem)
+          dem_prop, wartime, organ1, milaid.rc, asymm, us.mem, ussr.mem, base)
 
 
 # Replace missing conditions (arms, instituions and military aid) with zeros
@@ -127,8 +130,8 @@ vb.model.sum <- extract(ml.model.vb)
 ppc_dens_overlay(y, vb.model.sum$y_pred[1:100, ])
 
 # Remove vb model and associated summary
-rm(ml.model.vb)
-rm(vb.model.sum)
+rm(list = c("ml.model.vb", "vb.model.sum"))
+
  
 # Regular STAN
 system.time(
@@ -175,9 +178,10 @@ ml.model.sum <- extract(ml.model, permuted = TRUE)
 
 # Posterior predictive distributions relative to observed data
 yrep.full <- ml.model.sum$y_pred
+yrep.full <- yrep.full[1:100, ]
 
 # plot posterior predictive denisty of first 100 simulations
-ppc_dens_overlay(y, yrep.full[1:100, ])
+ppc_dens_overlay(y, yrep.full)
 
 
 
@@ -198,7 +202,7 @@ mean(ml.model.sum$beta[, 8] > 0) # military aid
 mean(ml.model.sum$beta[, 9] > 0) # asymmetric obligations 
 mean(ml.model.sum$beta[, 10] < 0) # US membership
 mean(ml.model.sum$beta[, 11] < 0) # USSR membership
-
+mean(ml.model.sum$beta[, 12] < 0) # Bases
 
 beta.melt <- melt(ml.model.sum$beta)
 
@@ -213,7 +217,7 @@ beta.summary <- beta.summary[, -2]
 rownames(beta.summary) <- c("Constant", "Uncond. Mil. Supp.", "Offense", 
                             "Number Members","Democratic Membership", 
                             "Wartime", "IO Form.", "Military Aid", "Asymmetric",
-                            "US Member", "USSR Member", "sigma Alliances")
+                            "US Member", "USSR Member", "Bases", "sigma Alliances")
 
 print(beta.summary)
 xtable(beta.summary, digits = 3)
@@ -285,14 +289,13 @@ ggsave("figures/post-prob.png", height = 6, width = 8)
 # LRM = beta / (1 - alpha), where alpha is the coef on the lagged DV
 lrm.uncond <- ml.model.sum$beta[, 2] / (1 - ml.model.sum$gamma[, 1])
 summary(lrm.uncond)
-plot(density(lrm.uncond))
 
 positive.check(lrm.uncond)
 
 lrm.dem <- ml.model.sum$gamma[, 6] / (1 - ml.model.sum$gamma[, 1])
 summary(lrm.dem)
 mean(lrm.dem < 0)
-mean(lrm.uncond < lrm.dem)
+mean(lrm.uncond > lrm.dem)
 
 
 
@@ -309,7 +312,7 @@ ggplot(lambda_df, aes(x = as.factor(uncond.milsup), y = lambda)) +
   geom_point(position = position_jitter(width = 0.1),  # jitter points to prevent overlap
              alpha = 0.5,  # somewhat trasparent
              aes(size = num.mem)) +  # make size and shape corresponde to number of members
-  ggtitle("Distribution of Mean Predicted Alliance Intercepts by Alliance Strength and Size") +
+  ggtitle("Distribution of Mean Predicted Alliance Coefficients by Alliance Strength and Size") +
   theme_classic()
 ggsave("figures/lambda-box.png", height = 6, width = 8)
 
@@ -332,39 +335,44 @@ ggsave("figures/varimp.png", height = 6, width = 8)
 
 ## Violin plot for lambdas, broken down by military aid
 ggplot(lambda_df, aes(x = as.factor(milaid.rc), y = lambda)) +
+  geom_violin() +
   geom_point(position = position_jitter(width = 0.1),  # jitter points to prevent overlap
              alpha = 0.5,  # somewhat trasparent
-             aes(size = num.mem)) +  # make size and shape corresponde to number of members
-  ggtitle("Distribution of Mean Predicted Alliance Intercepts by Military Aid and Size")
+             aes(size = num.mem))  +  # make size and shape corresponde to number of members
+  ggtitle("Distribution of Mean Predicted Alliance Coefficients by Military Aid and Size") +
+  theme_classic()
 
 ## plot for lambdas, broken down by wartime
 ggplot(lambda_df, aes(x = as.factor(wartime), y = lambda)) +
+  geom_violin() +
   geom_point(position = position_jitter(width = 0.1),  # jitter points to prevent overlap
              alpha = 0.5,  # somewhat trasparent
              aes(size = num.mem)) +  # make size and shape corresponde to number of members
-  ggtitle("Distribution of Mean Predicted Alliance Intercepts by Wartime and Size")
+  ggtitle("Distribution of Mean Predicted Alliance Coefficients by Wartime and Size")
 
 ## plot for lambdas, broken down by instititutionalization
 ggplot(lambda_df, aes(x = as.factor(organ1), y = lambda)) +
+  geom_violin() +
   geom_point(position = position_jitter(width = 0.1),  # jitter points to prevent overlap
              alpha = 0.5,  # somewhat trasparent
              aes(size = num.mem)) +  # make size and shape corresponde to number of members
-  ggtitle("Distribution of Mean Predicted Alliance Intercepts by Alliance Institutionalization and Size")
+  ggtitle("Distribution of Mean Predicted Alliance Coefficients by Alliance Institutionalization and Size")
 
 
 
 ## plot for lambdas, broken down by asymmetric obligations and size
 ggplot(lambda_df, aes(x = as.factor(asymm), y = lambda)) +
+  geom_violin() +
   geom_point(position = position_jitter(width = 0.1),  # jitter points to prevent overlap
              alpha = 0.5,  # somewhat trasparent
              aes(size = num.mem)) +  # make size and shape corresponde to number of members
-  ggtitle("Distribution of Mean Predicted Alliance Intercepts by Asymmetric Obligations and Size")
+  ggtitle("Distribution of Mean Predicted Alliance Coefficients by Asymmetric Obligations and Size")
 
 
 
 ### Summarize the distribution of the estimated lambdas
 # General density plot of the means
-ggplot(lambda_df, aes(x = lambda)) + geom_density() + ggtitle("Density of Posterior Means for all Alliance Intercepts")
+ggplot(lambda_df, aes(x = lambda)) + geom_density() + ggtitle("Density of Posterior Means for all Alliance Coefficients")
 
 # Check how many lambda parameters can be reliably distinguished from zero:
 lambda.probs <- apply(ml.model.sum$lambda, 2, positive.check)
@@ -404,7 +412,7 @@ lambda.probs %>%
   geom_col() +
   scale_fill_brewer(palette = "Greys") +
   geom_text(aes(label = lambda.mean), nudge_y = 0.01, size = 4) +
-  labs(y = "Posterior Mean of Alliance Weight Parameter") +
+  labs(y = "Posterior Mean of Alliance Parameter") +
   coord_flip() + theme_classic()
 ggsave("figures/non-zero alliances.png", height = 6, width = 8)
 
@@ -434,6 +442,7 @@ ggplot(sigma.df.melt, aes(x = value, fill = variable)) + geom_density() +
  ggtitle("Posterior Densities of Variance Hyperparameters") + theme_classic()
 ggsave("figures/variance-hyperparam-plot.png", height = 6, width = 8)
 
+rm(list = c("sigma.df", "sigma.df.melt"))
 
 # Calculate the R^2 of the alliance level model
 theta_means <- get_posterior_mean(ml.model, pars = "theta")
@@ -455,39 +464,9 @@ filter(reg.all.data, ussr.mem == 1) %>%
     russ.uncond = sum(uncond.milsup, na.rm = TRUE)
   )
 
-# Plot differences in control variables across alliances
-# Group by alliance type variables and calculate means
-alliance.reg.summary <- alliance.char.model %>%
-  mutate(
-  alliance.type = ifelse(prob_det == 1, "Probabilistic Deterrent", 
-                         ifelse(unconditional == 1, "Unconditional",
-                                ifelse(conditional == 1, "Conditional Deterrent", "No Support"))),
-  num.mem = num.mem / (2 * sd(num.mem)) # rescale the number of members by 2 sd 
-  ) %>%
-  group_by(alliance.type) %>%
-  summarize(
-    compellent = mean(compellent, na.rm = TRUE),
-    num.mem = mean(num.mem, na.rm = TRUE), 
-    dem.prop = mean(dem.prop, na.rm = TRUE),
-    wartime = mean(wartime, na.rm = TRUE), 
-    organ1 = mean(organ1, na.rm = TRUE),
-    milaid.rc = mean(milaid.rc, na.rm = TRUE),
-    us.mem = mean(us.mem, na.rm = TRUE), 
-    russ.mem = mean(russ.mem, na.rm = TRUE)
-    )
-
-# Melt for use with ggplot2
-alliance.reg.summary <- melt(alliance.reg.summary, 
-id.vars = c("alliance.type"))
-
-# Heatmap
-ggplot(data = alliance.reg.summary, aes(x= alliance.type, y = variable, fill=value)) + 
-  geom_tile(color = "white") + 
-  scale_fill_gradient(low = "white", high = "black", name = "Mean") +
-  labs(x = "Alliance Type", y = "Variable") +
-  scale_y_discrete(labels = c("Compellent", "Number of Members", "Share Democ.",
-                              "Wartime", "Institutionalization", "Military Aid", "US member", "Russia Member")) +
-  theme_classic() 
+# Plot mean lambdas against latent measure of treaty strength
+ggplot(lambda_df, aes(x = latent.str.mean, y = lambda)) +
+  geom_point() + geom_smooth()
 
 
 # summarize session info

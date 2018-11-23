@@ -76,7 +76,7 @@ atop <- atop %>%
     io.form = ifelse(organ1 > 0, 1, 0), # promise to form  an IO
     ecaid.dum = ifelse(ecaid > 0, 1, 0), # dummy indicator of economic aid
     milaid.dum = ifelse(milaid > 0, 1, 0), # dummy indicator of military aid
-    uncond.milsup = ifelse(uncond.def == 1 | uncond.def == 1, 1, 0) # unconditional military support
+    uncond.milsup = ifelse(conditio == 0 & (offense == 1 | defense == 1), 1, 0) # unconditional military support
  ) %>% 
   rowwise() %>%
   mutate(str.index = sum(uncond.milsup, milaid.dum, ecaid.dum, io.form, agpro.mult, na.rm = TRUE))
@@ -86,6 +86,8 @@ atop <- atop %>%
 # Check variables: 
 table(atop$uncond.def, atop$defcon)
 table(atop$uncond.off, atop$offcon)
+table(atop$offcon, atop$uncond.milsup)
+table(atop$defcon, atop$uncond.milsup)
 table(atop$uncond, atop$uncond.def) # 123/413 unconditional commitments are defense pacts
 table(atop$uncond, atop$uncond.off) # 13/413 unconditional commitments are offense pacts
 table(atop$uncond.milsup)
@@ -128,7 +130,6 @@ latent.strength <- bfa_mixed(~ uncond.milsup + offense + defense +
 
 # Little bit of diagnosis
 plot(get_coda(latent.strength))
-plot(get_coda(latent.strength, loadings=F, scores=T))
 
 # Diagnosis of convergence with coda
 lcap.sam <- get_coda(latent.strength, scores = TRUE)
@@ -249,7 +250,7 @@ atop <- left_join(atop, chibaetal.2015)
 
 # Export to public-goods-test paper
 write.csv(atop, 
-          "C:/Users/Josh/Dropbox/Research/Dissertation/public-goods-test/data/atop-additions.csv", 
+          "C:/Users/jkalley14/Dropbox/Research/Dissertation/public-goods-test/data/atop-additions.csv", 
           row.names = F)
 
 
