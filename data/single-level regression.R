@@ -127,7 +127,7 @@ plot(m1r.reg$residuals, m1r.reg$w)
 # subset by major and minor powers
 # Major powers
 rreg.maj <- rlm(ln.milex ~ uncond.milsup.pres + cond.milsup.pres + lag.ln.milex +
-                     atwar + civilwar.part + polity + ln.gdp + 
+                     atwar + civilwar.part + polity + ln.gdp + ln.ally.expend +
                      lsthreat + cold.war + avg.num.mem + avg.dem.prop,
                    data = state.char.full, subset = (majpower == 1))
 
@@ -136,12 +136,34 @@ plot(rreg.maj$residuals, rreg.maj$w)
 
 # minor powers
 rreg.min <- rlm(ln.milex ~ uncond.milsup.pres + cond.milsup.pres + lag.ln.milex +
-                     atwar + civilwar.part + polity + ln.gdp +
+                     atwar + civilwar.part + polity + ln.gdp + ln.ally.expend +
                      lsthreat + cold.war + avg.num.mem + avg.dem.prop,
                    data = state.char.full, subset = (majpower == 0))
 
 summary(rreg.min)
 plot(rreg.min$residuals, rreg.min$w)
+
+texreg(l = list(m1r.reg, rreg.maj, rreg.min), ci.force = TRUE)
+
+
+# subset by year: before and after 1945
+# before 1945
+rreg.pre45 <- rlm(ln.milex ~ uncond.milsup.pres + cond.milsup.pres + lag.ln.milex +
+                  atwar + civilwar.part + polity + ln.gdp + ln.ally.expend +
+                  lsthreat + avg.num.mem + avg.dem.prop,
+                data = state.char.full, subset = (year <= 1945))
+
+summary(rreg.pre45)
+plot(rreg.pre45$residuals, rreg.pre45$w)
+
+# after 1945
+rreg.post45 <- rlm(ln.milex ~ uncond.milsup.pres + cond.milsup.pres + lag.ln.milex +
+                  atwar + civilwar.part + polity + ln.gdp + ln.ally.expend +
+                  lsthreat + cold.war + avg.num.mem + avg.dem.prop,
+                data = state.char.full, subset = (year > 1945))
+
+summary(rreg.post45)
+plot(rreg.post45$residuals, rreg.post45$w)
 
 
 
@@ -264,4 +286,9 @@ kernel.rel <- inter.kernel(Y = "ln.milex", D = "uncond.milsup.pres", X = "avg.tr
 )
 kernel.rel
 
+
+
+# Remove all the robust regressions
+rm(list = c("m1r.reg", "rreg.ex", "rreg.maj", "rreg.min", "m1.all", "m1.all.iabs", "m1.all.irel",
+            "m1.reg.fe", "m1.fgls", "reg.ex.gls", "reg.ex", "rreg.pre45", "rreg.post45"))
 
