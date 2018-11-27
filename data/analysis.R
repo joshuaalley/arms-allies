@@ -80,7 +80,7 @@ reg.state.comp$year.id <- reg.state.comp %>% group_indices(year)
 # Make the alliance characteristics data match the membership matrix
 reg.all.data <- filter(alliance.char, atopid %in% colnames(state.mem.mat)) %>%
   select(atopid, uncond.milsup, offense, num.mem, 
-          dem_prop, wartime, organ1, milaid.rc, asymm, us.mem, ussr.mem, base)
+          dem_prop, wartime, organ1, milaid.rc, asymm, us.mem, ussr.mem)
 
 
 # Replace missing conditions (arms, instituions and military aid) with zeros
@@ -202,7 +202,6 @@ mean(ml.model.sum$beta[, 8] > 0) # military aid
 mean(ml.model.sum$beta[, 9] > 0) # asymmetric obligations 
 mean(ml.model.sum$beta[, 10] < 0) # US membership
 mean(ml.model.sum$beta[, 11] < 0) # USSR membership
-mean(ml.model.sum$beta[, 12] < 0) # Bases
 
 beta.melt <- melt(ml.model.sum$beta)
 
@@ -217,7 +216,7 @@ beta.summary <- beta.summary[, -2]
 rownames(beta.summary) <- c("Constant", "Uncond. Mil. Supp.", "Offense", 
                             "Number Members","Democratic Membership", 
                             "Wartime", "IO Form.", "Military Aid", "Asymmetric",
-                            "US Member", "USSR Member", "Bases", "sigma Alliances")
+                            "US Member", "USSR Member", "sigma Alliances")
 
 print(beta.summary)
 xtable(beta.summary, digits = 3)

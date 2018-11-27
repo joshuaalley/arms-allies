@@ -53,7 +53,7 @@ reg.state.comp.maj$year.id <- reg.state.comp.maj %>% group_indices(year)
 # Make the alliance characteristics data match the membership matrix
 reg.all.data.maj <- filter(alliance.char, atopid %in% colnames(state.mem.maj)) %>%
   select(atopid, uncond.milsup, offense, num.mem, 
-         dem_prop, wartime, organ1, milaid.rc, asymm, us.mem, ussr.mem, base)
+         dem_prop, wartime, organ1, milaid.rc, asymm, us.mem, ussr.mem)
 
 
 # Replace missing conditions (arms, instituions and military aid) with zeros
@@ -124,7 +124,7 @@ reg.state.comp.min$year.id <- reg.state.comp.min %>% group_indices(year)
 # Make the alliance characteristics data match the membership matrix
 reg.all.data.min <- filter(alliance.char, atopid %in% colnames(state.mem.min)) %>%
   select(atopid, uncond.milsup, offense, num.mem, 
-         dem_prop, wartime, organ1, milaid.rc, asymm, us.mem, ussr.mem, base)
+         dem_prop, wartime, organ1, milaid.rc, asymm, us.mem, ussr.mem)
 
 
 # Replace missing conditions (arms, instituions and military aid) with zeros
@@ -178,7 +178,7 @@ beta.summary.maj <- beta.summary.maj[, -2]
 rownames(beta.summary.maj) <- c("Constant", "Uncond. Mil. Supp.", "Offense", 
                                 "Number Members","Democratic Membership", 
                                 "Wartime", "IO Form.", "Military Aid", "Asymmetric",
-                                "US Member", "USSR Member", "Bases", "sigma Alliances")
+                                "US Member", "USSR Member", "sigma Alliances")
 
 print(beta.summary.maj)
 xtable(beta.summary.maj, digits = 3)
@@ -189,7 +189,7 @@ beta.summary.min <- beta.summary.min[, -2]
 rownames(beta.summary.min) <- c("Constant", "Uncond. Mil. Supp.", "Offense", 
                                 "Number Members","Democratic Membership", 
                                 "Wartime", "IO Form.", "Military Aid", "Asymmetric",
-                                "US Member", "USSR Member", "Bases", "sigma Alliances")
+                                "US Member", "USSR Member", "sigma Alliances")
 
 print(beta.summary.min)
 xtable(beta.summary.min, digits = 3)
