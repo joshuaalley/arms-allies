@@ -126,6 +126,7 @@ plot(m1r.reg$residuals, m1r.reg$w)
 
 # subset by major and minor powers
 # Major powers
+summary(subset(state.char.full, majpower == 1, select = uncond.milsup.pres))
 rreg.maj <- rlm(ln.milex ~ uncond.milsup.pres + cond.milsup.pres + lag.ln.milex +
                      atwar + civilwar.part + polity + ln.gdp + ln.ally.expend +
                      lsthreat + cold.war + avg.num.mem + avg.dem.prop,
@@ -135,6 +136,7 @@ summary(rreg.maj)
 plot(rreg.maj$residuals, rreg.maj$w)
 
 # minor powers
+summary(subset(state.char.full, majpower == 0, select = uncond.milsup.pres))
 rreg.min <- rlm(ln.milex ~ uncond.milsup.pres + cond.milsup.pres + lag.ln.milex +
                      atwar + civilwar.part + polity + ln.gdp + ln.ally.expend +
                      lsthreat + cold.war + avg.num.mem + avg.dem.prop,

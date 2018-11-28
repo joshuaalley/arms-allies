@@ -43,7 +43,7 @@ model {
 
   
   
-  // Linear prediction of the state-year spending mean Row i of the membership matrix Z will produce a scalar when postmultiplied by the vector of alliance characteristics lambda
+  // Linear prediction of state-year spending
   for (i in 1:N)
     y_hat[i] = alpha + alpha_state[state[i]] + alpha_year[year[i]] + W[i] * gamma;
   
