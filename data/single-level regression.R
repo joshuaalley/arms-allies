@@ -72,12 +72,11 @@ rm(duplicates)
 # IV: Unconditional military support
 summary(state.char.full$uncond.milsup.pres)
 # Differences in expenditure
-t.test(ln.milex ~ uncond.milsup.pres, data = state.char.full)
 t.test(change.ln.milex ~ uncond.milsup.pres, data = state.char.full)
 
 
 # Start with a simple linear regression: presence of unconditional support
-m1.all <- lm(ln.milex ~ uncond.milsup.pres + cond.milsup.pres + lag.ln.milex +
+m1.all <- lm(change.ln.milex ~ uncond.milsup.pres + cond.milsup.pres + lag.ln.milex +
             atwar + civilwar.part + polity + ln.gdp + majpower +
             lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
           data = state.char.full
@@ -88,7 +87,7 @@ qqline(m1.all$residuals)
 
 
 # FGLS: "random effects" robust to intragroup heteroskedasticity and serial correlation 
-m1.fgls <- pggls(ln.milex ~ uncond.milsup.pres + lag.ln.milex +
+m1.fgls <- pggls(change.ln.milex ~ uncond.milsup.pres + cond.milsup.pres + lag.ln.milex +
                    atwar + civilwar.part + polity + ln.gdp + majpower +
                  lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
          data = state.char.full,
@@ -115,7 +114,7 @@ summary(m1.reg.fe)
 ###### 
 # Residuals in the above have extremely heavy tails. Robust regression weights observations as 
 # a function of their residual, ensuring least squares is still efficient
-m1r.reg <- rlm(ln.milex ~ uncond.milsup.pres + cond.milsup.pres + lag.ln.milex +
+m1r.reg <- rlm(change.ln.milex ~ uncond.milsup.pres + lag.ln.milex +
                  atwar + civilwar.part + polity + ln.gdp + majpower +
                  lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
                data = state.char.full)
@@ -127,7 +126,7 @@ plot(m1r.reg$residuals, m1r.reg$w)
 # subset by major and minor powers
 # Major powers
 summary(subset(state.char.full, majpower == 1, select = uncond.milsup.pres))
-rreg.maj <- rlm(ln.milex ~ uncond.milsup.pres + cond.milsup.pres + lag.ln.milex +
+rreg.maj <- rlm(change.ln.milex ~ uncond.milsup.pres + lag.ln.milex +
                      atwar + civilwar.part + polity + ln.gdp + ln.ally.expend +
                      lsthreat + cold.war + avg.num.mem + avg.dem.prop,
                    data = state.char.full, subset = (majpower == 1))
@@ -137,7 +136,7 @@ plot(rreg.maj$residuals, rreg.maj$w)
 
 # minor powers
 summary(subset(state.char.full, majpower == 0, select = uncond.milsup.pres))
-rreg.min <- rlm(ln.milex ~ uncond.milsup.pres + cond.milsup.pres + lag.ln.milex +
+rreg.min <- rlm(change.ln.milex ~ uncond.milsup.pres + lag.ln.milex +
                      atwar + civilwar.part + polity + ln.gdp + ln.ally.expend +
                      lsthreat + cold.war + avg.num.mem + avg.dem.prop,
                    data = state.char.full, subset = (majpower == 0))
@@ -148,9 +147,30 @@ plot(rreg.min$residuals, rreg.min$w)
 texreg(l = list(m1r.reg, rreg.maj, rreg.min), ci.force = TRUE)
 
 
+
+# Interact major power indicator with unconditional support
+rreg.int <- rlm(change.ln.milex ~ uncond.milsup.pres + majpower + uncond.milsup.pres:majpower + 
+                 lag.ln.milex +
+                 atwar + civilwar.part + polity + ln.gdp + 
+                 lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
+               data = state.char.full)
+
+summary(rreg.int)
+plot(rreg.int$residuals, rreg.int$w)
+
+# Calculate marginal effects
+margins(rreg.int)
+cplot(rreg.int, x = "majpower", dx = "uncond.milsup.pres", what = "effect",
+      main = "Average Marginal Effect of Unconditional Military Support For Major and Non-Major Powers",
+      factor.lty = 0L, rug = FALSE, xvals = c(0, 1))
+abline(h = 0)
+
+
+
+
 # subset by year: before and after 1945
 # before 1945
-rreg.pre45 <- rlm(ln.milex ~ uncond.milsup.pres + cond.milsup.pres + lag.ln.milex +
+rreg.pre45 <- rlm(change.ln.milex ~ uncond.milsup.pres + cond.milsup.pres + lag.ln.milex +
                   atwar + civilwar.part + polity + ln.gdp + ln.ally.expend +
                   lsthreat + avg.num.mem + avg.dem.prop,
                 data = state.char.full, subset = (year <= 1945))
@@ -159,7 +179,7 @@ summary(rreg.pre45)
 plot(rreg.pre45$residuals, rreg.pre45$w)
 
 # after 1945
-rreg.post45 <- rlm(ln.milex ~ uncond.milsup.pres + cond.milsup.pres + lag.ln.milex +
+rreg.post45 <- rlm(change.ln.milex ~ uncond.milsup.pres + cond.milsup.pres + lag.ln.milex +
                   atwar + civilwar.part + polity + ln.gdp + ln.ally.expend +
                   lsthreat + cold.war + avg.num.mem + avg.dem.prop,
                 data = state.char.full, subset = (year > 1945))
@@ -174,7 +194,7 @@ plot(rreg.post45$residuals, rreg.post45$w)
 # This is a crude approximation of the multilevel model with capability in the membership matrix
 
 # Standard regression: complete pooling
-reg.ex <- lm(ln.milex ~ uncond.milsup.expend + lag.ln.milex +
+reg.ex <- lm(change.ln.milex ~ uncond.milsup.expend + lag.ln.milex +
                atwar + civilwar.part + polity + ln.gdp + majpower +
                lsthreat + cold.war + avg.num.mem + avg.dem.prop,
              data = state.char.full
@@ -183,7 +203,7 @@ summary(reg.ex)
 
 
 # Use fgls to acocunt for autoregressive component of the errors
-reg.ex.gls <- pggls(ln.milex ~ uncond.milsup.expend + lag.ln.milex +
+reg.ex.gls <- pggls(change.ln.milex ~ uncond.milsup.expend + lag.ln.milex +
                       atwar + civilwar.part + polity + ln.gdp + majpower +
                       lsthreat + cold.war + avg.num.mem + avg.dem.prop,
               data = state.char.full,
@@ -207,7 +227,7 @@ summary(reg.ex.fe)
 
 
 # Robust regression
-rreg.ex <- rlm(ln.milex ~ uncond.milsup.expend + lag.ln.milex +
+rreg.ex <- rlm(change.ln.milex ~ uncond.milsup.expend + lag.ln.milex +
                  atwar + civilwar.part + polity + ln.gdp + majpower +
                  lsthreat + cold.war + avg.num.mem + avg.dem.prop,
                data = state.char.full)
@@ -220,7 +240,7 @@ plot(rreg.ex$residuals, rreg.ex$w)
 ### Is the effect of unconditional military support conditional on ally size? 
 
 # Robust regression: absolute size
-m1.all.iabs <- rlm(ln.milex ~ uncond.milsup.pres + ln.gdp + uncond.milsup.pres:ln.gdp + lag.ln.milex +
+m1.all.iabs <- rlm(change.ln.milex ~ uncond.milsup.pres + ln.gdp + uncond.milsup.pres:ln.gdp + lag.ln.milex +
                atwar + civilwar.part + polity  + majpower +
                lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
              data = state.char.full
@@ -237,7 +257,7 @@ abline(h = 0)
 # Check results with interflex- continuous modifying variable
 state.char.full <- as.data.frame(state.char.full)
 # binning estimator
-bin.abs <- inter.binning(Y = "ln.milex", D = "uncond.milsup.pres", X = "ln.gdp", 
+bin.abs <- inter.binning(Y = "change.ln.milex", D = "uncond.milsup.pres", X = "ln.gdp", 
                          Z = c("lag.ln.milex", "atwar", "civilwar.part", "polity",
                                "majpower", "lsthreat", "cold.war", "avg.num.mem", 
                                "ln.ally.expend", "avg.dem.prop"), 
@@ -254,7 +274,7 @@ inter.data.rel <- filter(state.char.full, treaty.pres == 1)
 inter.data.rel <- as.data.frame(inter.data.rel)
 
 # Robust regression: average relative contribution
-m1.all.irel <- rlm(ln.milex ~ uncond.milsup.pres + avg.treaty.contrib + uncond.milsup.pres:avg.treaty.contrib + lag.ln.milex +
+m1.all.irel <- rlm(change.ln.milex ~ uncond.milsup.pres + avg.treaty.contrib + uncond.milsup.pres:avg.treaty.contrib + lag.ln.milex +
                      atwar + civilwar.part + polity  + majpower + ln.gdp +
                      lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
                    data = inter.data.rel
@@ -268,7 +288,7 @@ cplot(m1.all.irel, x = "avg.treaty.contrib", dx = "uncond.milsup.pres", what = "
 abline(h = 0)
 
 # Interflex check
-bin.rel <- inter.binning(Y = "ln.milex", D = "uncond.milsup.pres", X = "avg.treaty.contrib", 
+bin.rel <- inter.binning(Y = "change.ln.milex", D = "uncond.milsup.pres", X = "avg.treaty.contrib", 
                          Z = c("lag.ln.milex", "atwar", "civilwar.part", "polity",
                                "majpower", "lsthreat", "cold.war", "avg.num.mem", 
                                "ln.ally.expend", "avg.dem.prop", "ln.gdp"), 
@@ -278,7 +298,7 @@ bin.rel <- inter.binning(Y = "ln.milex", D = "uncond.milsup.pres", X = "avg.trea
 bin.rel
 
 # Kernel: 10+ minute run time 
-kernel.rel <- inter.kernel(Y = "ln.milex", D = "uncond.milsup.pres", X = "avg.treaty.contrib", 
+kernel.rel <- inter.kernel(Y = "change.ln.milex", D = "uncond.milsup.pres", X = "avg.treaty.contrib", 
                            Z = c("lag.ln.milex", "atwar", "civilwar.part", "polity",
                                  "majpower", "lsthreat", "cold.war", "avg.num.mem", 
                                  "ln.ally.expend", "avg.dem.prop", "ln.gdp"), 
@@ -290,7 +310,7 @@ kernel.rel
 
 
 
-# Remove all the robust regressions
+# Remove all these regressions from environment
 rm(list = c("m1r.reg", "rreg.ex", "rreg.maj", "rreg.min", "m1.all", "m1.all.iabs", "m1.all.irel",
-            "m1.reg.fe", "m1.fgls", "reg.ex.gls", "reg.ex", "rreg.pre45", "rreg.post45"))
+            "m1.reg.fe", "m1.fgls", "reg.ex.gls", "reg.ex", "rreg.pre45", "rreg.post45", "rreg.int"))
 

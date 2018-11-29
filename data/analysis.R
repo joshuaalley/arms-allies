@@ -32,7 +32,7 @@ set.seed(12)
 
 # Define a state-year level dataset with no missing observations
 reg.state.data <- state.vars %>%
-  select(ccode, year, ln.milex, lag.ln.milex,
+  select(ccode, year, change.ln.milex, lag.ln.milex,
                       atwar, civilwar.part, rival.milex, ln.gdp, polity, 
                       cold.war, disputes, majpower) 
 
@@ -59,9 +59,9 @@ reg.state.comp.min <- filter(reg.state.comp, majpower == 0)
 
  
 # Check the range and distribution of the DV
-summary(reg.state.comp$ln.milex)
-sd(reg.state.comp$ln.milex)
-ggplot(reg.state.comp, aes(ln.milex)) + geom_density()
+summary(reg.state.comp$change.ln.milex)
+sd(reg.state.comp$change.ln.milex)
+ggplot(reg.state.comp, aes(change.ln.milex)) + geom_density()
 
 
 
