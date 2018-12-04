@@ -52,8 +52,9 @@ reg.state.comp.maj$year.id <- reg.state.comp.maj %>% group_indices(year)
 # Create the matrix of alliance-level variables
 # Make the alliance characteristics data match the membership matrix
 reg.all.data.maj <- filter(alliance.char, atopid %in% colnames(state.mem.maj)) %>%
-  select(atopid, uncond.milsup, offense, num.mem, 
-         dem_prop, wartime, organ1, milaid.rc, asymm, us.mem, ussr.mem)
+  select(atopid, latent.str.mean, num.mem, 
+         dem_prop, wartime, asymm, us.mem, ussr.mem)
+
 
 
 # Replace missing conditions (arms, instituions and military aid) with zeros
@@ -123,8 +124,8 @@ reg.state.comp.min$year.id <- reg.state.comp.min %>% group_indices(year)
 # Create the matrix of alliance-level variables
 # Make the alliance characteristics data match the membership matrix
 reg.all.data.min <- filter(alliance.char, atopid %in% colnames(state.mem.min)) %>%
-  select(atopid, uncond.milsup, offense, num.mem, 
-         dem_prop, wartime, organ1, milaid.rc, asymm, us.mem, ussr.mem)
+  select(atopid, latent.str.mean, num.mem, 
+         dem_prop, wartime, asymm, us.mem, ussr.mem)
 
 
 # Replace missing conditions (arms, instituions and military aid) with zeros
@@ -175,10 +176,11 @@ check_hmc_diagnostics(ml.model.min)
 # Summarize intervals for major powers
 beta.summary.maj <- summary(ml.model.maj, pars = c("beta", "sigma_all"), probs = c(0.05, 0.95))$summary
 beta.summary.maj <- beta.summary.maj[, -2]
-rownames(beta.summary.maj) <- c("Constant", "Uncond. Mil. Supp.", "Offense", 
+rownames(beta.summary.maj) <- c("Constant", "Latent Str.", 
                                 "Number Members","Democratic Membership", 
-                                "Wartime", "IO Form.", "Military Aid", "Asymmetric",
+                                "Wartime", "Asymmetric",
                                 "US Member", "USSR Member", "sigma Alliances")
+
 
 print(beta.summary.maj)
 xtable(beta.summary.maj, digits = 3)
@@ -186,9 +188,9 @@ xtable(beta.summary.maj, digits = 3)
 # summarize intervals for minor powers
 beta.summary.min <- summary(ml.model.min, pars = c("beta", "sigma_all"), probs = c(0.05, 0.95))$summary
 beta.summary.min <- beta.summary.min[, -2]
-rownames(beta.summary.min) <- c("Constant", "Uncond. Mil. Supp.", "Offense", 
+rownames(beta.summary.min) <- c("Constant", "Latent Str.", 
                                 "Number Members","Democratic Membership", 
-                                "Wartime", "IO Form.", "Military Aid", "Asymmetric",
+                                "Wartime", "Asymmetric",
                                 "US Member", "USSR Member", "sigma Alliances")
 
 print(beta.summary.min)
@@ -197,14 +199,14 @@ xtable(beta.summary.min, digits = 3)
 
 
 # Create an object with all three estimates and plot (Gelman's Secret Weapon)
-uncond.summary <- rbind(beta.summary[2, ], beta.summary.maj[2, ], beta.summary.min[2, ])
-row.names(uncond.summary) <- c("Full Sample", "Major Powers", "Minor Powers")
-uncond.summary <- as.data.frame(uncond.summary)
+lscoef.summary <- rbind(beta.summary[2, ], beta.summary.maj[2, ], beta.summary.min[2, ])
+row.names(lscoef.summary) <- c("Full Sample", "Major Powers", "Minor Powers")
+lscoef.summary <- as.data.frame(lscoef.summary)
 
-ggplot(uncond.summary, aes(x = row.names(uncond.summary), y = mean)) +
+ggplot(lscoef.summary, aes(x = row.names(lscoef.summary), y = mean)) +
   geom_errorbar(aes(ymin = `5%`, 
                     ymax = `95%`,
                     width=.05), position = position_dodge(0.1)) +
   geom_point(position = position_dodge(0.1)) + geom_hline(yintercept = 0) +
-  theme_classic() + labs(x = "Sample", y = "Effect of Unconditional Military Support") +
+  theme_classic() + labs(x = "Sample", y = "Effect of Treaty Strength") +
   coord_flip()

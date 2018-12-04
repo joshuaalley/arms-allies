@@ -41,7 +41,7 @@ parameters {
   real<lower = 0> sigma_all; // variance hyperparameter of the alliances
   vector[L] beta; // vector of alliance-level coefficients
   vector[M] gamma; // vector of state-level coefficients 
-  real<lower = 5> nu; // degrees of freedom in t-distribution of outcome
+  real<lower = 3> nu; // degrees of freedom in t-distribution of outcome
 
 }
 

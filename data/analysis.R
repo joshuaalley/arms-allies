@@ -79,8 +79,8 @@ reg.state.comp$year.id <- reg.state.comp %>% group_indices(year)
 # Create the matrix of alliance-level variables
 # Make the alliance characteristics data match the membership matrix
 reg.all.data <- filter(alliance.char, atopid %in% colnames(state.mem.mat)) %>%
-  select(atopid, uncond.milsup, offense, num.mem, 
-          dem_prop, wartime, organ1, milaid.rc, asymm, us.mem, ussr.mem)
+  select(atopid, latent.str.mean, num.mem, 
+          dem_prop, wartime, asymm, us.mem, ussr.mem)
 
 
 # Replace missing conditions (arms, instituions and military aid) with zeros
@@ -177,8 +177,7 @@ pairs(ml.model, pars = c("gamma[1]", "gamma[2]", "gamma[3]", "gamma[4]",
 ml.model.sum <- extract(ml.model, permuted = TRUE)
 
 # Posterior predictive distributions relative to observed data
-yrep.full <- ml.model.sum$y_pred
-yrep.full <- yrep.full[1:100, ]
+yrep.full <- ml.model.sum$y_pred[1:100, ]
 
 # plot posterior predictive denisty of first 100 simulations
 ppc_dens_overlay(y, yrep.full)
@@ -192,30 +191,28 @@ ppc_dens_overlay(y, yrep.full)
 colnames(ml.model.sum$beta) <- colnames(alliance.reg.mat)
 
 
-mean(ml.model.sum$beta[, 2] > 0) # uncond military support
-mean(ml.model.sum$beta[, 3] > 0) # offense
-mean(ml.model.sum$beta[, 4] < 0) # number of members
-mean(ml.model.sum$beta[, 5] < 0) # democratic proportion
-mean(ml.model.sum$beta[, 6] > 0) # wartime
-mean(ml.model.sum$beta[, 7] < 0) # IO formation
-mean(ml.model.sum$beta[, 8] > 0) # military aid
-mean(ml.model.sum$beta[, 9] > 0) # asymmetric obligations 
-mean(ml.model.sum$beta[, 10] < 0) # US membership
-mean(ml.model.sum$beta[, 11] < 0) # USSR membership
+mean(ml.model.sum$beta[, 2] > 0) # latent strength
+mean(ml.model.sum$beta[, 3] > 0) # number of members
+mean(ml.model.sum$beta[, 4] < 0) # democratic proportion
+mean(ml.model.sum$beta[, 5] < 0) # wartime
+mean(ml.model.sum$beta[, 6] > 0) # asymmetric obligations 
+mean(ml.model.sum$beta[, 7] < 0) # US membership
+mean(ml.model.sum$beta[, 8] > 0) # USSR membership
+
 
 beta.melt <- melt(ml.model.sum$beta)
 
 # Plot density of the coefficients
-ggplot(beta.melt, aes(x=value, fill = Var2)) +
+ggplot(beta.melt, aes(x=value, fill = Var.2)) +
   geom_density(alpha=0.25) +
   ggtitle("Posterior Distribution of Alliance-Level Regression Coefficients")
 
 # Summarize intervals
 beta.summary <- summary(ml.model, pars = c("beta", "sigma_all"), probs = c(0.05, 0.95))$summary
 beta.summary <- beta.summary[, -2]
-rownames(beta.summary) <- c("Constant", "Uncond. Mil. Supp.", "Offense", 
+rownames(beta.summary) <- c("Constant", "Latent Str.", 
                             "Number Members","Democratic Membership", 
-                            "Wartime", "IO Form.", "Military Aid", "Asymmetric",
+                            "Wartime", "Asymmetric",
                             "US Member", "USSR Member", "sigma Alliances")
 
 print(beta.summary)
@@ -266,9 +263,9 @@ gamma.probs <- apply(ml.model.sum$gamma, 2, positive.check)
 # append in a dataframe to be used for plotting
 coef.probs <- as.data.frame(append(beta.probs, gamma.probs))
 colnames(coef.probs) <- c("Posterior Probability of Positive Coefficient")
-rownames(coef.probs) <- c("Alliance Model Constant", "Uncond. Mil. Supp.", "Offense", 
+rownames(coef.probs) <- c("Alliance Model Constant", "Latent Str.", 
                             "Number Members","Democratic Membership", 
-                          "Wartime", "IO Form.", "Military Aid", "Asymmetric",
+                          "Wartime", "Asymmetric",
                           "US Member", "USSR Member",
                           "Lagged Expenditures", "At War", "Civil War", "Rival Mil. Expenditure", 
                           "ln(GDP)", "Polity", "Cold War", "Disputes", "Major Power")
@@ -306,14 +303,20 @@ lambda_df <- data_frame(lambda = lambda_means[, 5]) %>%  # add lambdas to df
                                               
                                                                                            
 ## Violin plot for lambdas
-ggplot(lambda_df, aes(x = as.factor(uncond.milsup), y = lambda)) +
-  geom_violin() +  # add violin
+ggplot(lambda_df, aes(x = latent.str.mean, y = lambda)) +
+#  geom_violin() +  # add violin
   geom_point(position = position_jitter(width = 0.1),  # jitter points to prevent overlap
              alpha = 0.5,  # somewhat trasparent
              aes(size = num.mem)) +  # make size and shape corresponde to number of members
   ggtitle("Distribution of Mean Predicted Alliance Coefficients by Alliance Strength and Size") +
   theme_classic()
 ggsave("figures/lambda-box.png", height = 6, width = 8)
+
+
+# Plot mean lambdas against latent measure of treaty strength
+ggplot(lambda_df, aes(x = latent.str.mean, y = lambda)) +
+  geom_point() + 
+  geom_smooth() + theme_classic()
 
 
 # Use random forest to assess variable importance
@@ -375,8 +378,8 @@ ggplot(lambda_df, aes(x = lambda)) + geom_density() + ggtitle("Density of Poster
 
 # Check how many lambda parameters can be reliably distinguished from zero:
 lambda.probs <- apply(ml.model.sum$lambda, 2, positive.check)
-lambda.probs <- cbind.data.frame(reg.all.data$atopid, round(lambda_df$lambda, digits = 4), lambda_df$uncond.milsup, lambda.probs)
-colnames(lambda.probs) <- c("atopid", "lambda.mean", "uncond.milsup", "pos.post.prob")
+lambda.probs <- cbind.data.frame(reg.all.data$atopid, round(lambda_df$lambda, digits = 4), lambda_df$latent.str.mean, lambda.probs)
+colnames(lambda.probs) <- c("atopid", "lambda.mean", "latent.str.mean", "pos.post.prob")
 # binary indicator if posterior probability is greater than 90% for positive or negative
 lambda.probs$non.zero <- ifelse(lambda.probs$pos.post.prob >= .90 | lambda.probs$pos.post.prob <= .10, 1, 0)
 sum(lambda.probs$non.zero) # total number of non-zero alliances
@@ -385,14 +388,14 @@ sum(lambda.probs$non.zero) # total number of non-zero alliances
 lambda.probs$atopid <- reorder(lambda.probs$atopid, lambda.probs$pos.post.prob)
 
 # For all alliances
-ggplot(lambda.probs, aes(x = atopid, y = pos.post.prob, fill = factor(uncond.milsup))) + 
+ggplot(lambda.probs, aes(x = atopid, y = pos.post.prob, fill = latent.str.mean)) + 
   geom_col() +
   coord_flip()
 
 # For non-zero alliances 
 lambda.probs %>% 
   filter(non.zero == 1) %>% 
-  ggplot(mapping = aes(x = atopid, y = pos.post.prob, factor(uncond.milsup))) + 
+  ggplot(mapping = aes(x = atopid, y = pos.post.prob, latent.str.mean)) + 
   geom_col() +
   scale_fill_brewer(palette = "Greys") +
   geom_text(aes(label = pos.post.prob), nudge_y = .04) +
@@ -400,14 +403,14 @@ lambda.probs %>%
   
 # Plot the lambda means, coloring by type
 lambda.probs$atopid <- reorder(lambda.probs$atopid, lambda.probs$lambda.mean)
-ggplot(lambda.probs, aes(x = atopid, y = lambda.mean, fill = factor(uncond.milsup))) + 
+ggplot(lambda.probs, aes(x = atopid, y = lambda.mean, fill = latent.str.mean)) + 
   geom_col() 
 
 
 # For non-zero alliances 
 lambda.probs %>% 
   filter(non.zero == 1) %>% 
-  ggplot(mapping = aes(x = atopid, y = lambda.mean, fill = factor(uncond.milsup))) + 
+  ggplot(mapping = aes(x = atopid, y = lambda.mean, fill = latent.str.mean)) + 
   geom_col() +
   scale_fill_brewer(palette = "Greys") +
   geom_text(aes(label = lambda.mean), nudge_y = 0.01, size = 4) +
@@ -462,10 +465,6 @@ filter(reg.all.data, ussr.mem == 1) %>%
   summarize(
     russ.uncond = sum(uncond.milsup, na.rm = TRUE)
   )
-
-# Plot mean lambdas against latent measure of treaty strength
-ggplot(lambda_df, aes(x = latent.str.mean, y = lambda)) +
-  geom_point() + geom_smooth()
 
 
 # summarize session info
