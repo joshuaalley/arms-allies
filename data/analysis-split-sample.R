@@ -210,3 +210,98 @@ ggplot(lscoef.summary, aes(x = row.names(lscoef.summary), y = mean)) +
   geom_point(position = position_dodge(0.1)) + geom_hline(yintercept = 0) +
   theme_classic() + labs(x = "Sample", y = "Effect of Treaty Strength") +
   coord_flip()
+
+
+# compare trends in lambdas across treaty strength in major and minor
+
+# Start with major powers
+lambda.means.maj <- get_posterior_mean(ml.model.maj, pars = "lambda")
+lambda.df.maj <- data_frame(lambda = lambda.means.maj[, 5]) %>%  # add lambdas to df
+  bind_cols(filter(alliance.char, atopid %in% colnames(state.mem.maj)))
+
+# plot major powers
+lambda.str.maj <- ggplot(lambda.df.maj, aes(x = latent.str.mean, y = lambda)) +
+                  geom_point() + 
+                  geom_smooth() + theme_classic() +
+  labs(x = "Latent Treaty Strength", y = "Effect of Allied Spending") +
+  ggtitle("Major Powers")
+lambda.str.maj
+
+
+# Non-major powers
+lambda.means.min <- get_posterior_mean(ml.model.min, pars = "lambda")
+lambda.df.min <- data_frame(lambda = lambda.means.min[, 5]) %>%  # add lambdas to df
+  bind_cols(filter(alliance.char, atopid %in% colnames(state.mem.min)))
+
+# plot non-major powers
+lambda.str.min <- ggplot(lambda.df.min, aes(x = latent.str.mean, y = lambda)) +
+                  geom_point() + 
+                  geom_smooth() + theme_classic() +
+            labs(x = "Latent Treaty Strength", y = "Effect of Allied Spending") +
+            ggtitle("Non-Major Powers")
+lambda.str.min
+
+# Compare all in one plot
+# Define multiplot function from http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_%28ggplot2%29/ 
+multiplot.ggplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+  
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  
+  numPlots = length(plots)
+  
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                     ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+  
+  if (numPlots==1) {
+    print(plots[[1]])
+    
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+# Apply the function to major and non-major power plots  
+multiplot.ggplot(lambda.str.maj, lambda.str.min)
+
+
+# Compare lambdas for alliances with major and minor power members
+lambda.df.mix <- lambda.df.min %>%
+  select(atopid, lambda, latent.str.mean) %>%
+  left_join(select(lambda.df.maj, atopid, lambda, latent.str.mean), 
+            by = c("atopid", "latent.str.mean")) %>% 
+     rename(
+     lambda.min = lambda.x,
+     lambda.maj = lambda.y
+     ) %>%
+  filter(complete.cases(atopid, latent.str.mean, lambda.min, lambda.maj)) %>%
+  mutate(
+    lambda.diff = abs(lambda.min- lambda.maj) # this isn't working
+  )
+lambda.df.mix <- as.data.frame(lambda.df.mix)
+lambda.df.mix <- melt(lambda.df.mix, 
+                id = c("atopid", "latent.str.mean", "lambda.diff"))
+
+# plot
+ggplot(lambda.df.mix, aes(x = atopid, y = value, colour = variable)) + 
+  geom_point(aes(size = latent.str.mean)) + 
+  labs(x = 'ATOPID', y = "Effect of Allied Spending") 
+

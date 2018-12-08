@@ -315,9 +315,8 @@ ggsave("figures/lambda-box.png", height = 6, width = 8)
 
 # Plot mean lambdas against latent measure of treaty strength
 ggplot(lambda_df, aes(x = latent.str.mean, y = lambda)) +
-  geom_point() + 
-  geom_smooth() + theme_classic()
-
+      geom_point() + 
+      geom_smooth() + theme_classic()
 
 # Use random forest to assess variable importance
 rf <- cforest(lambda ~ ., data = lambda_df)  # fit forest
