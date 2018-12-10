@@ -174,10 +174,14 @@ pairs(ml.model, pars = c("gamma[1]", "gamma[2]", "gamma[3]", "gamma[4]",
 
 
 # Extract coefficients from the model
-ml.model.sum <- extract(ml.model, permuted = TRUE)
+ml.model.sum <- extract(ml.model, pars = c("beta", "gamma", "lambda", 
+                                           "sigma", "sigma_year", "sigma_state",
+                                           "sigma_all", "y_pred"),
+                        permuted = TRUE)
 
 # Posterior predictive distributions relative to observed data
 yrep.full <- ml.model.sum$y_pred[1:100, ]
+ml.model.sum <- ml.model.sum[1:7]
 
 # plot posterior predictive denisty of first 100 simulations
 ppc_dens_overlay(y, yrep.full)

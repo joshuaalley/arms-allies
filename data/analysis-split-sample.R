@@ -227,6 +227,10 @@ lambda.str.maj <- ggplot(lambda.df.maj, aes(x = latent.str.mean, y = lambda)) +
   ggtitle("Major Powers")
 lambda.str.maj
 
+# Quick comparison of US and USSR
+summary(subset(reg.all.data.maj, us.mem == 1)$latent.str.mean) # USA post-45
+summary(subset(reg.all.data.maj, ussr.mem == 1)$latent.str.mean) # USSR post-45
+
 
 # Non-major powers
 lambda.means.min <- get_posterior_mean(ml.model.min, pars = "lambda")
@@ -305,3 +309,67 @@ ggplot(lambda.df.mix, aes(x = atopid, y = value, colour = variable)) +
   geom_point(aes(size = latent.str.mean)) + 
   labs(x = 'ATOPID', y = "Effect of Allied Spending") 
 
+
+
+# More detailed posterior inference and comparisons
+# Extract coefficients from the major-power model
+sum.maj.post <- extract(ml.model.maj, pars = c("beta", "gamma", "lambda"),
+                        permuted = TRUE) # major power
+
+# Check how many lambda parameters can be reliably distinguished from zero:
+lambda.probs.maj <- apply(sum.maj.post$lambda, 2, positive.check)
+lambda.probs.maj <- cbind.data.frame(reg.all.data.maj$atopid, round(lambda.df.maj$lambda, digits = 4), lambda.df.maj$latent.str.mean, lambda.probs.maj)
+colnames(lambda.probs.maj) <- c("atopid", "lambda.mean", "latent.str.mean", "pos.post.prob")
+# binary indicator if posterior probability is greater than 90% for positive or negative
+lambda.probs.maj$non.zero <- ifelse(lambda.probs.maj$pos.post.prob >= .90 | lambda.probs.maj$pos.post.prob <= .10, 1, 0)
+sum(lambda.probs.maj$non.zero) # total number of non-zero alliances
+
+# Plot posterior probabilities
+lambda.probs.maj$atopid <- reorder(lambda.probs.maj$atopid, lambda.probs.maj$pos.post.prob)
+
+# For all alliances
+ggplot(lambda.probs.maj, aes(x = atopid, y = pos.post.prob, fill = latent.str.mean)) + 
+  geom_col() +
+  coord_flip()
+
+# For non-zero alliances 
+lambda.probs.maj %>% 
+  filter(non.zero == 1) %>% 
+  ggplot(mapping = aes(x = atopid, y = pos.post.prob, latent.str.mean)) + 
+  geom_col() +
+  scale_fill_brewer(palette = "Greys") +
+  geom_text(aes(label = pos.post.prob), nudge_y = .04) +
+  coord_flip()
+
+
+
+
+
+# Extract coefficients from non-major power model
+sum.min.post <- extract(ml.model.min, pars = c("beta", "gamma", "lambda"),
+                        permuted = TRUE) # non-major power
+
+# Check how many lambda parameters can be reliably distinguished from zero:
+lambda.probs.min <- apply(sum.min.post$lambda, 2, positive.check)
+lambda.probs.min <- cbind.data.frame(reg.all.data.min$atopid, round(lambda.df.min$lambda, digits = 4), lambda.df.min$latent.str.mean, lambda.probs.min)
+colnames(lambda.probs.min) <- c("atopid", "lambda.mean", "latent.str.mean", "pos.post.prob")
+# binary indicator if posterior probability is greater than 90% for positive or negative
+lambda.probs.min$non.zero <- ifelse(lambda.probs.min$pos.post.prob >= .90 | lambda.probs.min$pos.post.prob <= .10, 1, 0)
+sum(lambda.probs.min$non.zero) # total number of non-zero alliances
+
+# Plot posterior probabilities
+lambda.probs.min$atopid <- reorder(lambda.probs.min$atopid, lambda.probs.min$pos.post.prob)
+
+# For all alliances
+ggplot(lambda.probs.min, aes(x = atopid, y = pos.post.prob, fill = latent.str.mean)) + 
+  geom_col() +
+  coord_flip()
+
+# For non-zero alliances 
+lambda.probs.min %>% 
+  filter(non.zero == 1) %>% 
+  ggplot(mapping = aes(x = atopid, y = pos.post.prob, latent.str.mean)) + 
+  geom_col() +
+  scale_fill_brewer(palette = "Greys") +
+  geom_text(aes(label = pos.post.prob), nudge_y = .04) +
+  coord_flip()
