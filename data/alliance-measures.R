@@ -156,17 +156,22 @@ ggplot(atop, aes(x = atopid, y = str.index)) +
 
 
 # Histogram of latent strength 
-ggplot(atop, aes(x = latent.str.mean)) + geom_histogram() + theme_classic()
-
+ls.hist <- ggplot(atop, aes(x = latent.str.mean)) + geom_histogram() +
+  theme_classic() + labs(x = "Mean Latent Strength", y = "Treaties")
+ls.hist
 
 # Strength by year of formation
 ggplot(atop, aes(x = begyr, y = latent.str.mean)) + geom_point()
 # Add error bars to plot
-ggplot(atop, aes(x = begyr, y = latent.str.mean)) +
-geom_errorbar(aes(ymin = latent.str.mean - latent.str.sd, 
-ymax = latent.str.mean + latent.str.sd,
-width=.01), position = position_dodge(0.1)) +
-  geom_point(position = position_dodge(0.1))
+ls.styear <- ggplot(atop, aes(x = begyr, y = latent.str.mean)) +
+  geom_errorbar(aes(ymin = latent.str.mean - latent.str.sd, 
+    ymax = latent.str.mean + latent.str.sd,
+    width=.01), position = position_dodge(0.1)) +
+  geom_point(position = position_dodge(0.1)) +
+  labs(x = "Start Year", y = "Latent Strength of Treaty") +
+  theme_classic()
+ls.styear
+multiplot.ggplot(ls.hist, ls.styear)
 
 # highlight NATO
 atop %>% 
