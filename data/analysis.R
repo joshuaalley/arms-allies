@@ -32,8 +32,8 @@ set.seed(12)
 
 # Define a state-year level dataset with no missing observations
 reg.state.data <- state.vars %>%
-  select(ccode, year, change.ln.milex, lag.ln.milex,
-                      atwar, civilwar.part, rival.milex, ln.gdp, polity, 
+  select(ccode, year, growth.milex, 
+                      atwar, civilwar.part, rival.milex, gdp.growth, polity, 
                       cold.war, disputes, majpower) 
 
 # Add state membership in alliances to this data
@@ -41,14 +41,14 @@ reg.state.data <-  left_join(reg.state.data, state.mem.cap)
 
 
 # Replace missing alliance values with zero 
-reg.state.data[, 13: ncol(reg.state.data)][is.na(reg.state.data[, 13: ncol(reg.state.data)])] <- 0
+reg.state.data[, 12: ncol(reg.state.data)][is.na(reg.state.data[, 12: ncol(reg.state.data)])] <- 0
 
 # Remove observations with missing values
 reg.state.comp <- reg.state.data[complete.cases(reg.state.data), ]
 
 
-# Rescale the state-level regressors- but not the LDV
- reg.state.comp[, 5:11] <- lapply(reg.state.comp[, 5:11], 
+# Rescale the state-level regressors
+ reg.state.comp[, 4:11] <- lapply(reg.state.comp[, 4:11], 
        function(x) rescale(x, binary.inputs = "0/1"))
  
  
@@ -59,14 +59,14 @@ reg.state.comp.min <- filter(reg.state.comp, majpower == 0)
 
  
 # Check the range and distribution of the DV
-summary(reg.state.comp$change.ln.milex)
-sd(reg.state.comp$change.ln.milex)
-ggplot(reg.state.comp, aes(change.ln.milex)) + geom_density()
+summary(reg.state.comp$growth.milex)
+sd(reg.state.comp$growth.milex)
+ggplot(reg.state.comp, aes(growth.milex)) + geom_density()
 
 
 
 # Create a matrix of state membership in alliances (Z in STAN model)
-state.mem.mat <- as.matrix(reg.state.comp[, 13: ncol(reg.state.comp)])
+state.mem.mat <- as.matrix(reg.state.comp[, 12: ncol(reg.state.comp)])
 
 
 # create a state index variable
@@ -90,7 +90,7 @@ reg.all.data[is.na(reg.all.data)] <- 0
 
 ### transform data into matrices for STAN
 # State-level characeristics
-reg.state.mat <- as.matrix(reg.state.comp[, 4:12])
+reg.state.mat <- as.matrix(reg.state.comp[, 4:11])
 
 # check correlations among state-level regressors
 cor(reg.state.mat, method = "pearson")
@@ -228,15 +228,14 @@ xtable(beta.summary, digits = 3)
 colnames(ml.model.sum$gamma) <- colnames(reg.state.mat)
 
 # posterior probabilities
-mean(ml.model.sum$gamma[, 1] > 0) # lagged DV 
-mean(ml.model.sum$gamma[, 2] > 0) # at war
-mean(ml.model.sum$gamma[, 3] > 0) # civil war participation
-mean(ml.model.sum$gamma[, 4] > 0) # rival military expenditures 
-mean(ml.model.sum$gamma[, 5] > 0) # ln(GDP)
-mean(ml.model.sum$gamma[, 6] < 0) # POLITY
-mean(ml.model.sum$gamma[, 7] > 0) # Cold war years 
-mean(ml.model.sum$gamma[, 8] > 0) # number of disputes
-mean(ml.model.sum$gamma[, 9] > 0) # major power 
+mean(ml.model.sum$gamma[, 1] > 0) # at war
+mean(ml.model.sum$gamma[, 2] > 0) # civil war participation
+mean(ml.model.sum$gamma[, 3] > 0) # rival military expenditures 
+mean(ml.model.sum$gamma[, 4] > 0) # gdp growth
+mean(ml.model.sum$gamma[, 5] < 0) # POLITY
+mean(ml.model.sum$gamma[, 6] > 0) # Cold war years 
+mean(ml.model.sum$gamma[, 7] > 0) # number of disputes
+mean(ml.model.sum$gamma[, 8] > 0) # major power 
 
 gamma.melt <- melt(ml.model.sum$gamma)
 
@@ -249,7 +248,7 @@ ggplot(gamma.melt, aes(x=value,  fill = Var2)) +
 # summarize posterior intervals
 gamma.summary <- summary(ml.model, pars = c("gamma", "sigma_state", "alpha"), probs = c(0.05, 0.95))$summary
 gamma.summary <- gamma.summary[, -2]
-rownames(gamma.summary) <- c("Lagged Expenditures", "Wartime", "Civil War", "Rival Mil. Expenditure", 
+rownames(gamma.summary) <- c("Wartime", "Civil War", "Rival Mil. Expenditure", 
                             "ln(GDP)", "Polity", "Cold War", "Disputes", "Major Power",
                             "Sigma State", "Constant")
 print(gamma.summary)
@@ -271,7 +270,7 @@ rownames(coef.probs) <- c("Alliance Model Constant", "Latent Str.",
                             "Number Members","Democratic Membership", 
                           "Wartime", "Asymmetric",
                           "US Member", "USSR Member",
-                          "Lagged Expenditures", "At War", "Civil War", "Rival Mil. Expenditure", 
+                          "At War", "Civil War", "Rival Mil. Expenditure", 
                           "ln(GDP)", "Polity", "Cold War", "Disputes", "Major Power")
 coef.probs$variable <- rownames(coef.probs)
 coef.probs$variable <- reorder(coef.probs$variable, coef.probs$`Posterior Probability of Positive Coefficient`)

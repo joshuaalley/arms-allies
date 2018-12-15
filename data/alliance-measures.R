@@ -235,6 +235,9 @@ atop$ussr.mem[atop$begyr < 1945] <- 0
 # count number of members: non-missing membership variables
 atop$num.mem <-  apply(atop[, 72:130], 1, function(x) sum(!is.na(x)))
 
+# Plot alliance strength against size
+ggplot(atop, aes(x = latent.str.mean, y = num.mem)) +
+  geom_point()
 
 # identify non-aggression only pacts
 # Also, recode arms requirements and military aid variables from ATOP into dummy 

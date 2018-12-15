@@ -174,7 +174,7 @@ maddison.gdp <- filter(maddison.gdp, !(countrycode == "SRB" & year <= 1992))
 maddison.gdp$ccode[maddison.gdp$countrycode == "SRB"] <- 345
   
 # Left join state characteristics and gdp data
-gdp.data <- select(maddison.gdp, ccode, year, cgdppc, ln.gdp)
+gdp.data <- select(maddison.gdp, ccode, year, cgdppc, ln.gdp, gdp)
 
 state.vars <- left_join(state.vars, gdp.data)
 
@@ -346,12 +346,19 @@ state.vars$disputes[is.na(state.vars$disputes)] <- 0
 
 
 
+
+
+
+# Remove pacific micro-states (comprehensive missing data, not random)
+state.vars <- filter(state.vars, ccode <= 920) # New Zealand is ccode 920.
+
+
 # Add log-transformed military expenditure variable and its lag. 
 summary(state.vars$milex)
 ggplot(state.vars, aes(x = milex)) + geom_density()
 state.vars <- mutate(state.vars,
                      ln.milex = log(milex + 1)
-                     )
+)
 summary(state.vars$ln.milex)
 ggplot(state.vars, aes(x = ln.milex)) + geom_density()
 
@@ -362,18 +369,43 @@ rm(duplicates)
 
 
 # Create a lagged expenditures variable within each panel 
+# Then take differences and calculate growth
 state.vars <- state.vars %>%
-              group_by(ccode) %>% 
-              mutate(lag.ln.milex = lag(ln.milex),
-                     lag.milex = lag(milex)
-              ) %>%
-              group_by()
+  group_by(ccode) %>% 
+  mutate(lag.ln.milex = lag(ln.milex),
+         lag.milex = lag(milex),
+         change.milex = milex - lag.milex,
+         change.ln.milex = ln.milex - lag.ln.milex,
+         growth.milex = change.milex / lag.milex
+  ) %>%
+  group_by()
 
-# create a differenced expenditure variable 
-state.vars$change.milex <- state.vars$milex - state.vars$lag.milex
-state.vars$change.ln.milex <- state.vars$ln.milex - state.vars$lag.ln.milex
+# Check growth 
+summary(state.vars$growth.milex)
+ggplot(state.vars, aes(x = growth.milex)) + geom_density()
+
+# Trim the exceedingly large values
+state.vars$growth.milex[state.vars$growth.milex > 140] <- 140
+
+# Concerns, given noise in COW measure: 
+# cases where growth is -1 or close. Implies elimination of military budget
+# cases with infinite change- 0 to some spending: newly indep states and fluctuations in budget
+# Other large positive growth rates are less concerning- part of wartime increases
+# Place both these types of observations in their respective state TS to check them
+# Measurement error model would be essential. SIPRI 1949-2016 from Zielinski et al would be less noisy
 
 
+# Create a growth in GDP variable
+state.vars <- state.vars %>%
+  group_by(ccode) %>% 
+  mutate(lag.ln.gdp = lag(ln.gdp),
+         lag.gdp = lag(gdp),
+         change.gdp = (gdp - lag.gdp),
+         gdp.growth = change.gdp / lag.gdp
+  ) %>%
+  group_by()
+summary(state.vars$gdp.growth)
+ggplot(state.vars, aes(x = gdp.growth)) + geom_density()
 
 # Add data on rival military spending. 
 # Coded rivalry in directed dyad data
@@ -403,10 +435,6 @@ state.vars <- left_join(state.vars, td.rivalry.annual)
 state.vars$total.rivals[is.na(state.vars$total.rivals)] <- 0
 state.vars$rival.milex[is.na(state.vars$rival.milex)] <- 0
 state.vars$avg.rival.milex[is.na(state.vars$avg.rival.milex)] <- 0
-
-
-# Remove pacific micro-states (comprehensive missing data, not random)
-state.vars <- filter(state.vars, ccode <= 920) # New Zealand is ccode 920. 
 
 
 # export data to test of public goods theory

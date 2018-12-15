@@ -37,7 +37,7 @@ set.seed(12)
 ### Start with Major powers
 
 # Create a matrix of state membership in alliances (Z in STAN model)
-state.mem.maj <- as.matrix(reg.state.comp.maj[, 13: ncol(reg.state.comp.maj)])
+state.mem.maj <- as.matrix(reg.state.comp.maj[, 12: ncol(reg.state.comp.maj)])
 # remove alliances with no major power participation
 state.mem.maj <- state.mem.maj[, colSums(state.mem.maj != 0) > 0]
 
@@ -64,7 +64,7 @@ reg.all.data.maj[is.na(reg.all.data.maj)] <- 0
 
 ### transform data into matrices for STAN
 # State-level characeristics
-reg.state.mat.maj <- as.matrix(reg.state.comp.maj[, 4:11])
+reg.state.mat.maj <- as.matrix(reg.state.comp.maj[, 4:10])
 
 # State membership in alliances
 # pull the alliance-level regressors into a matrix
@@ -109,7 +109,7 @@ check_hmc_diagnostics(ml.model.maj)
 
 ### Now move to minor powers
 # Create a matrix of state membership in alliances (Z in STAN model)
-state.mem.min <- as.matrix(reg.state.comp.min[, 13: ncol(reg.state.comp.min)])
+state.mem.min <- as.matrix(reg.state.comp.min[, 12: ncol(reg.state.comp.min)])
 # remove alliances with no major power participation
 state.mem.min <- state.mem.min[, colSums(state.mem.min != 0) > 0]
 
@@ -132,10 +132,9 @@ reg.all.data.min <- filter(alliance.char, atopid %in% colnames(state.mem.min)) %
 reg.all.data.min[is.na(reg.all.data.min)] <- 0
 
 
-
 ### transform data into matrices for STAN
 # State-level characeristics
-reg.state.mat.min <- as.matrix(reg.state.comp.min[, 4:11])
+reg.state.mat.min <- as.matrix(reg.state.comp.min[, 4:10])
 
 # State membership in alliances
 # pull the alliance-level regressors into a matrix

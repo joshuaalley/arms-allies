@@ -53,7 +53,7 @@ state.char.full <- state.ally.year %>%
 state.char.full <- left_join(state.vars, state.char.full)
 
 # Fill missing values of alliance variables with zero
-state.char.full[, 36: ncol(state.char.full)][is.na(state.char.full[, 36: ncol(state.char.full)])] <- 0
+state.char.full[, 42: ncol(state.char.full)][is.na(state.char.full[, 42: ncol(state.char.full)])] <- 0
 
 
 # Check sums of expenditure and capability
@@ -72,12 +72,12 @@ rm(duplicates)
 # IV: Unconditional military support
 summary(state.char.full$uncond.milsup.pres)
 # Differences in expenditure
-t.test(change.ln.milex ~ uncond.milsup.pres, data = state.char.full)
+t.test(growth.milex ~ uncond.milsup.pres, data = state.char.full)
 
 
 # Start with a simple linear regression: presence of unconditional support
-m1.all <- lm(change.ln.milex ~ uncond.milsup.pres + cond.milsup.pres + lag.ln.milex +
-            atwar + civilwar.part + polity + ln.gdp + majpower +
+m1.all <- lm(growth.milex ~ uncond.milsup.pres + cond.milsup.pres +
+            atwar + civilwar.part + polity + gdp.growth + majpower +
             lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
           data = state.char.full
           )
@@ -87,8 +87,8 @@ qqline(m1.all$residuals)
 
 
 # FGLS: "random effects" robust to intragroup heteroskedasticity and serial correlation 
-m1.fgls <- pggls(change.ln.milex ~ uncond.milsup.pres + cond.milsup.pres + lag.ln.milex +
-                   atwar + civilwar.part + polity + ln.gdp + majpower +
+m1.fgls <- pggls(growth.milex ~ uncond.milsup.pres + cond.milsup.pres + 
+                   atwar + civilwar.part + polity + gdp.growth + majpower +
                  lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
          data = state.char.full,
          index = c("ccode", "year"),
@@ -98,8 +98,8 @@ summary(m1.fgls)
 
 
 # Add state and year fixed effects and estimate in differences (otherwise Nickell bias applies)
-m1.reg.fe <- plm(change.ln.milex ~ uncond.milsup.pres + 
-                   atwar + civilwar.part + polity + ln.gdp + majpower +
+m1.reg.fe <- plm(growth.milex ~ uncond.milsup.pres + 
+                   atwar + civilwar.part + polity + gdp.growth + majpower +
                    lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
                 index = c("ccode", "year"),
                 effect = "individual", # unrestricted error covariance
@@ -114,8 +114,8 @@ summary(m1.reg.fe)
 ###### 
 # Residuals in the above have extremely heavy tails. Robust regression weights observations as 
 # a function of their residual, ensuring least squares is still efficient
-m1r.reg <- rlm(change.ln.milex ~ uncond.milsup.pres + lag.ln.milex +
-                 atwar + civilwar.part + polity + ln.gdp + majpower +
+m1r.reg <- rlm(growth.milex ~ uncond.milsup.pres + cond.milsup.pres +
+                 atwar + civilwar.part + polity + gdp.growth + majpower +
                  lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
                data = state.char.full)
 
@@ -126,8 +126,8 @@ plot(m1r.reg$residuals, m1r.reg$w)
 # subset by major and minor powers
 # Major powers
 summary(subset(state.char.full, majpower == 1, select = uncond.milsup.pres))
-rreg.maj <- rlm(change.ln.milex ~ uncond.milsup.pres + lag.ln.milex +
-                     atwar + civilwar.part + polity + ln.gdp + ln.ally.expend +
+rreg.maj <- rlm(growth.milex ~ uncond.milsup.pres + 
+                     atwar + civilwar.part + polity + gdp.growth + ln.ally.expend +
                      lsthreat + cold.war + avg.num.mem + avg.dem.prop,
                    data = state.char.full, subset = (majpower == 1))
 
@@ -136,8 +136,8 @@ plot(rreg.maj$residuals, rreg.maj$w)
 
 # minor powers
 summary(subset(state.char.full, majpower == 0, select = uncond.milsup.pres))
-rreg.min <- rlm(change.ln.milex ~ uncond.milsup.pres + lag.ln.milex +
-                     atwar + civilwar.part + polity + ln.gdp + ln.ally.expend +
+rreg.min <- rlm(growth.milex ~ uncond.milsup.pres +
+                     atwar + civilwar.part + polity + gdp.growth + ln.ally.expend +
                      lsthreat + cold.war + avg.num.mem + avg.dem.prop,
                    data = state.char.full, subset = (majpower == 0))
 
@@ -149,9 +149,8 @@ texreg(l = list(m1r.reg, rreg.maj, rreg.min), ci.force = TRUE)
 
 
 # Interact major power indicator with unconditional support
-rreg.int <- rlm(change.ln.milex ~ uncond.milsup.pres + majpower + uncond.milsup.pres:majpower + 
-                 lag.ln.milex +
-                 atwar + civilwar.part + polity + ln.gdp + 
+rreg.int <- rlm(growth.milex ~ uncond.milsup.pres + majpower + uncond.milsup.pres:majpower + 
+                 atwar + civilwar.part + polity + gdp.growth + 
                  lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
                data = state.char.full)
 
@@ -170,8 +169,8 @@ abline(h = 0)
 
 # subset by year: before and after 1945
 # before 1945
-rreg.pre45 <- rlm(change.ln.milex ~ uncond.milsup.pres + cond.milsup.pres + lag.ln.milex +
-                  atwar + civilwar.part + polity + ln.gdp + ln.ally.expend +
+rreg.pre45 <- rlm(growth.milex ~ uncond.milsup.pres + cond.milsup.pres + 
+                  atwar + civilwar.part + polity + gdp.growth + ln.ally.expend +
                   lsthreat + avg.num.mem + avg.dem.prop,
                 data = state.char.full, subset = (year <= 1945))
 
@@ -179,8 +178,8 @@ summary(rreg.pre45)
 plot(rreg.pre45$residuals, rreg.pre45$w)
 
 # after 1945
-rreg.post45 <- rlm(change.ln.milex ~ uncond.milsup.pres + cond.milsup.pres + lag.ln.milex +
-                  atwar + civilwar.part + polity + ln.gdp + ln.ally.expend +
+rreg.post45 <- rlm(growth.milex ~ uncond.milsup.pres + cond.milsup.pres +
+                  atwar + civilwar.part + polity + gdp.growth + ln.ally.expend +
                   lsthreat + cold.war + avg.num.mem + avg.dem.prop,
                 data = state.char.full, subset = (year > 1945))
 
@@ -194,8 +193,8 @@ plot(rreg.post45$residuals, rreg.post45$w)
 # This is a crude approximation of the multilevel model with capability in the membership matrix
 
 # Standard regression: complete pooling
-reg.ex <- lm(change.ln.milex ~ uncond.milsup.expend + lag.ln.milex +
-               atwar + civilwar.part + polity + ln.gdp + majpower +
+reg.ex <- lm(growth.milex ~ uncond.milsup.expend +
+               atwar + civilwar.part + polity + gdp.growth + majpower +
                lsthreat + cold.war + avg.num.mem + avg.dem.prop,
              data = state.char.full
 )
@@ -215,8 +214,8 @@ plot(density(reg.ex.gls$residuals))
 
 
 # Use fixed effects
-reg.ex.fe <- plm(change.ln.milex ~ uncond.milsup.expend + 
-                   atwar + civilwar.part + polity + ln.gdp + majpower +
+reg.ex.fe <- plm(growth.milex ~ uncond.milsup.expend + 
+                   atwar + civilwar.part + polity + gdp.growth + majpower +
                    lsthreat + cold.war + avg.num.mem + avg.dem.prop,
                    data = state.char.full,
                    index = c("ccode", "year"),
@@ -227,8 +226,8 @@ summary(reg.ex.fe)
 
 
 # Robust regression
-rreg.ex <- rlm(change.ln.milex ~ uncond.milsup.expend + lag.ln.milex +
-                 atwar + civilwar.part + polity + ln.gdp + majpower +
+rreg.ex <- rlm(growth.milex ~ uncond.milsup.expend +
+                 atwar + civilwar.part + polity + gdp.growth + majpower +
                  lsthreat + cold.war + avg.num.mem + avg.dem.prop,
                data = state.char.full)
 
@@ -240,7 +239,7 @@ plot(rreg.ex$residuals, rreg.ex$w)
 ### Is the effect of unconditional military support conditional on ally size? 
 
 # Robust regression: absolute size
-m1.all.iabs <- rlm(change.ln.milex ~ uncond.milsup.pres + ln.gdp + uncond.milsup.pres:ln.gdp + lag.ln.milex +
+m1.all.iabs <- rlm(growth.milex ~ uncond.milsup.pres + ln.gdp + uncond.milsup.pres:ln.gdp + 
                atwar + civilwar.part + polity  + majpower +
                lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
              data = state.char.full

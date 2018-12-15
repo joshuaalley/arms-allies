@@ -72,7 +72,7 @@ for (i in 1:A)
 model {
   
   
-  alpha ~ normal(0, 3);
+  alpha ~ normal(0, 1);
   sigma ~ normal(0, 1);
   alpha_year_std ~ normal(0, 1);
   alpha_state_std ~ normal(0, 1); 
