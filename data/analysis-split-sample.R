@@ -172,6 +172,12 @@ check_hmc_diagnostics(ml.model.min)
 
 
 ### Compare the results
+
+# Summarize Strength by major and minor powers
+summary(reg.all.data.maj$latent.str.mean) # major powers
+summary(reg.all.data.min$latent.str.mean) # minor powers
+
+
 # Summarize intervals for major powers
 beta.summary.maj <- summary(ml.model.maj, pars = c("beta", "sigma_all"), probs = c(0.05, 0.95))$summary
 beta.summary.maj <- beta.summary.maj[, -2]
@@ -220,8 +226,8 @@ lambda.df.maj <- data_frame(lambda = lambda.means.maj[, 5]) %>%  # add lambdas t
 
 # plot major powers
 lambda.str.maj <- ggplot(lambda.df.maj, aes(x = latent.str.mean, y = lambda)) +
-                  geom_point() + 
-                  geom_smooth() + theme_classic() +
+                  geom_point() +
+                  geom_smooth(method = "lm") + theme_classic() +
   labs(x = "Latent Treaty Strength", y = "Effect of Allied Spending") +
   ggtitle("Major Powers")
 lambda.str.maj
@@ -238,8 +244,8 @@ lambda.df.min <- data_frame(lambda = lambda.means.min[, 5]) %>%  # add lambdas t
 
 # plot non-major powers
 lambda.str.min <- ggplot(lambda.df.min, aes(x = latent.str.mean, y = lambda)) +
-                  geom_point() + 
-                  geom_smooth() + theme_classic() +
+            geom_point() +
+                  geom_smooth(method = "lm") + theme_classic() +
             labs(x = "Latent Treaty Strength", y = "Effect of Allied Spending") +
             ggtitle("Non-Major Powers")
 lambda.str.min
