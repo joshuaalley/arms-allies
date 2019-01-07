@@ -9,6 +9,7 @@
 \usepackage{grffile} 
 \usepackage{hyperref}
 \usepackage{adjustbox}
+\usepackage{amsmath}
 \setcitestyle{aysep{}}
 
 
@@ -548,7 +549,7 @@ The remaining 289 treaties almost all have positive mean strength.
 
 \begin{figure}
 	\centering
-		\includegraphics[width=0.95\textwidth]{C:/Users/Josh/Dropbox/Research/arms-allies/figures/ls-summary.png}
+		\includegraphics[width=0.95\textwidth]{../figures/ls-summary.png}
 	\caption{Summary of latent measure of alliance treaty strength for 745 alliances from 1816 to 2016. The top panel is a histogram of the expected of alliance treaty strength. The bottom panel plots mean treaty strength (points) and the standard deviation (error bars) against the start year of the treaty.}
 	\label{fig:ls-summary}
 \end{figure}
@@ -586,7 +587,7 @@ Incorporating these changes in treaty strength and other variation among allianc
 Multilevel modeling combines standard approaches in the literature. 
 Studies of specific alliances provide more detail, while general studies in panel data rely on coarse measures of alliance participation.
 In this model, I estimate the impact of each alliance on member's military spending, but also the overall association between treaty strength and military expenditures. 
-To overcome common estimation challenges, I fit this model in the Bayesian framework using STAN \citep{Carpenteretal2016}.\footnote{See the appendix for details of the weakly informative prior distributions.}
+To overcome common estimation challenges, I fit this model in the Bayesian framework using STAN \citep{Carpenteretal2016}.\footnote{See the appendix for details of the weakly informative prior distributions and evidence of convergence.}
 
 
 The multilevel model is more complex than traditional approaches. 
@@ -650,10 +651,33 @@ and
 \end{equation}
 
 % Like an interaction between alliance and state-level factors 
+Hypothesis 1 predicts that $\beta_1$ will be negative among major powers, and Hypothesis @ predices that $\beta_1$ will be positive for non-major powers. 
 In this alliance-level regression, $\textbf{X}$ is a matrix of alliance-level control variables and $\alpha_{all}$ is the constant.
 Adding $\sigma_{all}$ means that the predictions of $\lambda$ are not deterministic--- the alliance level regression contains an error term. 
 Coefficients in the alliance-level regression are like marginal effects in an interaction. 
 A change in treaty strength modifies $\lambda$, which affects growth in military spending. 
+
+
+% Provide an example observation
+Consider one observation as an example of how the model works. 
+Growth in Argentina's military spending in 1955 depends on Argentina's economic growth, political regime, conflict participation, and rivals. 
+It is also affected by Argentine participation in the Rio Pact and OAS. 
+
+
+\begin{equation}
+\begin{split}
+& \mbox{Argentina 1955} = \mbox{Overall mean}
++ \mbox{Argentine Intercept} + \mbox{1955 Intercept} 
++ \mbox{Argentine Characteristics} \\
+& + \lambda_{OAS} * \mbox{OAS Expenditure} + \lambda_{Rio} * \mbox{Rio Pact Expenditure}
+\end{split} 
+\end{equation}
+
+
+$\lambda_{OAS}$ and $\lambda_{Rio}$ are modified by the alliance level regression. 
+The institutional design and membership of these treaties alter the $\lambda$ parameter.
+Alliances that Argentina does not participate in have no impact on growth in military spending.  
+
 
 
 \subsection{Sample and Covariates} 
@@ -691,13 +715,79 @@ The next section describes the results from my research design.
 \section{Results}
 
 % note on interpreting Bayesian results
+Because I use Bayesian modeling to estimate the association between treaty strength and growth in military spending, there are no conventional indicators of statistical significance. 
+Instead, each coefficient has a posterior distribution--- the possible values of the coefficient conditional on the prior and observed data. 
+Thus I calculate the positive and negative posterior probability for the treaty strength coefficient to assess Hypotheses 1 and 2.
 
 
 % show latent strength coefficient in each subset of data
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.95\textwidth]{../figures/str-dens.png}
+	\caption{Posterior density of treaty strength coefficient in major and non-major power samples, 1816 to 2007. 96\% of the major power posterior mass is negative. 94\% of the non-major power posterior mass is positive.}
+	\label{fig:str-dens}
+\end{figure}
 
+
+\autoref{fig:str-dens} plots the full posterior density of the treaty strength coefficients in the major and minor power samples. 
+The smaller sample for major powers produces more variance in all the coefficient estimates. 
+96\% of the posterior mass for major powers is negative. 
+94\% of the posterior mass for minor powers is positive. 
+There is little overlap between these two posteriors--- there is a 99\% chance that the association between treaty strength and military spending is larger for minor powers than major powers. 
+
+
+These two coefficient estimates match the predictions of Hypotheses 1 and 2. 
+For major powers, increasing treaty strength is associated with lower growth in military spending. 
+Greater treaty strength is associated with higher growth in military spending for non-major powers.
+
+
+How substantively important is treaty strength? 
+Among major powers, the mean of the treaty strength coefficient is -0.05, and median growth in military expenditures is 0.04.\footnote{The median is a better summary of the dependent variable because large positive and negative outliers influence the mean.} 
+So a one-unit increase in treaty strength offsets the typical annual growth in military spending. 
+
+
+For non-major powers, the mean of the treaty strength coefficient is 0.03, and median growth in military expenditures is 0.06. 
+Greater treaty strength increases growth in minor power military expenditures by about a third of typical growth. 
+Increasing treaty strength has a large substantive effect, relative to the scale of the data. 
+It also has a large influence on the overall association between changes in allied spending and growth in state defense spending. 
+
+
+If greater treaty strength has a large influence on the $\lambda$ parameters, there will be a clear trend in the value of $\lambda$ across the range of alliance treaty strength.
+We should observe a negative trend in the expected value of $\lambda$ as treaty strength increases in major power alliances. 
+Conversely, we should observe a positive trend in $\lambda$ for non-major power alliances. 
+
+
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.95\textwidth]{../figures/lambda-ls-scatter.png}
+	\caption{Scatter plots of trends in mean $\lambda$ parameters and treaty strength. Trend lines estimated using linear regression. }
+	\label{fig:lambda-ls-scatter}
+\end{figure}
+
+
+\autoref{fig:lambda-ls-scatter} plots the expected value of the association between allied spending and state spending $\lambda$ against treaty strength in the two samples. 
+In the major power sample, there is a slight negative trend in the scatter plot.
+For non-major powers, the trend is positive. 
+In both samples, the correlation between mean $\lambda$ and treaty strength is statistically significant. 
+
+
+Because $\lambda$ captures the total impact of an alliance, this pattern suggests that increasing alliance strength has an important role. 
+Even holding other alliance characteristics constant, alliance strength drives the overall effect of allied spending down for major powers, and up for non-major powers. 
+Greater alliance treaty strength has the expected impact on military spending in strong and weak states. 
 
 
 \section{Discussion}
+
+% Matches theory 
+
+
+% Precise interpretation
+% Coef compares strong and weak alliances. Not treaty vs absence. 
+
+
+% limitations of RD
+
+
 
 
 

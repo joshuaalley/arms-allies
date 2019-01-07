@@ -460,13 +460,15 @@ yhat_means <- get_posterior_mean(ml.model, pars = "y_hat")
 # Check what types of alliances the US and Russia are part of in the estimation sample
 filter(reg.all.data, us.mem == 1) %>%
   summarize(
-    us.uncond = sum(uncond.milsup, na.rm = TRUE)
+    us.uncond = mean(latent.str.mean, na.rm = TRUE)
   )
+summary(subset(reg.all.data, us.mem == 1)$latent.str.mean)
 
 filter(reg.all.data, ussr.mem == 1) %>%
   summarize(
-    russ.uncond = sum(uncond.milsup, na.rm = TRUE)
+    russ.uncond = mean(latent.str.mean, na.rm = TRUE)
   )
+summary(subset(reg.all.data, ussr.mem == 1)$latent.str.mean)
 
 
 # summarize session info

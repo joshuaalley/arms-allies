@@ -217,12 +217,47 @@ ggplot(lscoef.summary, aes(x = row.names(lscoef.summary), y = mean)) +
   coord_flip()
 
 
+# Summarize the alliance cofficient estimates in major and minor subsets
+coef.maj <- extract(ml.model.maj, pars = c("beta", "gamma"))
+colnames(coef.maj$beta) <- colnames(alliance.reg.mat)
+colnames(coef.maj$gamma) <- colnames(reg.state.mat.maj)
+coef.min <- extract(ml.model.min, pars = c("beta", "gamma"))
+colnames(coef.min$beta) <- colnames(alliance.reg.mat)
+colnames(coef.min$gamma) <- colnames(reg.state.mat.min)
+
+# Baseline posterior probabilities
+mean(coef.maj$beta[, 2] < 0) # latent strength: major
+mean(coef.min$beta[, 2] > 0) # latent strength: non-major
+
+# Create a nice comparison plot
+str.dens <- cbind(coef.maj$beta[, 2], coef.min$beta[, 2])
+colnames(str.dens) <- c("Major", "Non-Major")
+str.dens <- melt(str.dens)
+
+ggplot(str.dens, aes(x = value,  fill = X2)) +
+  geom_density(alpha = 0.25) +
+  scale_fill_manual(name = "Sample", values=c("#999999", "#000000")) +
+  ggtitle("Posterior Distributions of Treaty Strength: Major and Non-Major Powers") +
+  theme_classic()
+ggsave("figures/str-dens.png", height = 6, width = 8)
+
+# Compare Coefficients
+mean(coef.min$beta[, 2] > coef.maj$beta[, 2]) # 99% chance non-major coef is larger
+# compare state-level parameters
+mcmc_areas(coef.maj$gamma, 
+           prob = .9)
+mcmc_areas(coef.min$gamma, 
+           prob = .9)
+
+
 # compare trends in lambdas across treaty strength in major and minor
 
 # Start with major powers
 lambda.means.maj <- get_posterior_mean(ml.model.maj, pars = "lambda")
 lambda.df.maj <- data_frame(lambda = lambda.means.maj[, 5]) %>%  # add lambdas to df
   bind_cols(filter(alliance.char, atopid %in% colnames(state.mem.maj)))
+cor.test(lambda.df.maj$lambda, lambda.df.maj$latent.str.mean,
+         alternative = "less")
 
 # plot major powers
 lambda.str.maj <- ggplot(lambda.df.maj, aes(x = latent.str.mean, y = lambda)) +
@@ -240,7 +275,9 @@ summary(subset(reg.all.data.maj, ussr.mem == 1)$latent.str.mean) # USSR post-45
 # Non-major powers
 lambda.means.min <- get_posterior_mean(ml.model.min, pars = "lambda")
 lambda.df.min <- data_frame(lambda = lambda.means.min[, 5]) %>%  # add lambdas to df
-  bind_cols(filter(alliance.char, atopid %in% colnames(state.mem.min)))
+    bind_cols(filter(alliance.char, atopid %in% colnames(state.mem.min)))
+cor.test(lambda.df.min$lambda, lambda.df.min$latent.str.mean, 
+         alternative = "greater")
 
 # plot non-major powers
 lambda.str.min <- ggplot(lambda.df.min, aes(x = latent.str.mean, y = lambda)) +
