@@ -471,43 +471,227 @@ The next section describes how I address these two issues.
 % Need an RD that compares alliances. and a general measure of treaty strength
 % Develop latent str. measure and then put it into an ML model
 
+There are two novel components in my research design. 
+First, I develop a latent measure of alliance treaty strength. 
+Then, I employ that measure in a multilevel model which connects alliance-level variation to state-level outcomes. 
+To test differences between major and non-major powers, I estimate the same multilevel model in separate samples of major and non-major powers from 1816 to 2007. 
+The next section describes my measure of alliance treaty strength. 
+
 
 \subsection{Measuring Alliance Treaty Strength} 
 
 % Intuituion behind latent measures: observed char reflects underlying concept
+Observed alliance treaty conditions reflect the underlying strength of the treaty. 
+A stronger alliance will contain more costly promises. 
+Therefore, we can use observed alliance characteristics to infer treaty strength.
 
+
+Treaty strength and credibility depends on the costs of abrogation and other costly promises in the pact \citep{Leeds2003}. 
+The costs of abrogation reflect the primary commitments in the treaty, including defensive or offensive military support, and conditions on military support.\footnote{Some alliances promise only neutrality, consultation, or non-aggression, rather than active military engagement.}  
+Sunk costs promises in alliances include integrated military command, international organization formation, basing rights, promises to make other agreements, and economic or military aid. 
+
+
+This conceptualization generates several potential measures of treaty strength. 
+One is to focus on an important indicator of treaty strength, such as unconditional military support, and code a dummy measure of its presence. 
+Treaty strength is multidimensional, however, so this kind of measure is too coarse. 
+
+
+Another option is constructing an additive index of sources of treaty strength. 
+Treaties with better military support, and costly promises would have higher index values, and therefore greater strength. 
+Such indexes assume each indicator of strength is equally important, which is unlikely. 
+The costs of abrogation are a crucial source of alliance credibility, and should matter more than associated sunk cost promises. 
+
+
+Latent variable modeling offers a better way to measure alliance treaty strength. 
+It does not reduce strength to one alliance characteristic, or apply arbitrary weights to an index. 
+Instead, latent variable models use observed treaty characteristics to infer an unobservable concept the observed data reflects. 
 
 
 % Justify use
-
+Latent variable models have a rich history in political science \citep{Clintonetal2004, TreierJackman2008, Fariss2014}. 
+\citet{BensonClinton2016} use the latent variable model of \citet{Quinn2004} to measure alliance scope, depth and capability.
+I also use a latent variable model, but update Benson and Clinton's approach to focus on treaty strength and use a better estimator. 
 
 
 % How the model works
+I use the Bayesian Gaussian Copula Factor Model of \citet{Murrayetal2013} to measure alliance treaty strength. 
+Observed alliance characteristics come from the ATOP data \citep{Leedsetal2002}.
+Murray et al's model improves on mixed factor analysis for continuous, ordinal, and binary observed data by using a semiparametric approach. 
+With discrete observed variables and non-Gaussian latent variables, the dependence among the latent variables and their marginal distributions are both influenced by the latent variables.
+Their model encodes the dependence structure of a multivariate latent data using a Copula, and expresses the latent variables and factor loadings as a series of latent normal variables. 
+
+
+Besides the semiparametric terms, this measurement model employs factor analysis.
+Factor analysis estimates the association between observed variables and the latent factor.
+Each observed variable has a factor loading--- the association between the observed variable and the latent variable.  
+Like standardized regression coefficients, factor loadings range from -1 to 1, so observed variables can be positively or negatively correlated with the latent variable.  
+
+
+For each observation, a linear combination of observed alliance characteristics predicts latent treaty strength.\footnote{This is like regression with an unobserved outcome, but the analogy is imperfect.} 
+I took observed alliance characteristics for all 745 alliances in version 4 of the ATOP data \citep{Leedsetal2002}. 
+Treaty strength is reflected by promises of defensive support, offensive support, neutrality, consultation, non-aggression, unconditional military support, military aid, economic aid, bases, international organization formation, integrated military command, and promises to form new agreements in multiple issue areas. 
+I fit this model with those observed variables and one latent factor.
+Parameter expanded Gibbs sampling, the default generalized double Pareto (GDP) prior, 10,000 burn-in iterations of the MCMC chain, and 20,000 samples thinned every 20 observations ensured convergence. 
+Because treaty strength is the main quantity of interest for this paper, I focus on the posterior distributions of the latent factor. 
 
 
 % Show the measure for all alliances- note I'll only focus on treaties w/ military support. 
+\autoref{fig:ls-summary} describes the latent measure for 745 ATOP alliances from 1815 to 2016. 
+Each alliance has a unique posterior distribution of the latent measure of strength. 
+The mean of that distribution measures expected strength, given the design of the treaty.
 
+
+As the top panel of \autoref{fig:ls-summary} shows, most alliances are relatively weak.
+456 of the 745 have no promises of offensive or defensive support, reducing the costs of abrogation. 
+The remaining 289 treaties almost all have positive mean strength. 
+
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.95\textwidth]{C:/Users/Josh/Dropbox/Research/arms-allies/figures/ls-summary.png}
+	\caption{Summary of latent measure of alliance treaty strength for 745 alliances from 1816 to 2016. The top panel is a histogram of the expected of alliance treaty strength. The bottom panel plots mean treaty strength (points) and the standard deviation (error bars) against the start year of the treaty.}
+	\label{fig:ls-summary}
+\end{figure}
+	
+	
+The bottom panel of \autoref{fig:ls-summary} plots the posterior means and uncertainty in those estimates against the start year of the treaty. 
+Even after accounting for posterior uncertainty, it is possible to distinguish between strong and weak treaties. 
+Weak treaties are concentrated in the 20th century, when non-aggression and consultation alliances proliferated. 
+
+
+% Cases- especially strong and weak treaties
+The scale of the latent measure is not itself informative. 
+The key information is differences in the latent measure between treaties. 
+The mean of treaty strength is 0.01, and the median is -0.10. 
+By this metric a 1938 consultation pact between France and Czechoslovakia (ATOPID 2120) is quite average. 
+
+
+The weakest treaty is a neutrality and non-aggression treaty between Georgia and Kazakhstan (ATOPID 4476).  
+A similar treaty between between Ukraine and India (ATOPID 4188) scores -1.36 on the latent measure.
+The three strongest treaties are an 1867 alliance between Prussia and Hesse (ATOPID 1290), a 1955 treaty between Greece and Turkey governing relations in Cyprus and the United Arab Republic (ATOPID 3300).  
+NATO, the best-known alliance, scores 0.75- so its formal promises are stronger than average, but not exceedingly strong. 
+The weak treaties made few costly promises, while stronger treaties led to substantial concessions for members. 
+
+
+This measure has face and discriminant validity. 
+In this measure weak treaties had few sacrifices for participants. 
+Also, the measurement model divides treaties into two distinct clusters of weak and strong commitments. 
+Incorporating these changes in treaty strength and other variation among alliances is the key contribution of the multilevel model I use to estimate the association between treaty strength and members military spending.  
 
 
 \subsection{Multilevel Model} 
 
+
 % Best fit for theoretical process. Can compare alliances. 
+Multilevel modeling combines standard approaches in the literature. 
+Studies of specific alliances provide more detail, while general studies in panel data rely on coarse measures of alliance participation.
+In this model, I estimate the impact of each alliance on member's military spending, but also the overall association between treaty strength and military expenditures. 
+To overcome common estimation challenges, I fit this model in the Bayesian framework using STAN \citep{Carpenteretal2016}.\footnote{See the appendix for details of the weakly informative prior distributions.}
+
+
+The multilevel model is more complex than traditional approaches. 
+But added complexity has several benefits. 
+First, multilevel modeling allows my test to match the theory. 
+My predictions compare strong and weak treaties- and the alliance level regression in a multilevel model contains a corresponding coefficient.
+Relying on a state-level proxy for alliance strength generates comparisons among states, which may produce misleading inferences. 
+
+
+Last, multilevel modeling facilitates comparisons among alliances. 
+The alliance-level regression controls for other alliance characteristics that are correlated with alliance strength and military spending.
+Partial pooling allows me to estimate the unique impact of each alliance on members military spending. 
+Comparing patterns in these alliance-specific coefficients provides additional evidence to examine Hypotheses 1 and 2 as well as the importance of treaty strength. 
 
 
 % Two separate but connected regressions
 % State-level regression- alliances enter through spending matrix.
+This model contains two distinct but connected regressions. 
+The base is a state-level regression, which is similar to a regular panel data model.
+An alliance-level regression predicts parameters in the state-level regression, not unlike an interaction. 
 
+The state-level regression can be expressed as:
+\begin{equation}
+y \sim student_t(\mu, \nu, \sigma)
+\end{equation}
+ 
+$y$ is the outcome of interest--- growth in military spending. 
+I model growth in spending with a t-distribution to address large outliers in spending growth. 
+$\mu$, the mean of the t-distributed outcome, is a function of several covariates. 
+\begin{equation}
+\mu = \alpha + \alpha^{st} + \alpha^{yr} + W \gamma + Z \lambda
+\end{equation}
+
+
+Growth in spending is a function of an overall intercept $\alpha$, state and year varying intercepts $\alpha^{st}$ and $\alpha^{yr}$, and a matrix of state-level control variables $W$. 
+The $Z \lambda$ term adds alliance participation to the state-level model.
+
+
+$Z$ is a matrix of state participation in alliances. 
+Columns correspond to alliances, and rows with state-year observations. 
+If a state is not part of an alliance, the corresponding cell of the matrix is zero.
+If a state is part of an alliance in a given year, the corresponding cell of the matrix is the log of total allied military spending. 
+
+
+I use total allied spending in the alliance participation matrix because how much capability a treaty provides shapes its value.   
+Therefore, the $\lambda$ parameters capture alliance members' responsiveness to changes in allied capability. 
+Each alliance has a unique $\lambda$, which come from a common distribution. 
+These coefficients are a function of a second alliance-level regression. 
+
+% Alliance-level regression:
+The second part of the multilevel model uses alliance characteristics to predict how allied spending is associated with alliance members military spending. 
+The $\lambda$ parameters are the dependent variable in an alliance-level regression, which includes alliance treaty strength.
+Therefore, I focus interpretation on this second-level regression, where: 
+
+\begin{equation}
+\lambda \sim N(\theta, \sigma_{all})
+\end{equation} 
+and 
+\begin{equation}
+\theta = \alpha_{all} + \beta_1 \mbox{Treaty Strength} + X \beta
+\end{equation}
 
 % Like an interaction between alliance and state-level factors 
+In this alliance-level regression, $\textbf{X}$ is a matrix of alliance-level control variables and $\alpha_{all}$ is the constant.
+Adding $\sigma_{all}$ means that the predictions of $\lambda$ are not deterministic--- the alliance level regression contains an error term. 
+Coefficients in the alliance-level regression are like marginal effects in an interaction. 
+A change in treaty strength modifies $\lambda$, which affects growth in military spending. 
+
+
+\subsection{Sample and Covariates} 
+
+% Sample of states and alliances: latter is restricted to treaties with military support 
+I estimate this model on two sub-samples of states from 1816 to 2007. 
+Alliance participation data comes from the ATOP project \citep{Leedsetal2002}. 
+I focus on participation in defensive or offensive treaties, because it is hard to compare these treaties with consultation, neutrality or non-aggression pacts. 
+Direct promises of military support make allied capability important. 
+
+% Because I think the DGP is different for large and small- split sample.
+My argument suggests that major and non-major powers use alliances for different purposes.
+Major powers focus on influence, non-major powers emphasize immediate territorial security.  
+Therefore, the data-generating process connecting alliance participation and military spending should be different for these two states. 
+To capture these differences, I estimate the model in separate samples- one sample of major powers, the other of non-major powers.
+I employ the classification of major power status from the Correlates of War Project. 
+
+
+The non-major power sample contains 8,668 observations. 
+There are 930 major power observations. 
+Though the major power sample is smaller and has fewer units, Bayesian estimation and partial pooling can generate plausible estimates \citep{Stegmueller2013}. 
 
 
 % Describe covariates at each level. 
+In the state-level regression, I control for several correlates of alliance participation and military spending. 
+State-level covariates include GDP growth \citep{Boltetal2018}, regime type, international war \citep{Reiteretal2016}, civil war participation \citep{SarkeesWayman2010}, annual MIDs \citep{Gibleretal2016}, rival military spending \citep{ThompsonDreyer2012} and a dummy for Cold War years.
+Alliance level variables include my measure of treaty strength, number of members and share of democracies at time of formation \citep{Chibaetal2015}, and whether the US or USSR participated in a treaty during the Cold War. 
+Two dummy indicators of wartime alliances and asymmetric obligations \citep{Leedsetal2002} are also part of the alliance-level regression. 
 
 
-% Because I think the DGP is different for large and small- split sample.
-
+Democratic membership in an alliance is associated both with limited obligations \citep{Chibaetal2015} and military spending \citep{DigiuseppePoast2016}, making it a particularly important alliance-level covariate.  
+State and alliance-level controls for threat and conflict participation capture situations where states are more likely to seek allies. 
+The next section describes the results from my research design. 
 
 \section{Results}
+
+% note on interpreting Bayesian results
+
 
 % show latent strength coefficient in each subset of data
 
