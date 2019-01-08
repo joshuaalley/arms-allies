@@ -47,7 +47,7 @@ The other expects alliance members will spend more on defense.
 
 
 In this paper, I address the division between these two perspectives on alliance participation and military expenditures. 
-In doing so, I make theoretical and empirical contributions. 
+Answering this question makes theoretical and empirical contributions. 
 In my argument, I show when alliance participation increases and decreases military spending. 
 Major and non-major power states use alliances for different purposes, so they respond differently to changes in treaty strength.
 
@@ -105,7 +105,7 @@ The final section concludes with a discussion of the implications for scholarshi
 % 2-3 paragraphs per subsection
 
 I divide prior scholarship on alliance participation and military spending into two broad perspectives. 
-The foreign entanglement view is that alliance participation will increase military expenditures.
+The foreign entanglement predicts alliance participation will increase military expenditures.
 The force multiplier school expects alliance participation to reduce military spending. 
 
 
@@ -239,8 +239,27 @@ Alliance participation may accelerate or arrest the growth of defense budgets.
 
 % Introduce treaty strength, then move to size
 Two dimensions shape the association between alliance participation and military spending- state size and alliance treaty strength. 
+Alliance treaty strength reflects the costs of abrogation and sunk costs in the formal treaty. 
 Major and non-major powers face different opportunities and constraints, so they respond differently to greater alliance treaty strength. 
-Strong and weak alliances have different impacts on major and non-major powers.
+I use alliance treaty design to understand the strength of a commitment.
+
+
+Why focus on treaty design as the key source of credibility? 
+There are multiple sources of credibility. 
+\citet{DigiuseppePoast2016} argue that reliable treaty commitments by democratic states will be associated with reduced defense spending. 
+However, democracies are more likely to form institutionally weak treaties \citep{Mattes2012}. 
+Alliance treaty design closely connected to other sources of credibility. 
+
+
+Treaty design also provides essential information about the likelihood of intervention. 
+Formal alliance institutions structure exchange and bargaining among participants \citep{Williamson1985, North1990, DiermeierKrehbiel2003}.
+Last, alliance treaty design is easier to manipulate than other sources of credibility such as democracy. 
+So understanding the consequences of alliance treaty design can guide policy. 
+
+
+There is also some prior scholarship to suggest state size shapes the association between alliance participation and military spending. 
+Public goods models of alliance participation depend on differences in state size \citep{OlsonZeckhauser1966, DudleyMontmarquette1981}.  
+I argue that strong and weak alliances have different impacts on major and non-major powers.
 
 
 \subsection{Treaty Strength} 
@@ -394,7 +413,6 @@ Conversely, strong treaties will raise growth in non-major power military spendi
 
  
 % Large states- spending is decreasing in strength
-As institutions, alliances structure exchanges among participants \citep{Williamson1985, North1990, DiermeierKrehbiel2003}.
 For major powers, strong alliances substitute for military spending as a tool of influence. 
 Connecting military support to other promises gives large states more influence.
 As a result, increasing alliance treaty strength will reduce growth in military spending in major powers. 
@@ -529,7 +547,7 @@ Like standardized regression coefficients, factor loadings range from -1 to 1, s
 
 
 For each observation, a linear combination of observed alliance characteristics predicts latent treaty strength.\footnote{This is like regression with an unobserved outcome, but the analogy is imperfect.} 
-I took observed alliance characteristics for all 745 alliances in version 4 of the ATOP data \citep{Leedsetal2002}. 
+I took observed alliance characteristics for all 745 alliances in the alliance-level ATOP data \citep{Leedsetal2002}. 
 Treaty strength is reflected by promises of defensive support, offensive support, neutrality, consultation, non-aggression, unconditional military support, military aid, economic aid, bases, international organization formation, integrated military command, and promises to form new agreements in multiple issue areas. 
 I fit this model with those observed variables and one latent factor.
 Parameter expanded Gibbs sampling, the default generalized double Pareto (GDP) prior, 10,000 burn-in iterations of the MCMC chain, and 20,000 samples thinned every 20 observations ensured convergence. 
@@ -537,7 +555,7 @@ Because treaty strength is the main quantity of interest for this paper, I focus
 
 
 % Show the measure for all alliances- note I'll only focus on treaties w/ military support. 
-\autoref{fig:ls-summary} describes the latent measure for 745 ATOP alliances from 1815 to 2016. 
+\autoref{fig:ls-summary} describes the latent measure for 745 ATOP alliances from 1815 to 2016.
 Each alliance has a unique posterior distribution of the latent measure of strength. 
 The mean of that distribution measures expected strength, given the design of the treaty.
 
@@ -686,7 +704,8 @@ Alliances that Argentina does not participate in have no impact on growth in mil
 I estimate this model on two sub-samples of states from 1816 to 2007. 
 Alliance participation data comes from the ATOP project \citep{Leedsetal2002}. 
 I focus on participation in defensive or offensive treaties, because it is hard to compare these treaties with consultation, neutrality or non-aggression pacts. 
-Direct promises of military support make allied capability important. 
+Direct promises of military support give allied capability importance. 
+
 
 % Because I think the DGP is different for large and small- split sample.
 My argument suggests that major and non-major powers use alliances for different purposes.
@@ -704,6 +723,7 @@ Though the major power sample is smaller and has fewer units, Bayesian estimatio
 % Describe covariates at each level. 
 In the state-level regression, I control for several correlates of alliance participation and military spending. 
 State-level covariates include GDP growth \citep{Boltetal2018}, regime type, international war \citep{Reiteretal2016}, civil war participation \citep{SarkeesWayman2010}, annual MIDs \citep{Gibleretal2016}, rival military spending \citep{ThompsonDreyer2012} and a dummy for Cold War years.
+I include growth in GDP instead of levels of GDP because GDP levels are non-stationary, and economic growth shapes the opportunity costs of military spending \citep{Kimball2010, Zielinskietal2017}.
 Alliance level variables include my measure of treaty strength, number of members and share of democracies at time of formation \citep{Chibaetal2015}, and whether the US or USSR participated in a treaty during the Cold War. 
 Two dummy indicators of wartime alliances and asymmetric obligations \citep{Leedsetal2002} are also part of the alliance-level regression. 
 
@@ -778,25 +798,122 @@ Greater alliance treaty strength has the expected impact on military spending in
 
 \section{Discussion}
 
-% Matches theory 
+
+% Matches argument 
+The above results match the expectations of my argument. 
+Increasing treaty strength is positively associated with growth in military spending in non-major powers, who use the greater freedom of action in weak treaties to rely on their partners. 
+Greater treaty strength is associated with lower growth in military spending for major powers, who use treaty strength and military capability as substitutes while seeking influence. 
 
 
-% Precise interpretation
-% Coef compares strong and weak alliances. Not treaty vs absence. 
+% Precise interpretation: compares strong and weak alliances. Not treaty vs absence. 
+These results contribute to the debate over whether alliance participation increases or decreases military spending. 
+Dissension between the force multiplier and foreign entanglement views of alliances is based on competing claims about the purposes of alliances. 
+Some of these studies compare states in a particular kind of alliances to those outside the treaty. 
+Others examine responsiveness to allied military spending. 
+
+
+How do my results compare to previous evidence on alliance participation and military spending? 
+The multilevel model reflects a conditional argument that is largely absent in prior studies. 
+My key coefficient estimates compare strong and weak treaties, not states with a treaty to those without. 
+However those estimates are like marginal effects- increasing treaty strength alters the effect of alliance participation.
+
+ 
+$\lambda$ measures the impact of increasing allied spending \textit{for states in a treaty}. 
+These parameters capture the impact of alliance participation only for treaty members. 
+Therefore, a comparison between treaty members and non-members is included in the statistical model. 
+Greater treaty strength makes the association between alliance participation and growth in military expenditures more negative for major powers, and more positive for non-major powers. 
+
+
+My argument suggests claims that alliance participation only increases or decreases military spending are inappropriate. 
+Instead, the association between alliance participation and growth in military spending depends on alliance member size and treaty strength. 
+Alliance participation has heterogeneous effects because major powers and non-major powers employ treaties for different purposes. 
+The conditional argument and research design show that alliance participation can increase or decrease spending for different states. 
 
 
 % limitations of RD
+There are several limitations to my research design.
+First, measures of military spending are noisy and contain substantial measurement error. 
+There is also a great deal of missing data in the 1816--2007 time frame of this study. 
+I plan to check the robustness of my results to these issues in the near future by adding measurement error to the outcome and imputing of missing data.
 
 
+The multilevel model only incorporates time-invariant alliance characteristics, save for changing capabilities in the membership matrix. 
+So I measure share of democratic members and the number of members at time of formation. 
+This is a relatively crude measurement strategy, and allowing time-varying alliance characteristics might improve the statistical model. 
+
+
+% Strategic treaty design
+Strategic alliance design is the last major weakness of the research design. 
+Non-random selection into different kinds of alliances might lead to systematic differences between members that are not controlled for in my statistical model. 
+I attempted to control for correlates of alliance treaty strength, especially democracy, but this is still a theoretical and empirical limitation. 
 
 
 
 \section{Conclusion}
 
 
+% Start conclusion 
+This paper presented a novel argument and empirical evidence linking alliance participation and military expenditures. 
+I explain when alliance participation is associated with greater military spending, and when it reduces growth in spending, bridging a debate between competing answers to this question. 
+For major powers, greater treaty strength leads to lower growth in spending. 
+Non-major power growth in spending increases in alliance treaty strength. 
+I provide evidence for these predictions using a new measure of alliance treaty strength and a multilevel model. 
 
-%\bibliography{C:/Users/jkalley14/Dropbox/Research/MasterBibliography}  
-\bibliography{C:/Users/Josh/Dropbox/Research/MasterBibliography} 
+
+% Next steps: extend argument to other treaty characteristics
+There are several next steps for research on the question. 
+One is to extend the argument to other alliance characteristics. 
+If major and non-major powers employ alliances for different ends, then other alliance characteristics may have different impacts on military spending. 
+Large and small states might use wartime and asymmetric treaties differently, for instance. 
+
+
+% Next steps: More interp of lambdas
+Another task for future research is making more detailed comparisons of the $\lambda$ parameters for different alliances. 
+Each $\lambda$ captures the aggregate impact of alliance participation.
+As such, these parameters provide a novel measurement, and additional evidence of when alliance participation increases or decreases military spending. 
+
+
+% Case studies
+The multilevel model estimates do not establish causality. 
+But the $\lambda$ parameters might provide a guide for selecting cases for a process-tracing analysis to corroborate the regression results.
+One possible design is selecting the five largest and smallest $\lambda$ values for major and minor powers, and determining whether the connection between alliance participation and military expenditures matches the theoretical process.
+
+
+% The argument indicates tradeoff
+The argument and evidence suggests that major and non-major powers each face a tradeoff. 
+Major powers tradeoff between the risk of entrapment and greater influence in strong treaties. 
+Non-major powers sacrifice freedom of action for greater security as treaty strength rises. 
+
+
+% Implications for policy. 
+These twin tradeoffs have important consequences for policy debates.
+The United States has a long history of decrying ``free-riding'' by allies who provide too little for their own defense \citep{Lanoszka2015}. 
+But allies may be able to free-ride because the US prefers to form relatively weak alliance commitments. 
+``Entangling alliances'' can provide greater influence to curb allied free-riding. 
+
+
+Strong formal commitments can help restrain free-riding. 
+The growing institutionalization of NATO, including the agreement for all allies to spend at least 2\% of GDP on defense, may reduce free-riding. 
+However, conceptualizing alliances between major and non-major powers as the source of a public good is misleading. 
+Asymmetric alliances produce different goods for different members. 
+Major powers seek influence, while non-major powers secure their homeland. 
+
+
+The US could also use stronger formal commitments as a substitute for greater defense effort in reassuring allies.
+The danger is that making many strong commitments might create a situation where obligations exceed capabilities \citep{Kennedy1987}. 
+Emboldening junior partners with a strong treaty might have deterrent value \citep{Bensonetal2014}, or increase the risk of conflict \citep{Benson2012}. 
+
+ 
+% tie it all together
+The connection between alliance participation and military expenditures depends on state size and the strength of the treaty.  
+Alliance participation does not exclusively increase or decrease military spending.  
+Both the force multiplier and foreign entanglement views of alliance participation are correct in different circumstances. 
+Strong treaties have divergent effects on military spending in major and non-major powers. 
+
+
+
+ 
+\bibliography{../../MasterBibliography} 
 
 
 
