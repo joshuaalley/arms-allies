@@ -104,6 +104,10 @@ system.time(
 launch_shinystan(ml.model.maj)
 check_hmc_diagnostics(ml.model.maj)
 
+# trace plot for appendix
+traceplot(ml.model.maj, pars = "beta")
+ggsave("appendix/trace-all-maj.png", height = 6, width = 8)
+
 
 
 
@@ -168,6 +172,10 @@ system.time(
 # diagnose model
 launch_shinystan(ml.model.min)
 check_hmc_diagnostics(ml.model.min)
+
+# trace plot for appendix
+traceplot(ml.model.min, pars = "beta")
+ggsave("appendix/trace-all-min.png", height = 6, width = 8)
 
 
 
