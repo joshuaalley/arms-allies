@@ -27,9 +27,36 @@ Department of Political Science, Texas A\&M University.}}
 \doublespace 
 
 
+
+\section{Priors}
+
+\autoref{tab:priors} summarizes the prior distributions in the multilevel model. 
+All these priors are meant to be weakly informative relative to the scale of the data. 
+$\nu$ is the degrees of freedom for the t-distribution, and the gamma prior is the recommended default prior for STAN. 
+
+\begin{table} % Create a table of priors.
+\begin{center}
+\begin{tabular}{c} 
+$ p(\alpha) \sim N(0, 1)$  \\
+$ p(\sigma) \sim \mbox{half-}N(0, 1) $ \\
+$ p(\alpha^{yr}) \sim N(0, \sigma^{yr}) $ \\ 
+$ p(\sigma^{yr}) \sim N(0, 1) $ \\
+$ p(\alpha^{st}) \sim N(0, \sigma^{st}) $ \\ 
+$ p(\sigma^{st}) \sim \mbox{half-}N(0, 1) $ \\ 
+$ p(\sigma^{all}) \sim \mbox{half-}N(0, 1) $ \\
+$ p(\beta) \sim N(0, 1) $ \\
+$ p(\gamma) \sim N(0, 1) $ \\ 
+$ p(\nu) \sim gamma(2, 0.1)$ 
+\end{tabular} 
+\caption{Summary of Priors in Multilevel Model} 
+\label{tab:priors}
+\end{center} 
+\end{table} 
+
+
 \section{HMC Diagnostics}
 
-There were no divergent iterations in the run of 4 chains for 2,000 iterations in either sample. The $\hat{R}$  is less than 1.1 for all parameters in both samples. 
+There were no divergent iterations running 4 chains for 2,000 iterations in either sample. The $\hat{R}$ is less than 1.1 for all parameters in both samples. 
 
 Trace plots in \autoref{fig:trace-all-min} and \autoref{fig:trace-all-maj} indicate good mixing of the chains for the alliance-level parameters. 
 
