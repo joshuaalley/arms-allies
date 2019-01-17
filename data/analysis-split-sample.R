@@ -251,6 +251,12 @@ ggsave("figures/str-dens.png", height = 6, width = 8)
 
 # Compare Coefficients
 mean(coef.min$beta[, 2] > coef.maj$beta[, 2]) # 99% chance non-major coef is larger
+
+# Function to find overlap
+beta.overlap <- overlap(list(coef.maj$beta[, 2], coef.min$beta[, 2]), nbins = 1000, plot = TRUE)
+beta.overlap$OV
+
+
 # compare state-level parameters
 mcmc_areas(coef.maj$gamma, 
            prob = .9)
