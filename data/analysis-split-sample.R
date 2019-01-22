@@ -41,6 +41,9 @@ state.mem.maj <- as.matrix(reg.state.comp.maj[, 12: ncol(reg.state.comp.maj)])
 # remove alliances with no major power participation
 state.mem.maj <- state.mem.maj[, colSums(state.mem.maj != 0) > 0]
 
+# switch matrix to 0/1 for membership (comment on or off as needed)
+# state.mem.maj[state.mem.maj != 0] <- 1
+
 
 # create a state index variable
 reg.state.comp.maj$state.id <- reg.state.comp.maj %>% group_indices(ccode)
@@ -116,6 +119,9 @@ ggsave("appendix/trace-all-maj.png", height = 6, width = 8)
 state.mem.min <- as.matrix(reg.state.comp.min[, 12: ncol(reg.state.comp.min)])
 # remove alliances with no major power participation
 state.mem.min <- state.mem.min[, colSums(state.mem.min != 0) > 0]
+
+# switch matrix to 0/1 for membership (comment on or off as needed)
+#state.mem.min[state.mem.min != 0] <- 1
 
 
 # create a state index variable
@@ -248,9 +254,10 @@ ggplot(str.dens, aes(x = value,  fill = X2)) +
   ggtitle("Posterior Distributions of Treaty Strength: Major and Non-Major Powers") +
   theme_classic()
 ggsave("figures/str-dens.png", height = 6, width = 8)
+# ggsave("presentation/str-dens-dummy.png", height = 6, width = 8) # comment out as needed
 
 # Compare Coefficients
-mean(coef.min$beta[, 2] > coef.maj$beta[, 2]) # 99% chance non-major coef is larger
+mean(coef.min$beta[, 2] > coef.maj$beta[, 2]) 
 
 # Function to find overlap
 beta.overlap <- overlap(list(coef.maj$beta[, 2], coef.min$beta[, 2]), nbins = 1000, plot = TRUE)
