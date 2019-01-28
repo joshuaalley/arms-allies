@@ -17,82 +17,52 @@ setwd(here::here())
 getwd()
 
 
+# Plot histogram of mean latent strength
+ggplot(atop, aes(x = latent.str.mean)) + geom_histogram() +
+  theme_carly_presents() + labs(x = "Mean Latent Strength", y = "Treaties") 
+ggsave("presentation/ls-hist.png", height = 6, width = 8)
+
+# Show UAR
+ggplot(atop, aes(x = latent.str.mean)) + geom_histogram() +
+  theme_carly_presents() + labs(x = "Mean Latent Strength", y = "Treaties") +
+  geom_vline(xintercept = 1.9969987829, linetype = "dashed", size = 1)  + 
+  geom_text(label="United Arab Rep.", x = 1.9969987829, y = 65, hjust = 1, size = 5)  # UAR
+ggsave("presentation/ls-hist-uar.png", height = 6, width = 8)
+
+
+# Show Weak treaty
+ggplot(atop, aes(x = latent.str.mean)) + geom_histogram() +
+  theme_carly_presents() + labs(x = "Mean Latent Strength", y = "Treaties") +
+  geom_vline(xintercept = -1.36, linetype = "dashed", size = 1)  + 
+  geom_text(label="India Ukraine '92", x = -1.36, y = 65, hjust = 0.3, size = 5) # Ukraine-India neutrality and non-aggression
+ggsave("presentation/ls-hist-ukr-ind.png", height = 6, width = 8)
+
+
+# Show typical treaty
+ggplot(atop, aes(x = latent.str.mean)) + geom_histogram() +
+  theme_carly_presents() + labs(x = "Mean Latent Strength", y = "Treaties") +
+  geom_vline(xintercept = -0.103606287, linetype = "dashed", size = 1)  + 
+  geom_text(label="France Czech 1938", x = -0.103606287, y = 65, hjust = 0.37, size = 5) # France-Czech consul 1938
+ggsave("presentation/ls-hist-fr-czech.png", height = 6, width = 8)
+
+  
+  
+
+
 
 # Plot results
-pres.mplot <- multiplot(rreg.min, rreg.maj, m1r.reg,
-          names = c("Non-Major Powers", "Major Powers", "Full Sample"),
-          coefficients = "uncond.milsup.pres",
-          by = "Model",
-          xlab = "Value",
-          color = "#d95f02",
-          zeroColor = "black",
-          zeroType = 1,
-          zeroLWD = 2,
-         ylab = "Sample",
-         title = "",
-         lwdInner = 4,
-         lwdOuter =  2,
-           pointSize = 8,
-        horizontal = FALSE
-) 
-pres.mplot + theme_classic() + theme(axis.text=element_text(size=20),
-                                     axis.title=element_text(size=24,face="bold"))
-ggsave("presentation/robust-reg-coef.png", height = 6, width = 8) 
+ggplot(str.dens, aes(x = value,  fill = X2)) +
+  geom_density(alpha = .75) + geom_vline(xintercept = 0, size = 1.5) + 
+  scale_fill_brewer(name = "Sample", palette = "Dark2") +
+  theme_carly_presents() +
+  annotate("text", x = -.12, y = 12, 
+  label = ".963", size = 8, parse = TRUE) + # Note for major
+  annotate("text", x = 0.08, y = 12, 
+  label = ".935", size = 8, parse = TRUE) # Note for non-major 
+  
+ggsave("presentation/str-post.png", height = 6, width = 8)
 
-
-
-# Dynamic simulation of impact of minor powers
-scen1 <- data.frame(uncond.milsup.pres = 1,
-                    cond.milsup.pres = 0,
-                    atwar = 0,
-                    civilwar.part = 0,
-                    polity = mean(state.char.full$polity, na.rm = TRUE),
-                    ln.gdp = mean(state.char.full$ln.gdp, na.rm = TRUE),
-                    ln.ally.expend = mean(state.char.full$ln.ally.expend, na.rm = TRUE),
-                    lsthreat = mean(state.char.full$lsthreat, na.rm = TRUE),
-                    cold.war = 0,
-                    avg.num.mem = mean(state.char.full$avg.num.mem, na.rm = TRUE),
-                    avg.dem.prop = mean(state.char.full$avg.dem.prop, na.rm = TRUE)
-)
-
-# No unconditional- conditional instead
-scen2 <- data.frame(uncond.milsup.pres = 0, 
-                    cond.milsup.pres = 1,
-                    atwar = 0,
-                    civilwar.part = 0,
-                    polity = mean(state.char.full$polity, na.rm = TRUE),
-                    ln.gdp = mean(state.char.full$ln.gdp, na.rm = TRUE),
-                    ln.ally.expend = mean(state.char.full$ln.ally.expend, na.rm = TRUE),
-                    lsthreat = mean(state.char.full$lsthreat, na.rm = TRUE),
-                    cold.war = 0,
-                    avg.num.mem = mean(state.char.full$avg.num.mem, na.rm = TRUE),
-                    avg.dem.prop = mean(state.char.full$avg.dem.prop, na.rm = TRUE)
-)
-
-scen.list <- list(scen1, scen2)
-
-Sim1 <- dynsim(obj = rreg.min, ldv = 'lag.ln.milex',
-               scen = scen.list, n = 20)
-dynsimGG(Sim1, leg.labels = c("Unconditional Military Support", "Conditional Military Support"), color = "Dark2") +
-  theme_carly_presents()
-ggsave("presentation/mp-dynsim.png", height = 6, width = 8) 
-
-
-rm(list = c("m1r.reg", "rreg.maj", "rreg.min"))
-
-
-# Plot same split from ML model
-ggplot(uncond.summary, aes(x = row.names(uncond.summary), y = mean)) +
-  geom_errorbar(aes(ymin = `5%`, 
-                    ymax = `95%`,
-                    width=.05), position = position_dodge(0.1)) +
-  geom_point(position = position_dodge(0.1)) + geom_hline(yintercept = 0) +
-  theme_carly_presents() + labs(x = "Sample", y = "Effect of Unconditional Military Support") +
-  coord_flip()
-ggsave("presentation/ml-model-uncond-coefs.png", height = 6, width = 8) 
-
-
-# 
+ 
 #### Plot the Means of the Lambda Parameters
 lambda.probs$atopid <- reorder(lambda.probs$atopid, lambda.probs$lambda.mean)
 
@@ -107,15 +77,22 @@ lambda.probs %>%
 
 
 
-### Violin plots
-lambda.probs %>%
-ggplot(aes(x = factor(uncond.milsup), y = lambda.mean, fill = factor(uncond.milsup))) +
-  geom_violin() +  # add violin
-  scale_fill_brewer(palette = "Dark2") +
-  labs(x = "Unconditional Military Support", y = "Alliance Coef.")  + 
+### Plot treaty strength against lambda
+# non-major powers
+ggplot(lambda.df.min, aes(x = latent.str.mean, y = lambda)) +
+  geom_point() +
+  geom_smooth(method = "lm") + 
+  labs(x = "Latent Treaty Strength", y = "Effect of Allied Spending") +
   theme_carly_presents()
-ggsave("presentation/lambda-box-presentation.png", height = 6, width = 8) 
+ggsave("presentation/ls-lambda-min.png", height = 6, width = 8)
 
+# Major powers 
+ggplot(lambda.df.maj, aes(x = latent.str.mean, y = lambda)) +
+  geom_point() +
+  geom_smooth(method = "lm") + 
+  labs(x = "Latent Treaty Strength", y = "Effect of Allied Spending") +
+  theme_carly_presents()
+ggsave("presentation/ls-lambda-maj.png", height = 6, width = 8)
 
  
 #### Graphical comparison of coefficients with Bayesplot
@@ -128,9 +105,9 @@ beta.pars <- as.data.frame(ml.model.sum$beta)
 # Plot posterior density and Fill the negative region
 # Uncoditional treaties 
 uncond.dens <- ggplot(data = beta.pars, mapping = aes(x = uncond.milsup)) +
-  geom_density() + geom_vline(xintercept = 0, size = 1.5) + 
-  theme(axis.text=element_text(size=12),
-        axis.title=element_text(size=14))
+  + theme(axis.text=element_text(size=12),
+          axis.title=element_text(size=14))
+  geom_density() + geom_vline(xintercept = 0, size = 1.5) 
 
 d <- ggplot_build(uncond.dens)$data[[1]] # build the density plot for filling
 
@@ -142,7 +119,7 @@ ggsave("presentation/uncond post_prob.png", height = 6, width = 8)
 
 
 # Plot intervals
-mcmc_areas(ml.model.sum$beta, pars = c("uncond.milsup"), prob = .89) +
+mcmc_areas(ml.model.sum$beta, pars = c("uncond.milsup"), prob = .9) +
   ggplot2::labs(
     title = "Posterior distributions of Unconditional Alliance Parameter",
     subtitle = "with median and 90% interval")
@@ -194,21 +171,27 @@ ggsave("presentation/ppc.png", height = 6, width = 8)
 
 
 
-#### Figures for Prospectus defense slides
+### Single-level regression check 
+pres.mplot <- multiplot(rreg.min, rreg.maj, m1r.reg,
+                        names = c("Non-Major Powers", "Major Powers", "Full Sample"),
+                        coefficients = "uncond.milsup.pres",
+                        by = "Model",
+                        xlab = "Value",
+                        color = "#d95f02",
+                        zeroColor = "black",
+                        zeroType = 1,
+                        zeroLWD = 2,
+                        ylab = "Sample",
+                        title = "",
+                        lwdInner = 4,
+                        lwdOuter =  2,
+                        pointSize = 8,
+                        horizontal = FALSE
+) 
+pres.mplot + theme_carly_presents() 
+ggsave("presentation/robust-reg-coef.png", height = 6, width = 8) 
 
-# Distribution of compellent alliance duration
-alliance.char %>% filter(uncond_comp == 1) %>%
-  ggplot(alliance.char, mapping = aes(x = freq)) + 
-  geom_histogram(bins = 20) + 
-  labs(x = "Active Alliance Years") +
-  theme_carly_presents()
+rm(list = c("m1r.reg", "rreg.maj", "rreg.min"))
 
-
-# Distribution of unconditional deterrent alliance duration
-alliance.char %>% filter(uncond_det == 1) %>%
-  ggplot(alliance.char, mapping = aes(x = freq)) + 
-  geom_histogram(bins = 20) + 
-  labs(x = "Active Alliance Years") +
-  theme_carly_presents()
 
 

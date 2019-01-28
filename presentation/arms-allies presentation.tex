@@ -22,6 +22,7 @@
 \usepackage{graphicx} % Allows including images
 \usepackage{grffile}
 \usepackage{amsmath}
+\usepackage{adjustbox} 
 % have to have Mozilla's=Fira Sans} font and XeTeX installed to use full typography.
 
 %----------------------------------------------------------------------------------------
@@ -29,7 +30,7 @@
 %----------------------------------------------------------------------------------------
 
 \title{Alliance Participation and Military Spending}
-\date{November 28, 2018}
+\date{January 27, 2019}
 \author{Joshua Alley}
 \institute{Texas A\&M University}
 
@@ -45,47 +46,32 @@
 
 
 %------------------------------------------------
-% Question 
+% Here's my point. 
  \begin{frame}[standout]
 
-How does alliance participation affect military spending? 
+Whether alliance treaty participation increases or decreases military spending depends on state capability and alliance treaty strength. 
+
+ \end{frame}
+
+%------------------------------------------------
+% The two subpoints 
+ \begin{frame}[standout]
+
+\setbeamercovered{invisible}
+
+\uncover<1>{1: Strong alliance treaties decrease growth in military spending from alliance participation for major powers.} 
+
+\uncover<2>{2: Strong alliance treaties increase growth in military spending from alliance participation for non-major powers.}
 
  \end{frame}
 
 
 
 %------------------------------------------------
-% This is my point. 
- \begin{frame}{Key Points} 
 
-\begin{enumerate}
-\item The conventional wisdom predicts strong alliance commitments decrease military spending in small states, and increase spending in large states.
-\pause
-\item I find strong alliance commitments \textit{increase} military spending in non-major powers and \textit{do not impact} spending in major powers.
-\pause
-\item So I consider two alternative arguments.
-\end{enumerate}
+\begin{frame}{Scholarly Importance (1): Competing Expectations}
 
- \end{frame}
-
-%------------------------------------------------
-
- \begin{frame}{Relevance}
-
-% put some sort of motivation
-Current policy debates emphasize low defense spending by alliance members. 
-
-These debates lack theoretical and empirical context: do most alliances lead to reduced defense spending? 
-
-
- \end{frame}
-
-
-%------------------------------------------------
-
-\begin{frame}{Scholarly Importance: Part 1}
-
-Addresses debate between two sets of expectations:
+Debate between two views of alliance participation and military spending:
 \pause 
 
 \begin{itemize}
@@ -99,7 +85,7 @@ Addresses debate between two sets of expectations:
 
 %------------------------------------------------
 
-\begin{frame}{Mixed Empirical Results}
+\begin{frame}{Scholarly Importance (2): Mixed Empirical Results}
 
 
 \begin{table}[hbt!]
@@ -128,12 +114,13 @@ Horowitz et al 2017 &  & X & \\
 
 \begin{frame}{Outline}
 
+I provide two pieces of evidence for my claims about alliance participation and military spending: 
+
+\pause
 \begin{enumerate}
-\item Initial Expectations: Alliance Strength
+\item Argument: State Capability and Treaty Strength
 \pause
-\item Statistical Analysis
-\pause
-\item Alternative Arguments
+\item Statistical Analysis 
 \end{enumerate}
 
 
@@ -141,20 +128,17 @@ Horowitz et al 2017 &  & X & \\
 
 %------------------------------------------------
 
-\section{Initial Expectations}
+\section{Argument}
 
 %------------------------------------------------
 
-\begin{frame}{Key Principles}
+\begin{frame}{Assumptions}
 
-\begin{itemize}
-\item Alliances provide security for members.  
-\pause
-\item Small states depend on larger partners, and sacrifice autonomy for security.
-\pause
-\item Large states provide security, and gain autonomy. 
+\begin{itemize} 
+\item Military spending has opportunity costs, which decrease with greater state size. 
+\pause 
+\item Alliances are a costly signal of shared foreign policy interests: credible commitment to intervene.  
 \end{itemize}
-
 
 
 \end{frame}
@@ -163,54 +147,93 @@ Horowitz et al 2017 &  & X & \\
 
 \begin{frame}{Treaty Strength}
 
-Not all alliances are equally valuable. 
+Not all alliances are equally credible. Strength depends on costs an ally incurs or would incur. 
 
+\begin{itemize} 
 \pause
-
-Alliance Treaty Value $= \Delta$ Pr(Support) * Allied Capability:
-
+\item Costs of abrogation: breaking promises of support.
 \pause
-
-Strong/reliable alliance commitments $\uparrow$ Pr(Support)
+\item Sunk costs promises: commitment to take costly action. 
+\pause
+\item More foreign policy gains with stronger treaty. 
+\pause 
+\item But hands tying limits freedom of action for members. 
+\end{itemize}  
 
 
 \end{frame}
 
+
 %------------------------------------------------
 
-\begin{frame}{Unconditional Alliance Commitments and Spending}
+\begin{frame}{State Capability}
 
-Unconditional alliance commitments provide better security--- reflected in treaty design. 
+\setbeamercovered{invisible} 
 
-\pause
+\begin{columns}
+
+% Major powers
+\begin{column}{0.5\textwidth}
+\textbf{Major Powers}
 
 \begin{itemize}
-\item Small states rely more on their allies. 
-\pause
-\item Large states increase spending to cover junior partners.  
-\end{itemize}
+\uncover<2->{\item Alliances \& Spending: External Influence}
+\uncover<3->{\item $\mbox{Influence} = \mbox{Probability Intervention} \times \mbox{Capability}$}
+\uncover<4->{\item Strong treaties $\uparrow$ influence} 
+\end{itemize} 
+\end{column}
 
+
+
+\begin{column}{0.5\textwidth}
+\textbf{Non-Major Powers}
+
+\begin{itemize}
+\uncover<5->{\item Alliances \& Spending: Territorial Security}\
+\uncover<6->{\item Replace domestic expenditure with allied capability.}
+\uncover<7->{\item Strong treaties restrict freedom of action.} 
+\end{itemize} 
+
+\end{column}
+\end{columns}
 
 \end{frame}
 
 
 %------------------------------------------------
 
-\begin{frame}{Predictions}
+%\begin{frame}[standout]
+
+%\resizebox{.95\textwidth}{!} {
+%\begin{tabular}{ccc}
+%      & Strong Treaty      & Weak Treaty  \\
+%\hline
+%Major Power & (1)  $\downarrow$ Growth Spending   & (2)  $\uparrow$ Growth Spending        \\
+%\hline
+%Non-Major Power & (3) $\uparrow$ Growth Spending   & (4) $\downarrow$ Growth Spending       \\ 
+%\hline 
+%\end{tabular}
+%}
+
+%\end{frame} 
+
+%------------------------------------------------
+
+\begin{frame}[standout]
 
 
 \begin{quote}
-\textsc{Hypothesis 1}: Unconditional alliance participation will be associated with increases in defense spending by major powers. 
+\textsc{Hypothesis 1}: As alliance treaty strength increases, growth in major power military spending will decrease. 
 \end{quote} 
-
-\pause
-
+\pause 
 \begin{quote}
-\textsc{Hypothesis 2}: Unconditional alliance participation will be associated with decreases in defense spending by non-major powers. 
+\textsc{Hypothesis 2}: As alliance treaty strength increases, growth in non-major power military spending will increase. 
 \end{quote} 
 
 
 \end{frame}
+
+
 
 %------------------------------------------------
 
@@ -220,31 +243,164 @@ Unconditional alliance commitments provide better security--- reflected in treat
 
 \begin{frame}{Research Design}
 
-\begin{enumerate}
-\item \textbf{Key Independent Variable}: Binary indicator of Unconditional Alliance. 
-\pause
-\item \textbf{Base Category}: States with alliances that do not offer military support, and states with no alliances. 
-\pause
-\item \textbf{Dependent Variable}: Ln(Military Spending) 
+To test these predictions, I need two things: 
+
 \pause 
-\item \textbf{Estimator}: Robust Regression. 
-\end{enumerate}
+\begin{enumerate} 
+\item Measure of treaty strength--- Measurement Model. 
+\pause
+\item Connect alliance-level variation with state-level outcomes--- Multilevel Analysis.  
+\end{enumerate} 
 
 
 \end{frame}
 
 %------------------------------------------------
 
+\begin{frame}{Measuring Treaty Strength}
+
+I use a latent variable model to infer treaty strength from observed promises. 
+
+\pause 
+\begin{itemize}
+\item Multiple observed indicators of strength (ATOP): 
+\begin{itemize} 
+\item \textit{Costs of abrogation}: offense, defense, neutrality, consultation, non-aggression, unconditional military support.
+\item \textit{Sunk costs}: bases, integrated command, economic/military aid, IO formation, conclude multiple other agreements. 
+\end{itemize} 
+\pause 
+\item Semiparametric mixed factor analysis. (Murray et al 2013)
+\pause
+\item Mean of the latent factor for each alliance. 
+\end{itemize} 
+
+
+\end{frame} 
+
+%------------------------------------------------
+
+\begin{frame}{Latent Measure of Treaty Strength}
+
+% Visual summary of latent measure
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.95\textwidth]{ls-hist.png}
+\end{figure}
+
+
+\end{frame} 
+
+
+%------------------------------------------------
+
+\begin{frame}{Latent Measure of Treaty Strength: Weak}
+
+% Visual summary of latent measure
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.95\textwidth]{ls-hist-ukr-ind.png}
+\end{figure}
+
+
+\end{frame} 
+
+%------------------------------------------------
+
+\begin{frame}{Latent Measure of Treaty Strength: Typical}
+
+% Visual summary of latent measure
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.95\textwidth]{ls-hist-fr-czech.png}
+\end{figure}
+
+
+\end{frame} 
+
+%------------------------------------------------
+
+\begin{frame}{Latent Measure of Treaty Strength: Strong}
+
+% Visual summary of latent measure
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.95\textwidth]{ls-hist-uar.png}
+\end{figure}
+
+
+\end{frame} 
+
+%------------------------------------------------
+
+\begin{frame}{Empirical Analysis: Multilevel Model}
+
+\begin{itemize} 
+\item Link alliance-level variation with state-level outcomes. 
+\pause
+\item Two connected regressions: alliance and state-level. 
+\pause 
+\item Alliance characteristics modify the association between allied spending and spending growth.  
+\end{itemize} 
+
+\end{frame} 
+
+
+%------------------------------------------------
+
+\begin{frame}{ML Model}
+
+\[
+\begin{array}{cccccc}
+\uncover<2->{ & & & & &\mbox{Alliance} \\
+& & & & &    \mbox{Characteristics}  \\
+\uncover<3->{& & & & \lambda = & \alpha_{all} + \beta_1 \mbox{Str.} + \textbf{X} \beta \\}
+& & & & &    \downarrow  \\}
+\mbox{Growth} =     & \mbox{Varying}   & + & \mbox{State}   & + & \mbox{Alliance} \\
+\mbox{Mil. Ex.}      & \mbox{Intercepts}&   &  \mbox{Vars.} &   & \mbox{Participation} \\
+\uncover<3->{\mbox{y} = & \alpha + \alpha^{st} + \alpha^{yr}   & + & \textbf{W} \gamma  & + & \textbf{Z} \lambda \\}
+\end{array}
+\]
+
+
+\end{frame}
+
+%------------------------------------------------
+
+
+\begin{frame}{ML Model Specification}
+
+\begin{equation}
+y \sim student_t(\mu, \nu, \sigma)
+\end{equation}
+\begin{equation}
+\mu = \alpha + \alpha^{st} + \alpha^{yr} +\textbf{W} \gamma + \textbf{Z} \lambda
+\end{equation}
+
+\begin{equation}
+\lambda \sim N(\theta, \sigma_{all})
+\end{equation} 
+\begin{equation}
+\theta = \alpha_{all} + \beta_1 \mbox{Treaty Strength} + \textbf{X} \beta
+\end{equation}
+
+
+\end{frame}
+
+
+%------------------------------------------------
+
 \begin{frame}{Sample and Controls}
 
 \begin{itemize}
-\item \textbf{Sample}: All states: 1816-2007. 
+\item \textbf{Sample}: major and non-major power states--- 1816-2007. Alliances with military support. 
+\pause
+\item \textbf{DV}: Growth in Military Spending $ = \frac{ \mbox{Change Mil. Expend}_t }{ \mbox{Mil. Expend}_{t-1} }$ 
+\pause
+\item \textbf{Alliance-Level IV}: Mean Treaty Strength
+\pause
+\item \textbf{State-Level Controls}: Interstate war, Civil War, Annual MIDs, GDP growth, POLITY, Cold War, Rival military expenditures. 
 \pause 
-\item Divided into two sub-samples: major and non-major power states. 
-\pause
-\item Lagged DV
-\pause
-\item \textbf{Controls}: Conditional Military Support, Interstate war, Civil War, Annual MIDs, GDP, POLITY, Cold War, Major Power, Rival military expenditures, ln(ally expend), Average Alliance Size, Avg Democracy Among Allies. 
+\item \textbf{Alliance-Level Controls}: Share of Democracies, Number of Members, wartime, asymmetric obligations, US member (Cold War), USSR member.
 
 \end{itemize} 
 
@@ -258,238 +414,191 @@ Unconditional alliance commitments provide better security--- reflected in treat
 
 %------------------------------------------------
 
-\begin{frame}{Impact of Unconditional Military Support on Military Spending} 
-
-\begin{figure}[htbp]
-	\centering
-		\includegraphics[height=0.90\textheight]{robust-reg-coef.png}
-	\label{fig:robust-reg-coef}
-\end{figure}
-
-\end{frame}
-
-
-%------------------------------------------------
-
-\begin{frame}{Dynamic Simulation} 
+\begin{frame}{Association Between Treaty Strength and Growth in Military Spending} 
 
 \begin{figure}
 	\centering
-		\includegraphics[width=0.99\textwidth]{mp-dynsim.png}
-	\label{fig:mp-dynsim}
+		\includegraphics[width=0.95\textwidth]{str-post.png}
+	\label{fig:str-post}
 \end{figure}
 
 
 \end{frame}
 
 
-
-%-----------------------------------------------
-
-\begin{frame}{Alternative Specifications} 
-
-\begin{enumerate}
-\item OLS.
-\item FGLS.
-\item Fixed Effects with Changes in Military Spending.  
-\item Selection Models: Alliance Participants as Estimation Sample.
-\item Multilevel Model with separate alliance-level regression. 
-\end{enumerate}
-
-\end{frame}
-
 %------------------------------------------------
 
-\section{Alternative Arguments}
+\begin{frame}[standout]{Importance} 
 
-%------------------------------------------------
-
-\begin{frame}{(1) Value to Non-Major Powers} 
-
-Strong commitments produce greater foreign policy gains. 
+\begin{tabular}{lcc}
+Sample & Posterior Mean & Median Ex. Growth \\
+\hline
+Major & -0.05 & 0.04 \\
+\pause
+Non-major & 0.03 & 0.06  \\
+\end{tabular}
 
 \pause
 
-As a consequence, states are more willing to take costly actions to maintain the agreement. 
+US spent \$36.0 billion on NATO in 2018, or 5.5\% of the total defense spending. 
 
-
-\end{frame}
-
-%------------------------------------------------
-
-\begin{frame}{Process}
-
-\[
-\begin{array}{ccccc}
-\mbox{Alliance} &  \longrightarrow & \mbox{Foreign Policy} & \longrightarrow & \mbox{Assurance/} \\
-\mbox{Formation} &                 & \mbox{Gains}     &                      & \mbox{Maintenance} 
-\end{array}
-\]
-
-
-\end{frame} 
-
-%------------------------------------------------
-
-\begin{frame}{Alliance Member Size and Assurance}
-
-Signal ongoing commitment through sunk costs.
-
-\pause
-
-Large states continue to bear the autonomy costs of strong commitments. %Imposing restraints on oneself is more costly/meaningful when actor is strong. 
-
-\pause 
-
-Smaller alliance partners increase military spending to signal ongoing commitment. 
-
-\end{frame}
-
-
-
-%------------------------------------------------
-
-\begin{frame}{(2) Major Power Coercion} 
-
-A different explanation emphasizes major power coercion of smaller partners. 
-\pause
-
-\begin{itemize}
-\item Only form strong commitments with the expectation smaller partners will make significant contributions. 
-\pause
-\item Small states lose so much autonomy they must increase military spending. 
-\end{itemize}
-
-
-\end{frame}
-
-%------------------------------------------------
-
-\begin{frame}{Distinguishing Between Alternatives} 
-
-There are a couple ways to distinguish between the two alternatives. 
-\pause
-
-\begin{enumerate}
-\item Coercion: Smaller partner sacrifice autonomy on a range of other issues. 
-\pause
-\item Strong commitments reflect more hierarchical governance by larger partners. 
-\end{enumerate} 
 
 \end{frame}
 
 %-----------------------------------------------
 
-\section{Discussion and Conclusion}
-
-%-----------------------------------------------
-
-\begin{frame}{Discussion}
-
-\pause 
-Limitations:
-\pause
-\begin{enumerate}
-\item Measurement error and missing data. 
-\pause 
-\item Alliances as military coalitions. 
-\end{enumerate}
-
-\end{frame}
-
+\section{Conclusion}
 
 %-----------------------------------------------
 
 \begin{frame}{Conclusion}
 
-Unconditional alliance treaties are associated with increased military spending by non-major powers.
+Whether alliance treaty participation increases or decreases military spending depends on state capability and alliance treaty strength.  
 
 \pause
 
-Next Steps:
-\pause
 \begin{itemize}
-\item Developing alternative arguments and considering when alliances decrease spending. 
+\item Major Powers: Greater treaty strength lowers growth in spending. 
 \pause
-\item More general measure of alliance treaty strength. 
-\pause
-\item Alternatives to major/non-major split. 
+\item Non-major Powers: Greater treaty strength increases growth in spending.  
 \end{itemize}
 
 \end{frame}
+
+%-----------------------------------------------
+
+% Here's my point. 
+ \begin{frame}[standout]
+
+Thank you! Questions? 
+
+jkalley14@tamu.edu
+
+ \end{frame}
 
 
 %-----------------------------------------------
 
 \appendix 
 
+
+%-----------------------------------------------
+
+\begin{frame}{Limitations}
+
+\begin{enumerate}
+\item Domestic political economy of military spending. 
+\pause 
+\item Measurement error and missing data. 
+\pause 
+\item Strategic alliance design
+\end{enumerate}
+
+\end{frame}
+
 %------------------------------------------------
 
 
-\begin{frame}{Regression Table}
+\begin{frame}{Alliance-Level Regression Table: Major Powers}
 
+930 observations, with 130 alliances. 
 
-\begin{table}
-\begin{center}
-\scalebox{.5}{
-\begin{tabular}{l c c c }
-\hline
- & Full Sample & Major Powers & Minor Powers \\
-\hline
-Unconditional Mil. Sup. & $0.03^{*}$        & $-0.02$           & $0.03^{*}$       \\
-                   & $[0.01;\ 0.05]$   & $[-0.06;\ 0.03]$  & $[0.01;\ 0.06]$  \\
-Conditional Mil. Sup.   & $0.01$            & $-0.00$           & $0.01$           \\
-                   & $[-0.01;\ 0.03]$  & $[-0.04;\ 0.04]$  & $[-0.02;\ 0.03]$ \\
-Lag ln(Mil. Ex.)       & $1.00^{*}$        & $1.00^{*}$        & $1.00^{*}$       \\
-                   & $[0.99;\ 1.00]$   & $[0.99;\ 1.01]$   & $[0.99;\ 1.00]$  \\
-At War             & $0.10^{*}$        & $0.11^{*}$        & $0.09^{*}$       \\
-                   & $[0.08;\ 0.12]$   & $[0.09;\ 0.14]$   & $[0.06;\ 0.11]$  \\
-Civil War Part.      & $0.01$            & $0.01$            & $0.01$           \\
-                   & $[-0.00;\ 0.02]$  & $[-0.02;\ 0.04]$  & $[-0.00;\ 0.03]$ \\
-Polity            & $0.00$            & $-0.00^{*}$       & $0.00$           \\
-                   & $[-0.00;\ 0.00]$  & $[-0.01;\ -0.00]$ & $[-0.00;\ 0.00]$ \\
-ln(GDP)            & $0.00$            & $0.02^{*}$        & $0.00$           \\
-                   & $[-0.00;\ 0.00]$  & $[0.00;\ 0.03]$   & $[-0.00;\ 0.00]$ \\
-Major Power          & $-0.03^{*}$       &                   &                  \\
-                   & $[-0.04;\ -0.01]$ &                   &                  \\
-External Threat           & $0.04^{*}$        & $0.07^{*}$        & $0.04^{*}$       \\
-                   & $[0.02;\ 0.07]$   & $[0.01;\ 0.12]$   & $[0.02;\ 0.07]$  \\
-Cold War          & $0.04^{*}$        & $0.00$            & $0.05^{*}$       \\
-                   & $[0.04;\ 0.05]$   & $[-0.02;\ 0.03]$  & $[0.04;\ 0.06]$  \\
-Avg Alliance Size        & $0.00$            & $0.00$            & $0.00$           \\
-                   & $[-0.00;\ 0.00]$  & $[-0.00;\ 0.00]$  & $[-0.00;\ 0.00]$ \\
-ln(Allied Spending)     & $-0.00$           & $-0.00$           & $-0.00$          \\
-                   & $[-0.00;\ 0.00]$  & $[-0.01;\ 0.01]$  & $[-0.01;\ 0.00]$ \\
-Avg Alliance Dem.      & $0.00$            & $0.00^{*}$        & $0.00$           \\
-                   & $[-0.00;\ 0.00]$  & $[0.00;\ 0.01]$   & $[-0.00;\ 0.00]$ \\
-Constant       & $0.04^{*}$        & $-0.44^{*}$       & $0.05^{*}$       \\
-                   & $[0.01;\ 0.07]$   & $[-0.76;\ -0.13]$ & $[0.01;\ 0.08]$  \\									
-\hline
-Num. obs.          & 9461              & 916               & 8545             \\
-\hline
-\multicolumn{4}{l}{\scriptsize{$^*$ 0 outside the confidence interval}}
+\resizebox{.95\textwidth}{!}{
+\begin{tabular}{rrrrrrr}
+  \hline
+ & mean & S.D. & 5\% & 95\% & n\_eff & $\hat{R}$ \\ 
+  \hline
+Constant & 0.038 & 0.038 & -0.025 & 0.102 & 3380.954 & 1.000 \\ 
+  Latent Str. & -0.054 & 0.031 & -0.107 & -0.005 & 3278.923 & 1.000 \\ 
+  Number Members & 0.000 & 0.002 & -0.003 & 0.003 & 4000.000 & 0.999 \\ 
+  Democratic Membership & -0.009 & 0.033 & -0.065 & 0.042 & 4000.000 & 1.000 \\ 
+  Wartime & -0.057 & 0.035 & -0.115 & -0.001 & 4000.000 & 1.001 \\ 
+  Asymmetric & 0.053 & 0.035 & 0.001 & 0.115 & 2218.509 & 1.000 \\ 
+  US Member & 0.002 & 0.031 & -0.051 & 0.051 & 4000.000 & 1.000 \\ 
+  USSR Member & 0.023 & 0.033 & -0.028 & 0.079 & 4000.000 & 1.000 \\ 
+  $\sigma$ Alliances & 0.066 & 0.029 & 0.019 & 0.117 & 599.081 & 1.007 \\ 
+   \hline
 \end{tabular}
 }
-\label{table:coefficients}
-\end{center}
-\end{table}
 
 
 \end{frame}
 
 %-----------------------------------------------
 
-\begin{frame}{ML Model Results}
+\begin{frame}{Alliance-Level Regression Table: Non-Major Powers}
 
+8,668 observations and 192 alliances. 
 
-\begin{figure}
-	\centering
-		\includegraphics[width=0.95\textwidth]{ml-model-uncond-coefs.png}
-	\label{fig:ml-model-uncond-coefs}
-\end{figure}
+\resizebox{.95\textwidth}{!}{
+\begin{tabular}{rrrrrrr}
+  \hline
+ & mean & sd & 5\% & 95\% & n\_eff & $\hat{R}$ \\ 
+  \hline
+Constant & -0.018 & 0.018 & -0.047 & 0.012 & 2211.374 & 1.000 \\ 
+  Latent Str. & 0.026 & 0.017 & -0.002 & 0.054 & 2191.382 & 1.000 \\ 
+  Number Members & 0.000 & 0.001 & -0.001 & 0.001 & 4000.000 & 1.000 \\ 
+  Democratic Membership & -0.031 & 0.015 & -0.056 & -0.009 & 3213.621 & 1.000 \\ 
+  Wartime & 0.041 & 0.023 & 0.002 & 0.078 & 4000.000 & 1.000 \\ 
+  Asymmetric & -0.031 & 0.021 & -0.065 & 0.003 & 4000.000 & 0.999 \\ 
+  US Member & 0.013 & 0.018 & -0.016 & 0.042 & 2895.419 & 1.000 \\ 
+  USSR Member & 0.011 & 0.031 & -0.041 & 0.062 & 4000.000 & 1.000 \\ 
+  $\sigma$ Alliances & 0.014 & 0.009 & 0.002 & 0.030 & 1254.268 & 1.001 \\ 
+   \hline
+\end{tabular}
+}
+
 
 
 \end{frame}
+
+
+%------------------------------------------------
+
+
+\begin{frame}{Example}
+
+\setbeamercovered{transparent}
+
+\begin{equation*}
+\uncover<2->{\mu_{it} =} \uncover<3>{\alpha} \uncover<4>{+ \alpha^{st} + \alpha^{yr}} \uncover<5>{+ W_{it} \gamma} \uncover<6>{+ Z_{it} \lambda}
+\end{equation*}
+
+Example year: 
+
+\begin{equation*}
+\begin{split}
+& \uncover<2->{\mbox{Argentina 1955} = } \uncover<3>{\mbox{Overall mean}} \\
+& \uncover<4>{+ \mbox{Argentine Intercept} + \mbox{1955 Intercept}} \\
+& \uncover<5>{+ \mbox{Argentine Characteristics}} \\
+& \uncover<6>{+ \lambda_{OAS} * \mbox{OAS Expenditure} + \lambda_{Rio} * \mbox{Rio Pact Expenditure}}
+\end{split}
+\end{equation*}
+
+\uncover<7>{
+\begin{equation*}
+\lambda_{Rio} = \alpha_{all} + \beta_1 \mbox{Treaty Strength} + \mbox{Controls}
+\end{equation*}
+} 
+
+
+\end{frame}
+
+
+%------------------------------------------------
+
+
+\begin{frame}[standout]{Z} 
+
+\begin{tabular}{lccc}
+State-Year & Rio Pact & Warsaw Pact & \ldots \\
+\hline
+Argentina 1954 & .347 & 0 & \ldots \\
+Argentina 1955 & .418  & 0 & \ldots  \\
+ \vdots & \vdots & \vdots & \ldots  
+\end{tabular}
+
+ \end{frame}
 
 
 %------------------------------------------------
@@ -497,18 +606,19 @@ Num. obs.          & 9461              & 916               & 8545             \\
 
 \begin{frame}{Priors}
 
+4 Chains with 2,000 samples and 1,000 warmup iterations. 
+
 \begin{table} % Create a table of priors.
 
  \begin{center}
 \begin{tabular}{c} 
-$ p(\alpha) \sim N(0, 3)$  \\
+$ p(\alpha) \sim N(0, 1)$  \\
 $ p(\sigma) \sim \mbox{half-}N(0, 1) $ \\
 $ p(\alpha^{yr}) \sim N(0, \sigma^{yr}) $ \\ 
 $ p(\sigma^{yr}) \sim N(0, 1) $ \\
 $ p(\alpha^{st}) \sim N(0, \sigma^{st}) $ \\ 
 $ p(\sigma^{st}) \sim \mbox{half-}N(0, 1) $ \\ 
 $ p(\sigma^{all}) \sim \mbox{half-}N(0, 1) $ \\
-$ p(\eta) \sim \mbox{half-}N(0, 1) $ \\
 $ p(\beta) \sim N(0, 1) $ \\
 $ p(\gamma) \sim N(0, 1) $ \\ 
 $ p(\nu) \sim gamma(2, 0.1)$ 
@@ -520,44 +630,70 @@ $ p(\nu) \sim gamma(2, 0.1)$
 
 \end{frame}
 
+
 %------------------------------------------------
 
-\begin{frame}{Positive Posterior Probability of all Coefficients}
+
+\begin{frame}{Treaty Strength and $\lambda$: Major Powers}
+
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.95\textwidth]{ls-lambda-maj.png}
+	\label{fig:ls-lambda-maj}
+\end{figure}
+
+
+
+\end{frame}
+
+
+%------------------------------------------------
+
+
+\begin{frame}{Treaty Strength and $\lambda$: Non-major Powers}
 
 \begin{figure}
 	\centering
-		\includegraphics[width=0.95\textwidth]{post-prob-beta.png}
-	\label{fig:post-prob-beta}
+		\includegraphics[width=0.95\textwidth]{ls-lambda-min.png}
+	\label{fig:ls-lambda-min}
 \end{figure}
+
+
+
+\end{frame}
+
+
+
+%------------------------------------------------
+
+\begin{frame}{Details of Measurement Model}
+
+\begin{itemize}
+\item Bayesian Gaussian Copula Factor Model: for mixed data. 
+\item Uses copulas to break dependence between latent factors and marginal distributions. 
+\item Treats marginals as unknown and keeps them free of dependence. 
+\item IMH proposal, 10,000 iteration warmup, 20,000 samples, thinned every 20 draws. 
+\item Generalized double Pareto prior for the factor loading--- flexible generalized Laplace distribution with a spike at zero and heavy tails. 
+\end{itemize} 
 
 
 \end{frame}
 
 %------------------------------------------------
 
-\begin{frame}{Non-zero alliances}
 
-\begin{figure}
+\begin{frame}{Single-Level Robust Regression}
+
+\begin{figure}[htbp]
 	\centering
-		\includegraphics[width=0.95\textwidth]{non-zero alliances.png}
-	\label{fig:non-zero alliances}
+		\includegraphics[width=0.95\textwidth]{robust-reg-coef.png}
+	\label{fig:robust-reg-coef}
 \end{figure}
+
 
 
 \end{frame}
 
-%------------------------------------------------
-
-\begin{frame}{Violin Plot of Mean $\lambda$ for all alliances}
-
-\begin{figure}
-	\centering
-		\includegraphics[width=0.95\textwidth]{lambda-box-presentation.png}
-	\label{fig:lambda-box-presentation}
-\end{figure}
-
-
-\end{frame}
 
 
 %----------------------------------------------------------------------------------------
