@@ -669,7 +669,10 @@ Like Benson and Clinton, I employ a latent variable model, but with another conc
 I use the Bayesian Gaussian Copula Factor Model of \citet{Murrayetal2013} to measure alliance treaty strength. 
 Murray et al's model improves on mixed factor analysis for continuous, ordinal, and binary observed data by relaxing distributional assumptions. 
 With discrete observed variables and non-Gaussian latent variables, the dependence among the latent variables and their marginal distributions are both influenced by the latent variables.
-Their model encodes the dependence structure of multivariate latent data using a copula,\footnote{Copulas are distribution function on $[0, 1]^p$ where each univariate marginal distribution is uniform on $[0,1]$. This function encodes the dependence structure of a multivariate distribution.} and expresses the latent variables and factor loadings as a series of latent normal variables. 
+Their model encodes the dependence structure of multivariate latent data using a copula\footnote{
+Copulas are distribution function on $[0, 1]^p$ where each univariate marginal distribution is uniform on $[0,1]$. This function encodes the dependence structure of a multivariate distribution.
+} 
+and expresses the latent variables and factor loadings as a series of latent normal variables. 
 This semiparametric approach breaks the dependence between the latent factors and marginal distributions. 
 
 
@@ -681,8 +684,10 @@ Like standardized regression coefficients, factor loadings range from -1 to 1, s
 
 For each observation, a linear combination of observed alliance characteristics predicts latent treaty strength, like a regression with an unobserved outcome.  
 I took alliance characteristics for all 745 alliances in the alliance-level ATOP data \citep{Leedsetal2002}. 
-Indicators of treaty strength include promises of defensive support, offensive support, neutrality, consultation, non-aggression, unconditional military support, military aid, economic aid, bases, international organization formation, integrated military command, and promises to form new agreements in multiple issue areas. 
-My argument suggests there is one latent factor underlying variation in these indicators.
+Indicators of treaty strength are divided between the potential costs of abrogation and sunk costs commitments.
+The potential costs of abrogation depend on promises of defensive support, offensive support, neutrality, consultation, non-aggression and unconditional military support. 
+Sunk costs include military aid, economic aid, bases, international organization formation, integrated military command, as well as promises to form new agreements in multiple issue areas and to forgo competing alliances. 
+My argument suggests there is one latent factor underlying variation in all 13 indicators.
 
 
 The Bayesian Gaussian copula factor model generates posterior distributions for the factor loadings and the latent factor. 
@@ -692,45 +697,54 @@ Because treaty strength is the main quantity of interest for this paper, I focus
 
 % Show the measure for all alliances- note I'll only focus on treaties w/ military support.
 Each alliance has a unique posterior distribution of the latent strength measure. 
-The mean of that distribution measures expected treaty strength. 
-\autoref{fig:ls-summary} describes the latent measure for all ATOP alliances from 1815 to 2016.
-The empirical analysis includes only treaties that promise military support, but measuring all alliances means the model estimates the contribution of defensive and offensive conditions to treaty strength. 
+I use the mean of that posterior to measure treaty strength--- the mean captures the expected strength of a treaty, given its formal commitments. 
+\autoref{fig:ls-summary} describes the latent measure for ATOP alliances  with military support from 1815 to 2016.
+I focus on treaties with military support because prior studies of alliance participation and military spending emphasize these treaties.\footnote{
+I estimated the measurement model on all alliances to capture the contributions of defensive and offensive conditions to treaty strength relative to weaker promises.
+}
 
 
-As the top panel of \autoref{fig:ls-summary} shows, most alliances make weak formal promises.
-456 alliances have no promises of offensive or defensive support, reducing the costs of abrogation. 
-Almost all the remaining 289 treaties have positive mean strength. 
+As the top panel of \autoref{fig:ls-summary} shows, there is a wide range of strength among treaties with military support. 
+Most treaties are concentrated between .5 and 1.5 on the latent scale, but there are 40 or so treaties that are stronger or weaker. 
+The bottom panel of \autoref{fig:ls-summary} plots the posterior means and uncertainty in those estimates against the start year of the treaty. 
+Even after accounting for posterior uncertainty, it is possible to distinguish between many stronger and weaker formal treaties. 
 
 
 \begin{figure}
 	\centering
 		\includegraphics[width=0.95\textwidth]{../figures/ls-summary.png}
-	\caption{Summary of latent measure of alliance treaty strength for 745 alliances from 1816 to 2016. The top panel is a histogram of the expected of alliance treaty strength. The bottom panel plots mean treaty strength (points) and the standard deviation (error bars) against the start year of the treaty.}
+	\caption{Summary of latent measure of alliance treaty strength for 289 alliances promising military support from 1816 to 2016. The top panel is a histogram of the expected of alliance treaty strength. The bottom panel plots mean treaty strength (points) and the standard deviation (error bars) against the start year of the treaty.}
 	\label{fig:ls-summary}
 \end{figure}
-	
-	
-The bottom panel of \autoref{fig:ls-summary} plots the posterior means and uncertainty in those estimates against the start year of the treaty. 
-Even after accounting for posterior uncertainty, it is possible to distinguish between many strong and weak treaties. 
-Institutionally weak treaties proliferated in the 20th century, with many non-aggression and consultation pacts. 
 
 
 % Cases- especially strong and weak treaties
 The values of the latent strength measure are not intrinsically informative. 
 Differences between treaties on the latent strength scale are meaningful, however. 
-The mean of treaty strength is 0.01, and the median is -0.10. 
-The median treaty is a 1938 consultation pact between France and Czechoslovakia (ATOPID 2120). 
+The mean of treaty strength is 0.92, and the median is 0.90. 
+The median treaty is an 1854 agreement between Austria, France, and Britain against Russia in the Crimean war (ATOP ID 1180). 
 
 
-The weakest treaty is a neutrality and non-aggression treaty between Georgia and Kazakhstan (ATOPID 4476).  
-An almost equally weak treaty between between Ukraine and India (ATOPID 4188) scores -1.36 on the latent measure.
-The three strongest treaties are an 1867 alliance between Prussia and Hesse (ATOPID 1290), a 1955 treaty between Greece and Turkey governing relations in Cyprus and the United Arab Republic (ATOPID 3300).  
-NATO scores 0.75, placing it in the upper edge of the third quartile of treaty strength.  
+The weakest treaty is an 1870 neutrality and offense pact between France and Britain (ATOPID 1300), which Britain used to protect Belgian neutrality during the Franco-Prussian war.  
+Britain formed a similar and equally weak treaty with Prussia at the same time, which scores almost exactly the same on the latent measure. 
+Both treaties have only offensive and neutrality promises, conditional on France and Prussia respecting Belgian neutrality. 
+
+
+NATO (ATOPID 3180) has mean latent strength of 0.73, placing it in the third quartile of treaty strength. 
+NATO's main costly provisions are the defense obligations in Article 5 and establishing the Council. 
+According to the ATOP coding sheet for NATO, ``There are numerous bilateral agreements among NATO members re: military aid, bases, etc. but they do not qualify as separate alliances, nor are they part of the overall NATO structure.''
+So while the NATO treaty is above average in strength, many additional costs fall outside the formal treaty.    
+
+
+The three strongest treaties are an 1867 alliance between Prussia and Hesse (ATOPID 1290), a 1955 treaty between Greece and Turkey governing relations in Cyprus (ATOPID 3400) and the United Arab Republic (ATOPID 3300).  
+All of these treaties supplement promises of military support with costly promises of cooperation. 
+In the alliance between Greece, Turkey, and Cyprus, two historical enemies set up military aid, integrated military command, international organizations to mange relations on the island. 
+These extra costs made the commitment to defend Cyprus more credible. 
 
 
 These examples show some face, concept, and discriminant validity of the latent measure. 
-The UAR is a stronger commitment than non-aggression between India and Ukraine, for example. 
-The weakest treaties made few costly promises, matching my conceptualization of treaty strength. 
+The UAR is a more costly commitment than a functional promise to respect Belgian neutrality. 
+The weakest treaties make few costly promises beyond military support, matching my conceptualization of treaty strength. 
 This measure makes a clear distinction between weak and strong commitments. 
 I now describe how and why I use a multilevel model to estimate the association between this measure of treaty strength and alliance members' military spending.  
 

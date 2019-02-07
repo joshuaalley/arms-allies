@@ -112,7 +112,7 @@ ggplot(atop, aes(x = str.index)) + geom_bar()
 # Turn dummy indicators into factors in a separate dataset
 atop.str <- select(atop, uncond.milsup, offense, defense, nonagg,
                    neutral, consul, intcom, agpro.mult, 
-                   milaid, base, organ1, ecaid) 
+                   milaid, base, organ1, ecaid, noothall) 
 atop.str <- as.data.frame(atop.str)
 for(i in 1:ncol(atop.str)){
   atop.str[, i] <- as.ordered(atop.str[, i])
@@ -122,7 +122,7 @@ for(i in 1:ncol(atop.str)){
 latent.strength <- bfa_mixed(~ uncond.milsup + offense + defense + 
                                 neutral + consul + nonagg +
                                 milaid + base + ecaid + organ1 + 
-                                intcom + agpro.mult, 
+                                intcom + agpro.mult + noothall, 
                           data = atop.str, num.factor = 1,
                          keep.scores = TRUE, loading.prior = "gdp", 
                          px = TRUE, imh.iter = 500, imh.burn = 500,
@@ -154,16 +154,37 @@ ggplot(atop, aes(x = atopid, y = latent.str.mean)) + geom_point()
 ggplot(atop, aes(x = atopid, y = str.index)) +
   geom_point(position = position_dodge(2))
 
+# Histogram of latent strength- all ATOP alliances 
+ggplot(atop, aes(x = latent.str.mean)) + geom_histogram() +
+  theme_classic() + labs(x = "Mean Latent Strength", y = "Treaties")
 
-# Histogram of latent strength 
-ls.hist <- ggplot(atop, aes(x = latent.str.mean)) + geom_histogram() +
+# Strength by year of formation
+ggplot(atop, aes(x = begyr, y = latent.str.mean)) + geom_point() +
+  geom_errorbar(aes(ymin = latent.str.mean - latent.str.sd, 
+                    ymax = latent.str.mean + latent.str.sd,
+                    width=.01), position = position_dodge(0.1)) +
+  geom_point(position = position_dodge(0.1))
+
+
+
+# Summarize latent strength: treaties with military support only
+atop.milsup <- filter(atop, offense == 1 | defense == 1) 
+summary(atop.milsup$latent.str.mean)
+# weakest is 1870 France-UK offense/neutrality pact- meant to ensure Belgian neutrality
+# median is ATOP 1180- UK, Fr and Austria during Crimean war
+
+# 289 treaties with some promise of military support 
+nrow(atop.milsup)
+
+# histogram
+ls.hist <- ggplot(atop.milsup, aes(x = latent.str.mean)) + geom_histogram() +
   theme_classic() + labs(x = "Mean Latent Strength", y = "Treaties")
 ls.hist
 
-# Strength by year of formation
-ggplot(atop, aes(x = begyr, y = latent.str.mean)) + geom_point()
+
+# Strength against year of formation for treaties with military support
 # Add error bars to plot
-ls.styear <- ggplot(atop, aes(x = begyr, y = latent.str.mean)) +
+ls.styear <- ggplot(atop.milsup, aes(x = begyr, y = latent.str.mean)) +
   geom_errorbar(aes(ymin = latent.str.mean - latent.str.sd, 
     ymax = latent.str.mean + latent.str.sd,
     width=.01), position = position_dodge(0.1)) +
@@ -171,7 +192,10 @@ ls.styear <- ggplot(atop, aes(x = begyr, y = latent.str.mean)) +
   labs(x = "Start Year", y = "Latent Strength of Treaty") +
   theme_classic()
 ls.styear
+# Combine plots 
 multiplot.ggplot(ls.hist, ls.styear)
+
+
 
 # highlight NATO
 atop %>% 
