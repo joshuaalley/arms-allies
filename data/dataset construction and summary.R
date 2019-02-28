@@ -325,7 +325,7 @@ gml.mid.part <- read.csv("data/gml-ddy-disputes-2.03.csv")
 # Group data, collapse and get total disputes by year
 gml.mid.part <- gml.mid.part %>%
                 mutate(mid = 1) %>%
-                select(ccode1, ccode2, year, dispnum, mid) %>% 
+                select(ccode1, ccode2, year, dispnum, sidea2, mid) %>% 
                 gather(side, ccode, c(ccode1, ccode2)) %>%
                 select(-side)
 
@@ -333,9 +333,9 @@ gml.mid.part <- unique(gml.mid.part)
 gml.mid.part <- gml.mid.part %>%
                 group_by(ccode, year) %>%
                 summarize(
-                  mid.pres = 1,
-                  disputes = n()
-                )
+                mid.pres = 1,
+                disputes = n()
+                 )
 
 # merge with state variables 
 state.vars <- left_join(state.vars, gml.mid.part)
@@ -384,7 +384,7 @@ state.vars <- state.vars %>%
 summary(state.vars$growth.milex)
 ggplot(state.vars, aes(x = growth.milex)) + geom_density()
 
-# Trim the exceedingly large values
+# Trim the exceedingly large values, including infinite
 state.vars$growth.milex[state.vars$growth.milex > 140] <- 140
 
 # Concerns, given noise in COW measure: 

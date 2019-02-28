@@ -436,3 +436,23 @@ lambda.probs.min %>%
   scale_fill_brewer(palette = "Greys") +
   geom_text(aes(label = pos.post.prob), nudge_y = .04) +
   coord_flip()
+
+
+
+### Calculate aggregate impact of alliance participation on growth in spending 
+
+# Major powers 
+dim(state.mem.maj)
+
+# matrix multiplication of membership matrix by mean lambda 
+agg.all.maj  <- state.mem.maj%*%lambda.means.maj[, 5]
+
+summary(agg.all.maj)
+
+# non-major power
+dim(state.mem.min)
+
+# matrix multiplication of membership matrix by mean lambda 
+agg.all.min  <- state.mem.min%*%lambda.means.min[, 5]
+
+summary(agg.all.min)
