@@ -33,7 +33,7 @@ set.seed(12)
 # Define a state-year level dataset with no missing observations
 reg.state.data <- state.vars %>%
   select(ccode, year, growth.milex, 
-                      atwar, civilwar.part, rival.milex, gdp.growth, polity, 
+                      atwar, civilwar.part, rival.milex, gdp.growth, polity2, 
                       cold.war, disputes, majpower) 
 
 # Add state membership in alliances to this data
@@ -80,7 +80,7 @@ reg.state.comp$year.id <- reg.state.comp %>% group_indices(year)
 # Make the alliance characteristics data match the membership matrix
 reg.all.data <- filter(alliance.char, atopid %in% colnames(state.mem.mat)) %>%
   select(atopid, latent.str.mean, num.mem, 
-          dem_prop, wartime, asymm, us.mem, ussr.mem)
+          avg.democ, wartime, asymm, us.mem, ussr.mem)
 
 
 # Replace missing conditions (arms, instituions and military aid) with zeros

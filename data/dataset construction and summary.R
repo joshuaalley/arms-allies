@@ -32,7 +32,7 @@ alliance.char <- select(atop, atopid,
                     uncond.milsup, str.index, latent.str.mean,
                     offense, defense, consul, neutral, nonagg, base,
                     armred.rc, organ1, milaid.rc, us.mem, ussr.mem,
-                    num.mem, nonagg.only, dem_prop, wartime, asymm)
+                    num.mem, nonagg.only, wartime, asymm)
 
 # Expand alliance characteristics data to make it alliance characteristic-year data
 # Don't care about truncation here, just need to know if alliance is operational
@@ -503,23 +503,41 @@ alliance.year <- atop.cow.year %>%
   filter(atopid > 0) %>%
   group_by(atopid, year) %>%
   summarize(
-    avg.democ = mean(polity, na.rm = TRUE),
+    avg.democ = mean(polity2, na.rm = TRUE),
     total.cap = sum(cinc, na.rm = TRUE),
     total.expend = sum(ln.milex, na.rm = TRUE),
     num.mem = n()
   )
 
-alliance.year[order(alliance.year$atopid, alliance.year$year), ]
+alliance.year[order(alliance.year$atopid, alliance.year$year),] 
+
+
+# Merge mean democracy into alliance characteristics data
+alliance.year <- alliance.year %>% 
+                  group_by(atopid) %>%
+                  mutate(
+                    begyr = min(year)
+                  )
+
+alliance.democ <- filter(alliance.year, begyr == year) %>% 
+                 select(c(atopid, avg.democ)) 
+
+# merge with alliance characteristics data
+alliance.char <- left_join(alliance.char, alliance.democ, by = "atopid")
+summary(alliance.char$avg.democ)
+alliance.char$avg.democ[is.nan(alliance.char$avg.democ)] <- 0 # alliances where some members are not in system
+ggplot(alliance.char, aes(x = avg.democ)) + geom_histogram()
+
+
+# Create a membership matrix with the spending of all 
+# other alliance members in place of 1s 
+
 
 # With na.rm = TRUE, all missing values have a sum of zero.
 # I filter out all of these alliance-year observations
 alliance.year <- filter(alliance.year, total.expend != 0)
 
 ggplot(alliance.year, aes(x = total.expend)) + geom_density()
-
-
-# Create a membership matrix with the spending of all 
-# other alliance members in place of 1s 
 
 # Replace missing NA values with 0 in atop.cow.year data
 # This means mutate below won't produce missing values when state military spending is missing. 
@@ -543,7 +561,7 @@ state.mem.cap$avg.democ[is.na(state.mem.cap$avg.democ) & state.mem.cap$atopid ==
 
 # export data to test of public goods theory
 write.csv(state.mem.cap, 
-          "C:/Users/jkalley14/Dropbox/Research/Dissertation/public-goods-test/data/state-mem-cap.csv", 
+          "/../Research/Dissertation/public-goods-test/data/state-mem-cap.csv", 
           row.names = F)
 
 
@@ -552,7 +570,7 @@ state.ally.year <- left_join(atop.cow.year, state.mem.cap)
 
 # Write to Olson and Zeckhauser reanalysis paper
 write.csv(state.ally.year, 
-          "C:/Users/jkalley14/Dropbox/Research/Dissertation/public-goods-test/data/alliance-state-year.csv", 
+          "/../Research/Dissertation/public-goods-test/data/alliance-state-year.csv", 
           row.names = F)
 
 

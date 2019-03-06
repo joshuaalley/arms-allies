@@ -273,12 +273,6 @@ atop <- mutate(atop, nonagg.only = ifelse((nonagg == 1 & offense != 1
                milaid.rc = ifelse(milaid >= 2, 1, 0)
                )
 
-# Add Chiba et al data on democractic proportion at time of formation
-chibaetal.2015 <- read.csv("data/chiba-etal2015.csv")
-chibaetal.2015 <- select(chibaetal.2015, atopid, dem_prop)
-
-atop <- left_join(atop, chibaetal.2015)
-
 
 # Export to public-goods-test paper
 write.csv(atop, 

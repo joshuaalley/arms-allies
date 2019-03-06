@@ -56,7 +56,7 @@ reg.state.comp.maj$year.id <- reg.state.comp.maj %>% group_indices(year)
 # Make the alliance characteristics data match the membership matrix
 reg.all.data.maj <- filter(alliance.char, atopid %in% colnames(state.mem.maj)) %>%
   select(atopid, latent.str.mean, num.mem, 
-         dem_prop, wartime, asymm, us.mem, ussr.mem)
+         avg.democ, wartime, asymm, us.mem, ussr.mem)
 
 
 
@@ -120,9 +120,6 @@ state.mem.min <- as.matrix(reg.state.comp.min[, 12: ncol(reg.state.comp.min)])
 # remove alliances with no major power participation
 state.mem.min <- state.mem.min[, colSums(state.mem.min != 0) > 0]
 
-# switch matrix to 0/1 for membership (comment on or off as needed)
-#state.mem.min[state.mem.min != 0] <- 1
-
 
 # create a state index variable
 reg.state.comp.min$state.id <- reg.state.comp.min %>% group_indices(ccode)
@@ -135,7 +132,7 @@ reg.state.comp.min$year.id <- reg.state.comp.min %>% group_indices(year)
 # Make the alliance characteristics data match the membership matrix
 reg.all.data.min <- filter(alliance.char, atopid %in% colnames(state.mem.min)) %>%
   select(atopid, latent.str.mean, num.mem, 
-         dem_prop, wartime, asymm, us.mem, ussr.mem)
+         avg.democ, wartime, asymm, us.mem, ussr.mem)
 
 
 # Replace missing conditions (arms, instituions and military aid) with zeros
@@ -448,6 +445,8 @@ dim(state.mem.maj)
 agg.all.maj  <- state.mem.maj%*%lambda.means.maj[, 5]
 
 summary(agg.all.maj)
+agg.all.maj <- cbind(reg.state.comp.maj$ccode,
+                     reg.state.comp.maj$year, agg.all.maj)
 
 # non-major power
 dim(state.mem.min)
@@ -456,3 +455,11 @@ dim(state.mem.min)
 agg.all.min  <- state.mem.min%*%lambda.means.min[, 5]
 
 summary(agg.all.min)
+agg.all.min <- cbind(reg.state.comp.min$ccode,
+                     reg.state.comp.min$year, agg.all.min)
+
+# Create dataframe with state-year indicators and 
+# aggregate impact of alliance participation
+agg.all.imp <- rbind(agg.all.maj, agg.all.min)
+colnames(agg.all.imp) <- c("ccode", "year", "agg.all.imp")
+agg.all.imp <- data.frame(agg.all.imp)
