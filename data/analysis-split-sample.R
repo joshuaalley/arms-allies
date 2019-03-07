@@ -55,7 +55,7 @@ reg.state.comp.maj$year.id <- reg.state.comp.maj %>% group_indices(year)
 # Create the matrix of alliance-level variables
 # Make the alliance characteristics data match the membership matrix
 reg.all.data.maj <- filter(alliance.char, atopid %in% colnames(state.mem.maj)) %>%
-  select(atopid, latent.str.mean, num.mem, 
+  select(atopid, latent.str.mean, num.mem, low.kap.sc,
          avg.democ, wartime, asymm, us.mem, ussr.mem)
 
 
@@ -131,7 +131,7 @@ reg.state.comp.min$year.id <- reg.state.comp.min %>% group_indices(year)
 # Create the matrix of alliance-level variables
 # Make the alliance characteristics data match the membership matrix
 reg.all.data.min <- filter(alliance.char, atopid %in% colnames(state.mem.min)) %>%
-  select(atopid, latent.str.mean, num.mem, 
+  select(atopid, latent.str.mean, num.mem, low.kap.sc, 
          avg.democ, wartime, asymm, us.mem, ussr.mem)
 
 

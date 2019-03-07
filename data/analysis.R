@@ -79,7 +79,7 @@ reg.state.comp$year.id <- reg.state.comp %>% group_indices(year)
 # Create the matrix of alliance-level variables
 # Make the alliance characteristics data match the membership matrix
 reg.all.data <- filter(alliance.char, atopid %in% colnames(state.mem.mat)) %>%
-  select(atopid, latent.str.mean, num.mem, 
+  select(atopid, latent.str.mean, num.mem, low.kap.sc,
           avg.democ, wartime, asymm, us.mem, ussr.mem)
 
 

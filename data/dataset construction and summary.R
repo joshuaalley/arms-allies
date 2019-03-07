@@ -32,7 +32,7 @@ alliance.char <- select(atop, atopid,
                     uncond.milsup, str.index, latent.str.mean,
                     offense, defense, consul, neutral, nonagg, base,
                     armred.rc, organ1, milaid.rc, us.mem, ussr.mem,
-                    num.mem, nonagg.only, wartime, asymm)
+                    num.mem, nonagg.only, wartime, asymm, low.kap.sc)
 
 # Expand alliance characteristics data to make it alliance characteristic-year data
 # Don't care about truncation here, just need to know if alliance is operational

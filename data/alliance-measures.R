@@ -274,9 +274,30 @@ atop <- mutate(atop, nonagg.only = ifelse((nonagg == 1 & offense != 1
                )
 
 
+# Generate a measure of FP similarity in initial year of alliance 
+all.fp.sim <- read.csv("data/all-fp-sim.csv")
+all.fp.sim <- all.fp.sim[complete.cases(all.fp.sim), ] # missing data on all measures of FP similarity 
+
+# Get first observation for each ATOPID
+all.fp.sim <- all.fp.sim %>%
+                   group_by(atopid) %>%
+                   mutate(
+                     yr1 = min(year)
+                   ) 
+
+all.fpsim.first <- filter(all.fp.sim, year == yr1) %>% 
+                   group_by() %>% 
+                   select(-c(year, yr1))  
+
+
+# Add measures of FP similiarity in first year observed
+atop <- left_join(atop, all.fpsim.first)
+
+
+
 # Export to public-goods-test paper
 write.csv(atop, 
-          "C:/Users/jkalley14/Dropbox/Research/Dissertation/public-goods-test/data/atop-additions.csv", 
+          "../Dissertation/public-goods-test/data/atop-additions.csv", 
           row.names = F)
 
 
