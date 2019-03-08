@@ -280,14 +280,18 @@ all.fp.sim <- all.fp.sim[complete.cases(all.fp.sim), ] # missing data on all mea
 
 # Get first observation for each ATOPID
 all.fp.sim <- all.fp.sim %>%
-                   group_by(atopid) %>%
-                   mutate(
-                     yr1 = min(year)
-                   ) 
+  group_by(atopid) %>%
+  mutate(
+    yr1 = min(year)
+  ) 
 
 all.fpsim.first <- filter(all.fp.sim, year == yr1) %>% 
-                   group_by() %>% 
-                   select(-c(year, yr1))  
+  group_by() %>% 
+  select(-c(year, yr1))  
+
+
+# Add measures of FP similiarity in first year observed
+atop <- left_join(atop, all.fpsim.first)
 
 
 # Add measures of FP similiarity in first year observed
