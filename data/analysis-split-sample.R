@@ -41,16 +41,6 @@ state.mem.maj <- as.matrix(reg.state.comp.maj[, 12: ncol(reg.state.comp.maj)])
 # remove alliances with no major power participation
 state.mem.maj <- state.mem.maj[, colSums(state.mem.maj != 0) > 0]
 
-# switch matrix to 0/1 for membership (comment on or off as needed)
-# state.mem.maj[state.mem.maj != 0] <- 1
-
-
-# create a state index variable
-reg.state.comp.maj$state.id <- reg.state.comp.maj %>% group_indices(ccode)
-# Create a year index variable 
-reg.state.comp.maj$year.id <- reg.state.comp.maj %>% group_indices(year)
-
-
 
 # Create the matrix of alliance-level variables
 # Make the alliance characteristics data match the membership matrix
@@ -59,9 +49,19 @@ reg.all.data.maj <- filter(alliance.char, atopid %in% colnames(state.mem.maj)) %
          avg.democ, wartime, asymm, us.mem, ussr.mem)
 
 
+# Remove two alliances where non-major members are not in COW system: ATOPID 1118 and 1320
+reg.all.data.maj <- reg.all.data.maj[complete.cases(reg.all.data.maj), ]
+state.mem.maj <- state.mem.maj[, colnames(state.mem.maj) %in% reg.all.data.maj$atopid]
 
-# Replace missing conditions (arms, instituions and military aid) with zeros
-reg.all.data.maj[is.na(reg.all.data.maj)] <- 0
+
+
+
+
+
+# create a state index variable
+reg.state.comp.maj$state.id <- reg.state.comp.maj %>% group_indices(ccode)
+# Create a year index variable 
+reg.state.comp.maj$year.id <- reg.state.comp.maj %>% group_indices(year)
 
 
 
@@ -121,12 +121,6 @@ state.mem.min <- as.matrix(reg.state.comp.min[, 12: ncol(reg.state.comp.min)])
 state.mem.min <- state.mem.min[, colSums(state.mem.min != 0) > 0]
 
 
-# create a state index variable
-reg.state.comp.min$state.id <- reg.state.comp.min %>% group_indices(ccode)
-# Create a year index variable 
-reg.state.comp.min$year.id <- reg.state.comp.min %>% group_indices(year)
-
-
 
 # Create the matrix of alliance-level variables
 # Make the alliance characteristics data match the membership matrix
@@ -135,8 +129,17 @@ reg.all.data.min <- filter(alliance.char, atopid %in% colnames(state.mem.min)) %
          avg.democ, wartime, asymm, us.mem, ussr.mem)
 
 
-# Replace missing conditions (arms, instituions and military aid) with zeros
-reg.all.data.min[is.na(reg.all.data.min)] <- 0
+# Remove two alliances where members are not in COW system: no kappa 
+reg.all.data.min <- reg.all.data.min[complete.cases(reg.all.data.min), ]
+state.mem.min <- state.mem.min[, colnames(state.mem.min) %in% reg.all.data.min$atopid]
+
+
+# create a state index variable
+reg.state.comp.min$state.id <- reg.state.comp.min %>% group_indices(ccode)
+# Create a year index variable 
+reg.state.comp.min$year.id <- reg.state.comp.min %>% group_indices(year)
+
+
 
 
 ### transform data into matrices for STAN
@@ -193,7 +196,8 @@ summary(reg.all.data.min$latent.str.mean) # minor powers
 beta.summary.maj <- summary(ml.model.maj, pars = c("beta", "sigma_all"), probs = c(0.05, 0.95))$summary
 beta.summary.maj <- beta.summary.maj[, -2]
 rownames(beta.summary.maj) <- c("Constant", "Latent Str.", 
-                                "Number Members","Democratic Membership", 
+                                "Number Members", "FP Similarity",
+                                "Democratic Membership", 
                                 "Wartime", "Asymmetric",
                                 "US Member", "USSR Member", "sigma Alliances")
 
@@ -201,16 +205,17 @@ rownames(beta.summary.maj) <- c("Constant", "Latent Str.",
 print(beta.summary.maj)
 xtable(beta.summary.maj, digits = 3)
 
+
 # summarize intervals for minor powers
 beta.summary.min <- summary(ml.model.min, pars = c("beta", "sigma_all"), probs = c(0.05, 0.95))$summary
 beta.summary.min <- beta.summary.min[, -2]
 rownames(beta.summary.min) <- c("Constant", "Latent Str.", 
-                                "Number Members","Democratic Membership", 
+                                "Number Members", "FP Similarity",
+                                "Democratic Membership", 
                                 "Wartime", "Asymmetric",
                                 "US Member", "USSR Member", "sigma Alliances")
 
 print(beta.summary.min)
-xtable(beta.summary.min, digits = 3)
 
 
 
@@ -230,17 +235,17 @@ ggplot(lscoef.summary, aes(x = row.names(lscoef.summary), y = mean)) +
 
 # Summarize the alliance cofficient estimates in major and minor subsets
 coef.maj <- extract(ml.model.maj, pars = c("beta", "gamma"))
-colnames(coef.maj$beta) <- colnames(alliance.reg.mat)
+colnames(coef.maj$beta) <- colnames(alliance.reg.mat.maj)
 colnames(coef.maj$gamma) <- colnames(reg.state.mat.maj)
 coef.min <- extract(ml.model.min, pars = c("beta", "gamma"))
-colnames(coef.min$beta) <- colnames(alliance.reg.mat)
+colnames(coef.min$beta) <- colnames(alliance.reg.mat.min)
 colnames(coef.min$gamma) <- colnames(reg.state.mat.min)
 
 # Baseline posterior probabilities
 mean(coef.maj$beta[, 2] < 0) # latent strength: major
 mean(coef.min$beta[, 2] > 0) # latent strength: non-major
 
-# Create a nice comparison plot
+# Create a nice comparison plot: secret weapon 
 str.dens <- cbind(coef.maj$beta[, 2], coef.min$beta[, 2])
 colnames(str.dens) <- c("Major", "Non-Major")
 str.dens <- melt(str.dens)
@@ -251,17 +256,10 @@ ggplot(str.dens, aes(x = value,  fill = X2)) +
   ggtitle("Posterior Distributions of Treaty Strength: Major and Non-Major Powers") +
   theme_classic()
 ggsave("figures/str-dens.png", height = 6, width = 8)
-# ggsave("presentation/str-dens-dummy.png", height = 6, width = 8) # comment out as needed
-
-# Compare Coefficients
-mean(coef.min$beta[, 2] > coef.maj$beta[, 2]) 
-
-# Function to find overlap
-beta.overlap <- overlap(list(coef.maj$beta[, 2], coef.min$beta[, 2]), nbins = 1000, plot = TRUE)
-beta.overlap$OV
 
 
-# compare state-level parameters
+
+# Examine state-level parameters
 mcmc_areas(coef.maj$gamma, 
            prob = .9)
 mcmc_areas(coef.min$gamma, 
