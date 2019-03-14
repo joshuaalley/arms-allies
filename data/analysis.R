@@ -48,7 +48,7 @@ reg.state.comp <- reg.state.data[complete.cases(reg.state.data), ]
 
 
 # Rescale the state-level regressors
- reg.state.comp[, 4:11] <- lapply(reg.state.comp[, 4:11], 
+ reg.state.comp[, 4:10] <- lapply(reg.state.comp[, 4:10], 
        function(x) rescale(x, binary.inputs = "0/1"))
  
  
@@ -73,7 +73,8 @@ state.mem.mat <- as.matrix(reg.state.comp[, 12: ncol(reg.state.comp)])
 reg.state.comp$state.id <- reg.state.comp %>% group_indices(ccode)
 # Create a year index variable 
 reg.state.comp$year.id <- reg.state.comp %>% group_indices(year)
-
+# Create a major power index variable 
+reg.state.comp$mp.id <- reg.state.comp %>% group_indices(majpower)
 
 
 # Create the matrix of alliance-level variables
@@ -83,14 +84,14 @@ reg.all.data <- filter(alliance.char, atopid %in% colnames(state.mem.mat)) %>%
           avg.democ, wartime, asymm, us.mem, ussr.mem)
 
 
-# Replace missing conditions (arms, instituions and military aid) with zeros
-reg.all.data[is.na(reg.all.data)] <- 0
-
+# Remove alliances w/ missing FPsim- one member not in system
+reg.all.data <- reg.all.data[complete.cases(reg.all.data), ] 
+state.mem.mat <- state.mem.mat[, colnames(state.mem.mat) %in% reg.all.data$atopid]
 
 
 ### transform data into matrices for STAN
 # State-level characeristics
-reg.state.mat <- as.matrix(reg.state.comp[, 4:11])
+reg.state.mat <- as.matrix(reg.state.comp[, 4:10])
 
 # check correlations among state-level regressors
 cor(reg.state.mat, method = "pearson")
@@ -111,6 +112,7 @@ reg.state.comp <- as.data.frame(reg.state.comp)
 stan.data <- list(N = nrow(reg.state.comp), y = reg.state.comp[, 3],
                       state = reg.state.comp$state.id, S = length(unique(reg.state.comp$state.id)),
                       year = reg.state.comp$year.id, T = length(unique(reg.state.comp$year.id)),
+                      cap = reg.state.comp$mp.id, J = length(unique(reg.state.comp$mp.id)),
                       A = ncol(state.mem.mat), L = ncol(alliance.reg.mat),
                       Z = state.mem.mat, 
                       X = alliance.reg.mat,
@@ -136,7 +138,8 @@ rm(list = c("ml.model.vb", "vb.model.sum"))
 # Regular STAN
 system.time(
   ml.model <- sampling(model.1, data = stan.data, 
-                       iter = 2000, warmup = 1000, chains = 4
+                       iter = 2000, warmup = 1000, chains = 4,
+                       control=list(adapt_delta = 0.9, max_treedepth = 15)
   )
 )
 
@@ -148,6 +151,8 @@ check_hmc_diagnostics(ml.model)
 # Traceplots for the regression parameters
 traceplot(ml.model, pars = "beta")
 traceplot(ml.model, pars = "gamma")
+traceplot(ml.model, pars = "L_Omega_gamma")
+traceplot(ml.model, pars = "tau_gamma")
 
 # Pairs plots to see sources of autocorrelation in the chains: Select only some intercept parameters
 # Check for correlation between the means and variances of the state intercepts
@@ -169,8 +174,11 @@ pairs(ml.model, pars = c("beta[1]", "beta[2]", "beta[3]", "beta[4]",
                          "beta[5]", "beta[6]", "beta[7]", "beta[8]"))
 
 # State-level variables
-pairs(ml.model, pars = c("gamma[1]", "gamma[2]", "gamma[3]", "gamma[4]",
-                         "gamma[5]", "gamma[6]", "gamma[7]"))
+pairs(ml.model, pars = c("gamma[1,1]", "gamma[1,2]", "gamma[1,3]", "gamma[1,4]",
+                         "gamma[1,5]", "gamma[1,6]", "gamma[1,7]"))
+# State-level variables
+pairs(ml.model, pars = c("gamma[2,1]", "gamma[2,2]", "gamma[2,3]", "gamma[2,4]",
+                         "gamma[2,5]", "gamma[2,6]", "gamma[2,7]"))
 
 
 # Extract coefficients from the model
