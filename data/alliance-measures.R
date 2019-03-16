@@ -298,6 +298,23 @@ atop <- left_join(atop, all.fpsim.first)
 atop <- left_join(atop, all.fpsim.first)
 
 
+# Look at correlation between FP similarity and strength
+# Full ATOP data
+cor.test(atop$mean.kap.sc, atop$latent.str.mean)
+cor.test(atop$low.kap.sc, atop$latent.str.mean)
+
+ggplot(atop, aes(x = mean.kap.sc, y = latent.str.mean)) + 
+  geom_point() + theme_classic()
+
+
+# Treaties with military support
+atop.milsup <- filter(atop, offense == 1 | defense == 1) 
+cor.test(atop.milsup$mean.kap.sc, atop.milsup$latent.str.mean)
+cor.test(atop.milsup$low.kap.sc, atop.milsup$latent.str.mean)
+
+ggplot(atop.milsup, aes(x = mean.kap.sc, y = latent.str.mean)) + 
+  geom_point() + theme_classic()
+
 
 # Export to public-goods-test paper
 write.csv(atop, 
