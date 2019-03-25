@@ -601,4 +601,106 @@ state.mem.cap <- select(state.mem.cap, atopid, ccode, year, ally.spend) %>%
 
 
 
+# Combine State and alliance data 
+########
+
+
+
+# Define a state-year level dataset with no missing observations
+reg.state.data <- state.vars %>%
+  select(ccode, year, growth.milex, 
+         atwar, civilwar.part, rival.milex, gdp.growth, polity2, 
+         cold.war, disputes, majpower) 
+
+# Add state membership in alliances to this data
+reg.state.data <-  left_join(reg.state.data, state.mem.cap) 
+
+
+# Replace missing alliance values with zero 
+reg.state.data[, 12: ncol(reg.state.data)][is.na(reg.state.data[, 12: ncol(reg.state.data)])] <- 0
+
+# Remove observations with missing values
+reg.state.comp <- reg.state.data[complete.cases(reg.state.data), ]
+
+
+# Rescale the state-level regressors
+reg.state.comp[, 4:10] <- lapply(reg.state.comp[, 4:10], 
+                                 function(x) rescale(x, binary.inputs = "0/1"))
+
+
+# Create separate datasets for major and non-major powers
+# major powers
+reg.state.comp.maj <- filter(reg.state.comp, majpower == 1)
+# Create a matrix of major power membership in alliances (Z in STAN model)
+state.mem.maj <- as.matrix(reg.state.comp.maj[, 12: ncol(reg.state.comp.maj)])
+# remove alliances with no major power participation
+state.mem.maj <- state.mem.maj[, colSums(state.mem.maj != 0) > 0]
+
+# non-major powers
+reg.state.comp.min <- filter(reg.state.comp, majpower == 0)
+# Create a matrix of npn-major membership in alliances (Z in STAN model)
+state.mem.min <- as.matrix(reg.state.comp.min[, 12: ncol(reg.state.comp.min)])
+# remove alliances with no non-major power participation
+state.mem.min <- state.mem.min[, colSums(state.mem.min != 0) > 0]
+
+
+
+
+# Check the range and distribution of the DV
+summary(reg.state.comp$growth.milex)
+sd(reg.state.comp$growth.milex)
+ggplot(reg.state.comp, aes(growth.milex)) + geom_density()
+
+
+
+# Create a matrix of state membership in alliances (Z in STAN model)
+state.mem.mat <- select(reg.state.comp, c(majpower, 12: ncol(reg.state.comp)))
+# Create a major power index variable 
+state.mem.mat$mp.id <- state.mem.mat %>% group_indices(majpower)
+state.mem.mat <- select(state.mem.mat, - c(majpower))
+# Create a row index 
+state.mem.mat$obs <- as.numeric(row.names(state.mem.mat))
+
+# reorder variables in dataframe
+state.mem.mat <- select(state.mem.mat, obs, mp.id, everything())
+
+
+# move to long form 
+state.mem.long <- gather(state.mem.mat, atopid, allied.cap, `1020`:`6035`)
+dim(state.mem.long)
+sum(state.mem.long$allied.cap == 0)
+sum(state.mem.long$allied.cap != 0)
+
+# filter out observations where states capability status does not include an alliance 
+state.mem.long <- filter(state.mem.long, (mp.id == 1 & atopid %in% colnames(state.mem.min)) |
+                           (mp.id == 2 & atopid %in% colnames(state.mem.maj))
+)
+# Check results- mean should increase as 0s are removed
+dim(state.mem.long)
+sum(state.mem.long$allied.cap == 0)
+sum(state.mem.long$allied.cap != 0)
+
+
+
+# create a state index variable
+reg.state.comp$state.id <- reg.state.comp %>% group_indices(ccode)
+# Create a year index variable 
+reg.state.comp$year.id <- reg.state.comp %>% group_indices(year)
+# Create a major power index variable 
+reg.state.comp$mp.id <- reg.state.comp %>% group_indices(majpower)
+
+
+
+
+
+# Create the matrix of alliance-level variables
+# Make the alliance characteristics data match the membership matrix
+reg.all.data <- filter(alliance.char, atopid %in% colnames(state.mem.mat)) %>%
+  select(atopid, latent.str.mean, num.mem, low.kap.sc,
+         avg.democ, wartime, asymm, us.mem, ussr.mem)
+
+
+# Remove alliances w/ missing FPsim- one member not in system
+reg.all.data <- reg.all.data[complete.cases(reg.all.data), ] 
+state.mem.mat <- state.mem.mat[, colnames(state.mem.mat) %in% reg.all.data$atopid]
 

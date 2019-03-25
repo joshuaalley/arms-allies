@@ -36,11 +36,6 @@ set.seed(12)
 
 ### Start with Major powers
 
-# Create a matrix of state membership in alliances (Z in STAN model)
-state.mem.maj <- as.matrix(reg.state.comp.maj[, 12: ncol(reg.state.comp.maj)])
-# remove alliances with no major power participation
-state.mem.maj <- state.mem.maj[, colSums(state.mem.maj != 0) > 0]
-
 
 # Create the matrix of alliance-level variables
 # Make the alliance characteristics data match the membership matrix
@@ -52,8 +47,6 @@ reg.all.data.maj <- filter(alliance.char, atopid %in% colnames(state.mem.maj)) %
 # Remove two alliances where non-major members are not in COW system: ATOPID 1118 and 1320
 reg.all.data.maj <- reg.all.data.maj[complete.cases(reg.all.data.maj), ]
 state.mem.maj <- state.mem.maj[, colnames(state.mem.maj) %in% reg.all.data.maj$atopid]
-
-
 
 
 
@@ -114,12 +107,7 @@ ggsave("appendix/trace-all-maj.png", height = 6, width = 8)
 
 
 
-### Now move to minor powers
-# Create a matrix of state membership in alliances (Z in STAN model)
-state.mem.min <- as.matrix(reg.state.comp.min[, 12: ncol(reg.state.comp.min)])
-# remove alliances with no major power participation
-state.mem.min <- state.mem.min[, colSums(state.mem.min != 0) > 0]
-
+### Now move to non-major powers
 
 
 # Create the matrix of alliance-level variables

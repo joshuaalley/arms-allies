@@ -30,63 +30,6 @@ set.seed(12)
 # the scripts alliance-measures.R and dataset construction and summary.R 
 
 
-# Define a state-year level dataset with no missing observations
-reg.state.data <- state.vars %>%
-  select(ccode, year, growth.milex, 
-                      atwar, civilwar.part, rival.milex, gdp.growth, polity2, 
-                      cold.war, disputes, majpower) 
-
-# Add state membership in alliances to this data
-reg.state.data <-  left_join(reg.state.data, state.mem.cap) 
-
-
-# Replace missing alliance values with zero 
-reg.state.data[, 12: ncol(reg.state.data)][is.na(reg.state.data[, 12: ncol(reg.state.data)])] <- 0
-
-# Remove observations with missing values
-reg.state.comp <- reg.state.data[complete.cases(reg.state.data), ]
-
-
-# Rescale the state-level regressors
- reg.state.comp[, 4:10] <- lapply(reg.state.comp[, 4:10], 
-       function(x) rescale(x, binary.inputs = "0/1"))
- 
- 
-# Create separate dataset of major powers 
-reg.state.comp.maj <- filter(reg.state.comp, majpower == 1)
-reg.state.comp.min <- filter(reg.state.comp, majpower == 0)
- 
-
- 
-# Check the range and distribution of the DV
-summary(reg.state.comp$growth.milex)
-sd(reg.state.comp$growth.milex)
-ggplot(reg.state.comp, aes(growth.milex)) + geom_density()
-
-
-
-# Create a matrix of state membership in alliances (Z in STAN model)
-state.mem.mat <- as.matrix(reg.state.comp[, 12: ncol(reg.state.comp)])
-
-
-# create a state index variable
-reg.state.comp$state.id <- reg.state.comp %>% group_indices(ccode)
-# Create a year index variable 
-reg.state.comp$year.id <- reg.state.comp %>% group_indices(year)
-# Create a major power index variable 
-reg.state.comp$mp.id <- reg.state.comp %>% group_indices(majpower)
-
-
-# Create the matrix of alliance-level variables
-# Make the alliance characteristics data match the membership matrix
-reg.all.data <- filter(alliance.char, atopid %in% colnames(state.mem.mat)) %>%
-  select(atopid, latent.str.mean, num.mem, low.kap.sc,
-          avg.democ, wartime, asymm, us.mem, ussr.mem)
-
-
-# Remove alliances w/ missing FPsim- one member not in system
-reg.all.data <- reg.all.data[complete.cases(reg.all.data), ] 
-state.mem.mat <- state.mem.mat[, colnames(state.mem.mat) %in% reg.all.data$atopid]
 
 
 ### transform data into matrices for STAN
