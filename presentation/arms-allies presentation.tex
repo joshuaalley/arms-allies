@@ -49,7 +49,7 @@
 % Here's my point. 
  \begin{frame}[standout]
 
-Whether alliance treaty participation increases or decreases military spending depends on state capability and alliance treaty strength. 
+Whether alliance treaty participation increases or decreases military spending depends on alliance treaty strength and state capability. 
 
  \end{frame}
 
@@ -66,28 +66,13 @@ Whether alliance treaty participation increases or decreases military spending d
  \end{frame}
 
 
-
 %------------------------------------------------
 
-\begin{frame}{Scholarly Importance (1): Competing Expectations}
+\begin{frame}{Scholarly Importance: Competing Expectations and Results}
 
-Debate between two views of alliance participation and military spending:
-\pause 
+\textit{Expectations}: \uncover<2->{Force Multiplier} \uncover<3->{or Foreign Entanglement?}
 
-\begin{itemize}
-\item \textbf{Force Multiplier}- Alliance participation decreases military spending.
-\pause 
-\item \textbf{Foreign Entanglement}- Alliance participation increases military spending.
-\end{itemize} 
-
-
- \end{frame}
-
-%------------------------------------------------
-
-\begin{frame}{Scholarly Importance (2): Mixed Empirical Results}
-
-
+\uncover<4->{
 \begin{table}[hbt!]
 \begin{center}
 \begin{tabular}{lccc}
@@ -105,20 +90,47 @@ Horowitz et al 2017 &  & X & \\
 \end{tabular}
 \end{center} 
 \end{table}
+}
 
+ \end{frame}
+
+
+%------------------------------------------------
+
+\begin{frame}{Alliance Heterogeneity}
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.95\textwidth]{lambda-est-full.png}
+	\label{fig:lambda-est-full}
+\end{figure}
 
 
  \end{frame}
+
+
+%------------------------------------------------
+
+\begin{frame}{Relevance}
+
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.95\textwidth]{mattis-nato.jpg}
+	\label{fig:mattis-nato}
+\end{figure}
+
+
+\end{frame}
 
 %------------------------------------------------
 
 \begin{frame}{Outline}
 
-I provide two pieces of evidence for my claims about alliance participation and military spending: 
+I make my claim about alliance participation and military spending in two ways: 
 
 \pause
 \begin{enumerate}
-\item Argument: State Capability and Treaty Strength
+\item Argument: Treaty Strength and State Capability
 \pause
 \item Statistical Analysis 
 \end{enumerate}
@@ -132,32 +144,32 @@ I provide two pieces of evidence for my claims about alliance participation and 
 
 %------------------------------------------------
 
-\begin{frame}{Assumptions}
+%\begin{frame}{Assumptions}
 
-\begin{itemize} 
-\item Military spending has opportunity costs, which decrease with greater state size. 
-\pause 
-\item Alliances are a costly signal of shared foreign policy interests: credible commitment to intervene.  
-\end{itemize}
+%\begin{itemize} 
+%\item Military spending has opportunity costs, which decrease with greater state size. 
+%\pause 
+%\item Alliances are a costly signal of shared foreign policy interests: credible commitment to intervene.  
+%\end{itemize}
 
 
-\end{frame}
+%\end{frame}
 
 %------------------------------------------------
 
-\begin{frame}{Treaty Strength}
+\begin{frame}{Formal Treaty Strength}
 
-Not all alliances are equally credible. Strength depends on costs an ally incurs or would incur. 
+Not all alliances are equally deep and costly. Strength depends on costs an ally incurs or would incur. 
 
 \begin{itemize} 
 \pause
-\item Costs of abrogation: breaking promises of support.
+\item Potential Costs: honoring or breaking promises of support.
 \pause
 \item Sunk costs promises: commitment to take costly action. 
 \pause
-\item More foreign policy gains with stronger treaty. 
+\item Strong/deep formal commitments increase foreign policy gains from alliance participation. 
 \pause 
-\item But hands tying limits freedom of action for members. 
+\item But the same hands tying limits freedom of action for members. 
 \end{itemize}  
 
 
@@ -179,7 +191,7 @@ Not all alliances are equally credible. Strength depends on costs an ally incurs
 \begin{itemize}
 \uncover<2->{\item Alliances \& Spending: External Influence}
 \uncover<3->{\item $\mbox{Influence} = \mbox{Probability Intervention} \times \mbox{Capability}$}
-\uncover<4->{\item Strong treaties $\uparrow$ influence} 
+\uncover<4->{\item Strong treaties $\uparrow$ influence without $\uparrow$ spending} 
 \end{itemize} 
 \end{column}
 
@@ -191,7 +203,7 @@ Not all alliances are equally credible. Strength depends on costs an ally incurs
 \begin{itemize}
 \uncover<5->{\item Alliances \& Spending: Territorial Security}\
 \uncover<6->{\item Replace domestic expenditure with allied capability.}
-\uncover<7->{\item Strong treaties restrict freedom of action.} 
+\uncover<7->{\item Strong treaties restrict freedom of action: alliance value and allied influence.} 
 \end{itemize} 
 
 \end{column}
@@ -200,22 +212,6 @@ Not all alliances are equally credible. Strength depends on costs an ally incurs
 \end{frame}
 
 
-%------------------------------------------------
-
-%\begin{frame}[standout]
-
-%\resizebox{.95\textwidth}{!} {
-%\begin{tabular}{ccc}
-%      & Strong Treaty      & Weak Treaty  \\
-%\hline
-%Major Power & (1)  $\downarrow$ Growth Spending   & (2)  $\uparrow$ Growth Spending        \\
-%\hline
-%Non-Major Power & (3) $\uparrow$ Growth Spending   & (4) $\downarrow$ Growth Spending       \\ 
-%\hline 
-%\end{tabular}
-%}
-
-%\end{frame} 
 
 %------------------------------------------------
 
@@ -223,11 +219,11 @@ Not all alliances are equally credible. Strength depends on costs an ally incurs
 
 
 \begin{quote}
-\textsc{Hypothesis 1}: As alliance treaty strength increases, growth in major power military spending will decrease. 
+\textsc{Hypothesis 1}: As alliance treaty strength increases, growth in major power military spending from alliance participation will decrease. 
 \end{quote} 
 \pause 
 \begin{quote}
-\textsc{Hypothesis 2}: As alliance treaty strength increases, growth in non-major power military spending will increase. 
+\textsc{Hypothesis 2}: As alliance treaty strength increases, growth in non-major power military spending from alliance participation will increase. 
 \end{quote} 
 
 
@@ -259,76 +255,28 @@ To test these predictions, I need two things:
 
 \begin{frame}{Measuring Treaty Strength}
 
-I use a latent variable model to infer treaty strength from observed promises. 
+I use a latent variable model (semiparametric mixed factor analysis) to infer formal treaty strength from observed promises. 
 
 \pause 
-\begin{itemize}
-\item Multiple observed indicators of strength (ATOP): 
-\begin{itemize} 
-\item \textit{Costs of abrogation}: offense, defense, neutrality, consultation, non-aggression, unconditional military support.
-\item \textit{Sunk costs}: bases, integrated command, economic/military aid, IO formation, conclude multiple other agreements. 
-\end{itemize} 
-\pause 
-\item Semiparametric mixed factor analysis. (Murray et al 2013)
-\pause
-\item Mean of the latent factor for each alliance. 
-\end{itemize} 
+
+For each alliance, the posterior mean of the latent factor is my measure of strength. 
+
+%\pause 
+%\begin{itemize}
+%\item Multiple observed indicators of strength (ATOP): 
+%\begin{itemize} 
+%\item \textit{Potential costs}: offense, defense, neutrality, consultation, non-aggression, unconditional military support.
+%\item \textit{Sunk costs}: bases, integrated command, economic/military aid, IO formation, conclude multiple other agreements. 
+%\end{itemize} 
+%\pause 
+%\item Semiparametric mixed factor analysis. (Murray et al 2013)
+%\pause
+%\item Mean of the latent factor for each alliance. 
+%\end{itemize} 
 
 
 \end{frame} 
 
-%------------------------------------------------
-
-\begin{frame}{Latent Measure of Treaty Strength}
-
-% Visual summary of latent measure
-\begin{figure}[htbp]
-	\centering
-		\includegraphics[width=0.95\textwidth]{ls-hist.png}
-\end{figure}
-
-
-\end{frame} 
-
-
-%------------------------------------------------
-
-\begin{frame}{Latent Measure of Treaty Strength: Weak}
-
-% Visual summary of latent measure
-\begin{figure}[htbp]
-	\centering
-		\includegraphics[width=0.95\textwidth]{ls-hist-ukr-ind.png}
-\end{figure}
-
-
-\end{frame} 
-
-%------------------------------------------------
-
-\begin{frame}{Latent Measure of Treaty Strength: Typical}
-
-% Visual summary of latent measure
-\begin{figure}[htbp]
-	\centering
-		\includegraphics[width=0.95\textwidth]{ls-hist-fr-czech.png}
-\end{figure}
-
-
-\end{frame} 
-
-%------------------------------------------------
-
-\begin{frame}{Latent Measure of Treaty Strength: Strong}
-
-% Visual summary of latent measure
-\begin{figure}[htbp]
-	\centering
-		\includegraphics[width=0.95\textwidth]{ls-hist-uar.png}
-\end{figure}
-
-
-\end{frame} 
 
 %------------------------------------------------
 
@@ -339,7 +287,7 @@ I use a latent variable model to infer treaty strength from observed promises.
 \pause
 \item Two connected regressions: alliance and state-level. 
 \pause 
-\item Alliance characteristics modify the association between allied spending and spending growth.  
+\item Alliance characteristics modify the association between alliance membership and spending growth.  
 \end{itemize} 
 
 \end{frame} 
@@ -366,33 +314,10 @@ I use a latent variable model to infer treaty strength from observed promises.
 
 %------------------------------------------------
 
-
-\begin{frame}{ML Model Specification}
-
-\begin{equation}
-y \sim student_t(\mu, \nu, \sigma)
-\end{equation}
-\begin{equation}
-\mu = \alpha + \alpha^{st} + \alpha^{yr} +\textbf{W} \gamma + \textbf{Z} \lambda
-\end{equation}
-
-\begin{equation}
-\lambda \sim N(\theta, \sigma_{all})
-\end{equation} 
-\begin{equation}
-\theta = \alpha_{all} + \beta_1 \mbox{Treaty Strength} + \textbf{X} \beta
-\end{equation}
-
-
-\end{frame}
-
-
-%------------------------------------------------
-
 \begin{frame}{Sample and Controls}
 
 \begin{itemize}
-\item \textbf{Sample}: major and non-major power states--- 1816-2007. Alliances with military support. 
+\item \textbf{Split Sample}: major and non-major power states--- 1816-2007. Alliances with military support. 
 \pause
 \item \textbf{DV}: Growth in Military Spending $ = \frac{ \mbox{Change Mil. Expend}_t }{ \mbox{Mil. Expend}_{t-1} }$ 
 \pause
@@ -405,8 +330,8 @@ y \sim student_t(\mu, \nu, \sigma)
 \end{itemize} 
 
 
-
 \end{frame}
+
 
 %------------------------------------------------
 
@@ -426,24 +351,7 @@ y \sim student_t(\mu, \nu, \sigma)
 \end{frame}
 
 
-%------------------------------------------------
 
-\begin{frame}[standout]{Importance} 
-
-\begin{tabular}{lcc}
-Sample & Posterior Mean & Median Ex. Growth \\
-\hline
-Major & -0.05 & 0.04 \\
-\pause
-Non-major & 0.03 & 0.06  \\
-\end{tabular}
-
-\pause
-
-US spent \$36.0 billion on NATO in 2018, or 5.5\% of the total defense spending. 
-
-
-\end{frame}
 
 %-----------------------------------------------
 
@@ -455,13 +363,6 @@ US spent \$36.0 billion on NATO in 2018, or 5.5\% of the total defense spending.
 
 Whether alliance treaty participation increases or decreases military spending depends on state capability and alliance treaty strength.  
 
-\pause
-
-\begin{itemize}
-\item Major Powers: Greater treaty strength lowers growth in spending. 
-\pause
-\item Non-major Powers: Greater treaty strength increases growth in spending.  
-\end{itemize}
 
 \end{frame}
 
@@ -470,7 +371,7 @@ Whether alliance treaty participation increases or decreases military spending d
 % Here's my point. 
  \begin{frame}[standout]
 
-Thank you! Questions? 
+Thank you! 
 
 jkalley14@tamu.edu
 
@@ -493,6 +394,25 @@ jkalley14@tamu.edu
 \pause 
 \item Strategic alliance design
 \end{enumerate}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[standout]{Importance} 
+
+\begin{tabular}{lcc}
+Sample & Posterior Mean & Median Ex. Growth \\
+\hline
+Major & -0.05 & 0.04 \\
+%\pause
+Non-major & 0.03 & 0.06  \\
+\end{tabular}
+
+%\pause
+
+US spent \$36.0 billion on NATO in 2018, or 5.5\% of the total defense spending. 
+
 
 \end{frame}
 
@@ -555,6 +475,29 @@ Constant & -0.018 & 0.018 & -0.047 & 0.012 & 2211.374 & 1.000 \\
 
 %------------------------------------------------
 
+
+
+\begin{frame}{ML Model Specification}
+
+\begin{equation}
+y \sim student_t(\mu, \nu, \sigma)
+\end{equation}
+\begin{equation}
+\mu = \alpha + \alpha^{st} + \alpha^{yr} +\textbf{W} \gamma + \textbf{Z} \lambda
+\end{equation}
+
+\begin{equation}
+\lambda \sim N(\theta, \sigma_{all})
+\end{equation} 
+\begin{equation}
+\theta = \alpha_{all} + \beta_1 \mbox{Treaty Strength} + \textbf{X} \beta
+\end{equation}
+
+
+\end{frame}
+
+
+%------------------------------------------------
 
 \begin{frame}{Example}
 
@@ -678,6 +621,58 @@ $ p(\nu) \sim gamma(2, 0.1)$
 
 
 \end{frame}
+
+%------------------------------------------------
+
+\begin{frame}{Latent Measure of Treaty Strength}
+
+% Visual summary of latent measure
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.95\textwidth]{ls-hist.png}
+\end{figure}
+
+
+\end{frame} 
+
+%------------------------------------------------
+
+\begin{frame}{Latent Measure of Treaty Strength: Weak}
+
+% Visual summary of latent measure
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.95\textwidth]{ls-hist-weak.png}
+\end{figure}
+
+
+\end{frame} 
+
+%------------------------------------------------
+
+\begin{frame}{Latent Measure of Treaty Strength: Typical}
+
+% Visual summary of latent measure
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.95\textwidth]{ls-hist-median.png}
+\end{figure}
+
+
+\end{frame} 
+
+%------------------------------------------------
+
+\begin{frame}{Latent Measure of Treaty Strength: Strong}
+
+% Visual summary of latent measure
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.95\textwidth]{ls-hist-strong.png}
+\end{figure}
+
+
+\end{frame} 
 
 %------------------------------------------------
 

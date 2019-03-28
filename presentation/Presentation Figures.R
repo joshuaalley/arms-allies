@@ -17,33 +17,75 @@ setwd(here::here())
 getwd()
 
 
+
+
+# Create a plot of estiamted effects of treaty participation. 
+# Summarize lambda from full model (not fit on subsets)
+lambda.summary <- summary(ml.model, pars = c("lambda"), probs = c(0.05, 0.95))$summary
+lambda.summary <- cbind.data.frame(as.numeric(colnames(state.mem.mat)), lambda.summary)
+colnames(lambda.summary) <- c("atopid", "lambda.mean", "lambda.se.mean",
+                             "lambda.sd", "lambda.5", "lambda.95",
+                             "lambda.neff", "lambda.rhat")
+lambda.summary <- left_join(atop, lambda.summary)
+
+
+# Plot points with error bars by start year of treaty without having split samples 
+ggplot(lambda.summary, aes(x = begyr, y = lambda.mean)) +
+  geom_errorbar(aes(ymin = lambda.5, 
+                    ymax = lambda.95,
+                    width=.01), position = position_dodge(0.1)) +
+  geom_point(position = position_dodge(0.1), size = 2) + geom_hline(yintercept = 0) +
+  labs(x = "Start Year", y = "Estimated Impact on Growth in Military Spending") + 
+  coord_flip() +
+  theme_carly_presents()
+
+
+# Compare lambdas for alliances with major and minor power members
+lambda.mix.full <- lambda.df.min %>%
+  select(atopid, begyr, lambda, latent.str.mean) %>%
+  left_join(select(lambda.df.maj, atopid, begyr, lambda, latent.str.mean), 
+            by = c("atopid", "begyr", "latent.str.mean")) %>% 
+  rename(
+    lambda.min = lambda.x,
+    lambda.maj = lambda.y
+  ) %>%
+  gather(mp.stat, lambda, c(lambda.min, lambda.maj))
+
+ggplot(lambda.mix.full, aes(x = begyr, y = c(lambda))) +
+  geom_point(position = position_dodge(0.1), size = 2) + geom_hline(yintercept = 0) +
+  labs(x = "Start Year", y = "Estimated Impact on Growth in Military Spending") + 
+  coord_flip() +
+  theme_carly_presents()
+ggsave("presentation/lambda-est-full.png", height = 6, width = 8)
+
+
 # Plot histogram of mean latent strength
-ggplot(atop, aes(x = latent.str.mean)) + geom_histogram() +
+ggplot(atop.milsup, aes(x = latent.str.mean)) + geom_histogram() +
   theme_carly_presents() + labs(x = "Mean Latent Strength", y = "Treaties") 
 ggsave("presentation/ls-hist.png", height = 6, width = 8)
 
 # Show UAR
-ggplot(atop, aes(x = latent.str.mean)) + geom_histogram() +
+ggplot(atop.milsup, aes(x = latent.str.mean)) + geom_histogram() +
   theme_carly_presents() + labs(x = "Mean Latent Strength", y = "Treaties") +
   geom_vline(xintercept = 1.9969987829, linetype = "dashed", size = 1)  + 
-  geom_text(label="United Arab Rep.", x = 1.9969987829, y = 65, hjust = 1, size = 5)  # UAR
-ggsave("presentation/ls-hist-uar.png", height = 6, width = 8)
+  geom_text(label="United Arab Rep.", x = 1.9969987829, y = 40, hjust = 1, size = 5)  # UAR
+ggsave("presentation/ls-hist-strong.png", height = 6, width = 8)
 
 
 # Show Weak treaty
-ggplot(atop, aes(x = latent.str.mean)) + geom_histogram() +
+ggplot(atop.milsup, aes(x = latent.str.mean)) + geom_histogram() +
   theme_carly_presents() + labs(x = "Mean Latent Strength", y = "Treaties") +
-  geom_vline(xintercept = -1.36, linetype = "dashed", size = 1)  + 
-  geom_text(label="India Ukraine '92", x = -1.36, y = 65, hjust = 0.3, size = 5) # Ukraine-India neutrality and non-aggression
-ggsave("presentation/ls-hist-ukr-ind.png", height = 6, width = 8)
+  geom_vline(xintercept = -0.017, linetype = "dashed", size = 1)  + 
+  geom_text(label="UK-France 1870", x = -0.017, y = 45, hjust = -0.01, size = 5) # Ukraine-India neutrality and non-aggression
+ggsave("presentation/ls-hist-weak.png", height = 6, width = 8)
 
 
 # Show typical treaty
-ggplot(atop, aes(x = latent.str.mean)) + geom_histogram() +
+ggplot(atop.milsup, aes(x = latent.str.mean)) + geom_histogram() +
   theme_carly_presents() + labs(x = "Mean Latent Strength", y = "Treaties") +
-  geom_vline(xintercept = -0.103606287, linetype = "dashed", size = 1)  + 
-  geom_text(label="France Czech 1938", x = -0.103606287, y = 65, hjust = 0.37, size = 5) # France-Czech consul 1938
-ggsave("presentation/ls-hist-fr-czech.png", height = 6, width = 8)
+  geom_vline(xintercept = 0.90289, linetype = "dashed", size = 1)  + 
+  geom_text(label="Crimean War 1854", x = 0.90289, y = 45, hjust = 1, size = 5) # France-Czech consul 1938
+ggsave("presentation/ls-hist-median.png", height = 6, width = 8)
 
   
   
@@ -93,6 +135,9 @@ ggplot(lambda.df.maj, aes(x = latent.str.mean, y = lambda)) +
   labs(x = "Latent Treaty Strength", y = "Effect of Allied Spending") +
   theme_carly_presents()
 ggsave("presentation/ls-lambda-maj.png", height = 6, width = 8)
+
+
+
 
  
 #### Graphical comparison of coefficients with Bayesplot
