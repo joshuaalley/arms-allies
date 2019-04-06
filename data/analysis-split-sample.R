@@ -40,7 +40,7 @@ set.seed(12)
 # Create the matrix of alliance-level variables
 # Make the alliance characteristics data match the membership matrix
 reg.all.data.maj <- filter(alliance.char, atopid %in% colnames(state.mem.maj)) %>%
-  select(atopid, latent.str.mean, num.mem, low.kap.sc,
+  select(atopid, latent.scope.mean, num.mem, low.kap.sc,
          avg.democ, wartime, asymm, us.mem, ussr.mem)
 
 
@@ -113,7 +113,7 @@ ggsave("appendix/trace-all-maj.png", height = 6, width = 8)
 # Create the matrix of alliance-level variables
 # Make the alliance characteristics data match the membership matrix
 reg.all.data.min <- filter(alliance.char, atopid %in% colnames(state.mem.min)) %>%
-  select(atopid, latent.str.mean, num.mem, low.kap.sc, 
+  select(atopid, latent.scope.mean, num.mem, low.kap.sc, 
          avg.democ, wartime, asymm, us.mem, ussr.mem)
 
 
@@ -175,15 +175,15 @@ ggsave("appendix/trace-all-min.png", height = 6, width = 8)
 
 ### Compare the results
 
-# Summarize Strength by major and minor powers
-summary(reg.all.data.maj$latent.str.mean) # major powers
-summary(reg.all.data.min$latent.str.mean) # minor powers
+# Summarize Scope by major and minor powers
+summary(reg.all.data.maj$latent.scope.mean) # major powers
+summary(reg.all.data.min$latent.scope.mean) # minor powers
 
 
 # Summarize intervals for major powers
 beta.summary.maj <- summary(ml.model.maj, pars = c("beta", "sigma_all"), probs = c(0.05, 0.95))$summary
 beta.summary.maj <- beta.summary.maj[, -2]
-rownames(beta.summary.maj) <- c("Constant", "Latent Str.", 
+rownames(beta.summary.maj) <- c("Constant", "Latent Scope.", 
                                 "Number Members", "FP Similarity",
                                 "Democratic Membership", 
                                 "Wartime", "Asymmetric",
@@ -197,7 +197,7 @@ xtable(beta.summary.maj, digits = 3)
 # summarize intervals for minor powers
 beta.summary.min <- summary(ml.model.min, pars = c("beta", "sigma_all"), probs = c(0.05, 0.95))$summary
 beta.summary.min <- beta.summary.min[, -2]
-rownames(beta.summary.min) <- c("Constant", "Latent Str.", 
+rownames(beta.summary.min) <- c("Constant", "Latent Scope.", 
                                 "Number Members", "FP Similarity",
                                 "Democratic Membership", 
                                 "Wartime", "Asymmetric",
@@ -217,7 +217,7 @@ ggplot(lscoef.summary, aes(x = row.names(lscoef.summary), y = mean)) +
                     ymax = `95%`,
                     width=.05), position = position_dodge(0.1)) +
   geom_point(position = position_dodge(0.1)) + geom_hline(yintercept = 0) +
-  theme_classic() + labs(x = "Sample", y = "Effect of Treaty Strength") +
+  theme_classic() + labs(x = "Sample", y = "Effect of Treaty Scope") +
   coord_flip()
 
 
@@ -230,20 +230,20 @@ colnames(coef.min$beta) <- colnames(alliance.reg.mat.min)
 colnames(coef.min$gamma) <- colnames(reg.state.mat.min)
 
 # Baseline posterior probabilities
-mean(coef.maj$beta[, 2] < 0) # latent strength: major
-mean(coef.min$beta[, 2] > 0) # latent strength: non-major
+mean(coef.maj$beta[, 2] < 0) # latent scope: major
+mean(coef.min$beta[, 2] > 0) # latent scope: non-major
 
 # Create a nice comparison plot: secret weapon 
-str.dens <- cbind(coef.maj$beta[, 2], coef.min$beta[, 2])
-colnames(str.dens) <- c("Major", "Non-Major")
-str.dens <- melt(str.dens)
+scope.dens <- cbind(coef.maj$beta[, 2], coef.min$beta[, 2])
+colnames(scope.dens) <- c("Major", "Non-Major")
+scope.dens <- melt(scope.dens)
 
-ggplot(str.dens, aes(x = value,  fill = X2)) +
+ggplot(scope.dens, aes(x = value,  fill = X2)) +
   geom_density(alpha = 0.25) +
   scale_fill_manual(name = "Sample", values=c("#999999", "#000000")) +
-  ggtitle("Posterior Distributions of Treaty Strength: Major and Non-Major Powers") +
+  ggtitle("Posterior Distributions of Treaty Scope: Major and Non-Major Powers") +
   theme_classic()
-ggsave("figures/str-dens.png", height = 6, width = 8)
+ggsave("figures/scope-dens.png", height = 6, width = 8)
 
 
 
@@ -254,42 +254,43 @@ mcmc_areas(coef.min$gamma,
            prob = .9)
 
 
-# compare trends in lambdas across treaty strength in major and minor
+# compare trends in lambdas across treaty scope in major and minor
 
 # Start with major powers
 lambda.means.maj <- get_posterior_mean(ml.model.maj, pars = "lambda")
 lambda.df.maj <- data_frame(lambda = lambda.means.maj[, 5]) %>%  # add lambdas to df
   bind_cols(filter(alliance.char, atopid %in% colnames(state.mem.maj)))
-cor.test(lambda.df.maj$lambda, lambda.df.maj$latent.str.mean,
-         alternative = "less")
+cor.test(lambda.df.maj$lambda, lambda.df.maj$latent.scope.mean,
+         alternative = "less", method = "spearman")
 
 # plot major powers
-lambda.str.maj <- ggplot(lambda.df.maj, aes(x = latent.str.mean, y = lambda)) +
+lambda.scope.maj <- ggplot(lambda.df.maj, aes(x = latent.scope.mean, y = lambda)) +
                   geom_point() +
                   geom_smooth(method = "lm") + theme_classic() +
-  labs(x = "Latent Treaty Strength", y = "Effect of Allied Spending") +
+  labs(x = "Latent Treaty Scope", y = "Effect of Allied Spending") +
   ggtitle("Major Powers")
-lambda.str.maj
+lambda.scope.maj
 
 # Quick comparison of US and USSR
-summary(subset(reg.all.data.maj, us.mem == 1)$latent.str.mean) # USA post-45
-summary(subset(reg.all.data.maj, ussr.mem == 1)$latent.str.mean) # USSR post-45
+summary(subset(reg.all.data.maj, us.mem == 1)$latent.scope.mean) # USA post-45
+summary(subset(reg.all.data.maj, ussr.mem == 1)$latent.scope.mean) # USSR post-45
+
 
 
 # Non-major powers
 lambda.means.min <- get_posterior_mean(ml.model.min, pars = "lambda")
 lambda.df.min <- data_frame(lambda = lambda.means.min[, 5]) %>%  # add lambdas to df
     bind_cols(filter(alliance.char, atopid %in% colnames(state.mem.min)))
-cor.test(lambda.df.min$lambda, lambda.df.min$latent.str.mean, 
-         alternative = "greater")
+cor.test(lambda.df.min$lambda, lambda.df.min$latent.scope.mean, 
+         alternative = "greater", method = "spearman")
 
 # plot non-major powers
-lambda.str.min <- ggplot(lambda.df.min, aes(x = latent.str.mean, y = lambda)) +
+lambda.scope.min <- ggplot(lambda.df.min, aes(x = latent.scope.mean, y = lambda)) +
             geom_point() +
                   geom_smooth(method = "lm") + theme_classic() +
-            labs(x = "Latent Treaty Strength", y = "Effect of Allied Spending") +
+            labs(x = "Latent Treaty Scope", y = "Effect of Allied Spending") +
             ggtitle("Non-Major Powers")
-lambda.str.min
+lambda.scope.min
 
 # Compare all in one plot
 # Define multiplot function from http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_%28ggplot2%29/ 
@@ -330,29 +331,29 @@ multiplot.ggplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 }
 
 # Apply the function to major and non-major power plots  
-multiplot.ggplot(lambda.str.maj, lambda.str.min)
+multiplot.ggplot(lambda.scope.maj, lambda.scope.min)
 
 
 # Compare lambdas for alliances with major and minor power members
 lambda.df.mix <- lambda.df.min %>%
-  select(atopid, lambda, latent.str.mean) %>%
-  left_join(select(lambda.df.maj, atopid, lambda, latent.str.mean), 
-            by = c("atopid", "latent.str.mean")) %>% 
+  select(atopid, lambda, latent.scope.mean) %>%
+  left_join(select(lambda.df.maj, atopid, lambda, latent.scope.mean), 
+            by = c("atopid", "latent.scope.mean")) %>% 
      rename(
      lambda.min = lambda.x,
      lambda.maj = lambda.y
      ) %>%
-  filter(complete.cases(atopid, latent.str.mean, lambda.min, lambda.maj)) %>%
+  filter(complete.cases(atopid, latent.scope.mean, lambda.min, lambda.maj)) %>%
   mutate(
     lambda.diff = abs(lambda.min- lambda.maj) # this isn't working
   )
 lambda.df.mix <- as.data.frame(lambda.df.mix)
 lambda.df.mix <- melt(lambda.df.mix, 
-                id = c("atopid", "latent.str.mean", "lambda.diff"))
+                id = c("atopid", "latent.scope.mean", "lambda.diff"))
 
 # plot
 ggplot(lambda.df.mix, aes(x = atopid, y = value, colour = variable)) + 
-  geom_point(aes(size = latent.str.mean)) + 
+  geom_point(aes(size = latent.scope.mean)) + 
   labs(x = 'ATOPID', y = "Effect of Allied Spending") 
 
 
@@ -364,8 +365,8 @@ sum.maj.post <- extract(ml.model.maj, pars = c("beta", "gamma", "lambda"),
 
 # Check how many lambda parameters can be reliably distinguished from zero:
 lambda.probs.maj <- apply(sum.maj.post$lambda, 2, positive.check)
-lambda.probs.maj <- cbind.data.frame(reg.all.data.maj$atopid, round(lambda.df.maj$lambda, digits = 4), lambda.df.maj$latent.str.mean, lambda.probs.maj)
-colnames(lambda.probs.maj) <- c("atopid", "lambda.mean", "latent.str.mean", "pos.post.prob")
+lambda.probs.maj <- cbind.data.frame(reg.all.data.maj$atopid, round(lambda.df.maj$lambda, digits = 4), lambda.df.maj$latent.scope.mean, lambda.probs.maj)
+colnames(lambda.probs.maj) <- c("atopid", "lambda.mean", "latent.scope.mean", "pos.post.prob")
 # binary indicator if posterior probability is greater than 90% for positive or negative
 lambda.probs.maj$non.zero <- ifelse(lambda.probs.maj$pos.post.prob >= .90 | lambda.probs.maj$pos.post.prob <= .10, 1, 0)
 sum(lambda.probs.maj$non.zero) # total number of non-zero alliances
@@ -374,14 +375,14 @@ sum(lambda.probs.maj$non.zero) # total number of non-zero alliances
 lambda.probs.maj$atopid <- reorder(lambda.probs.maj$atopid, lambda.probs.maj$pos.post.prob)
 
 # For all alliances
-ggplot(lambda.probs.maj, aes(x = atopid, y = pos.post.prob, fill = latent.str.mean)) + 
+ggplot(lambda.probs.maj, aes(x = atopid, y = pos.post.prob, fill = latent.scope.mean)) + 
   geom_col() +
   coord_flip()
 
 # For non-zero alliances 
 lambda.probs.maj %>% 
   filter(non.zero == 1) %>% 
-  ggplot(mapping = aes(x = atopid, y = pos.post.prob, latent.str.mean)) + 
+  ggplot(mapping = aes(x = atopid, y = pos.post.prob, latent.scope.mean)) + 
   geom_col() +
   scale_fill_brewer(palette = "Greys") +
   geom_text(aes(label = pos.post.prob), nudge_y = .04) +
@@ -397,8 +398,8 @@ sum.min.post <- extract(ml.model.min, pars = c("beta", "gamma", "lambda"),
 
 # Check how many lambda parameters can be reliably distinguished from zero:
 lambda.probs.min <- apply(sum.min.post$lambda, 2, positive.check)
-lambda.probs.min <- cbind.data.frame(reg.all.data.min$atopid, round(lambda.df.min$lambda, digits = 4), lambda.df.min$latent.str.mean, lambda.probs.min)
-colnames(lambda.probs.min) <- c("atopid", "lambda.mean", "latent.str.mean", "pos.post.prob")
+lambda.probs.min <- cbind.data.frame(reg.all.data.min$atopid, round(lambda.df.min$lambda, digits = 4), lambda.df.min$latent.scope.mean, lambda.probs.min)
+colnames(lambda.probs.min) <- c("atopid", "lambda.mean", "latent.scope.mean", "pos.post.prob")
 # binary indicator if posterior probability is greater than 90% for positive or negative
 lambda.probs.min$non.zero <- ifelse(lambda.probs.min$pos.post.prob >= .90 | lambda.probs.min$pos.post.prob <= .10, 1, 0)
 sum(lambda.probs.min$non.zero) # total number of non-zero alliances
@@ -407,14 +408,14 @@ sum(lambda.probs.min$non.zero) # total number of non-zero alliances
 lambda.probs.min$atopid <- reorder(lambda.probs.min$atopid, lambda.probs.min$pos.post.prob)
 
 # For all alliances
-ggplot(lambda.probs.min, aes(x = atopid, y = pos.post.prob, fill = latent.str.mean)) + 
+ggplot(lambda.probs.min, aes(x = atopid, y = pos.post.prob, fill = latent.scope.mean)) + 
   geom_col() +
   coord_flip()
 
 # For non-zero alliances 
 lambda.probs.min %>% 
   filter(non.zero == 1) %>% 
-  ggplot(mapping = aes(x = atopid, y = pos.post.prob, latent.str.mean)) + 
+  ggplot(mapping = aes(x = atopid, y = pos.post.prob, latent.scope.mean)) + 
   geom_col() +
   scale_fill_brewer(palette = "Greys") +
   geom_text(aes(label = pos.post.prob), nudge_y = .04) +

@@ -29,7 +29,7 @@ getwd()
 # select key variables
 alliance.char <- select(atop, atopid,
                     begyr, endyr,
-                    uncond.milsup, str.index, latent.str.mean,
+                    uncond.milsup, scope.index, latent.scope.mean,
                     offense, defense, consul, neutral, nonagg, base,
                     armred.rc, organ1, milaid.rc, us.mem, ussr.mem,
                     num.mem, nonagg.only, wartime, asymm, low.kap.sc)
@@ -395,6 +395,10 @@ state.vars$growth.milex[state.vars$growth.milex > 140] <- 140
 # Measurement error model would be essential. SIPRI 1949-2016 from Zielinski et al would be less noisy
 
 
+# What does inverse hyperbolic sine transformation look like? 
+ggplot(state.vars, aes(x = asinh(growth.milex))) + geom_density()
+ggplot(state.vars, aes(x = asinh(growth.milex))) + geom_histogram(bins = 45)
+
 # Create a growth in GDP variable
 state.vars <- state.vars %>%
   group_by(ccode) %>% 
@@ -680,6 +684,8 @@ dim(state.mem.long)
 sum(state.mem.long$allied.cap == 0)
 sum(state.mem.long$allied.cap != 0)
 
+# index by capability and treaty
+state.mem.long$lambda.id <- state.mem.long %>% group_indices(mp.id, atopid)
 
 
 # create a state index variable
@@ -696,7 +702,7 @@ reg.state.comp$mp.id <- reg.state.comp %>% group_indices(majpower)
 # Create the matrix of alliance-level variables
 # Make the alliance characteristics data match the membership matrix
 reg.all.data <- filter(alliance.char, atopid %in% colnames(state.mem.mat)) %>%
-  select(atopid, latent.str.mean, num.mem, low.kap.sc,
+  select(atopid, latent.scope.mean, num.mem, low.kap.sc,
          avg.democ, wartime, asymm, us.mem, ussr.mem)
 
 

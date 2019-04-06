@@ -19,7 +19,6 @@ library(coda)
 setwd(here::here())
 getwd()
 
-
 # Load ATOP v4 alliance-level data 
 atop <- read.csv("data/atop-alliance-level.csv")
 atop.mem.full <- read.csv("data/atop-member-level.csv")
@@ -66,7 +65,7 @@ table(atop.mem.full$off.cond.count, atop.mem.full$offense)
 
 
 # Generate an unconditional variable for defense and offense
-# Generate other dummy indicators to produce a cumulative indicator of alliance strength
+# Generate other dummy indicators to produce a cumulative indicator of alliance scope
 atop <- atop %>%
   mutate(
     uncond = ifelse(conditio == 0, 1, 0), # unconditional dummy
@@ -79,7 +78,7 @@ atop <- atop %>%
     uncond.milsup = ifelse(conditio == 0 & (offense == 1 | defense == 1), 1, 0) # unconditional military support
  ) %>% 
   rowwise() %>%
-  mutate(str.index = sum(uncond.milsup, milaid.dum, ecaid.dum, io.form, agpro.mult, na.rm = TRUE))
+  mutate(scope.index = sum(uncond.milsup, milaid.dum, ecaid.dum, io.form, agpro.mult, na.rm = TRUE))
 
 
 
@@ -91,10 +90,10 @@ table(atop$defcon, atop$uncond.milsup)
 table(atop$uncond, atop$uncond.def) # 123/413 unconditional commitments are defense pacts
 table(atop$uncond, atop$uncond.off) # 13/413 unconditional commitments are offense pacts
 table(atop$uncond.milsup)
-table(atop$str.index, atop$uncond.milsup)
+table(atop$scope.index, atop$uncond.milsup)
 
 
-# Look at strength of commitment
+# Look at scope of commitment
 table(atop$uncond) # unconditional
 table(atop$milaid) # military aid
 table(atop$base) # basing rights
@@ -104,35 +103,35 @@ table(atop$organ2) # second IO
 table(atop$intcom) # integrated command
 table(atop$agpro.mult) # promise multiple agreements
 
-# aggregate index of strength
-table(atop$str.index)
-ggplot(atop, aes(x = str.index)) + geom_bar()
+# aggregate index of scope
+table(atop$scope.index)
+ggplot(atop, aes(x = scope.index)) + geom_bar()
 
 
 # Turn dummy indicators into factors in a separate dataset
-atop.str <- select(atop, uncond.milsup, offense, defense, nonagg,
+atop.scope <- select(atop, uncond.milsup, offense, defense, nonagg,
                    neutral, consul, intcom, agpro.mult, 
                    milaid, base, organ1, ecaid, noothall) 
-atop.str <- as.data.frame(atop.str)
-for(i in 1:ncol(atop.str)){
-  atop.str[, i] <- as.ordered(atop.str[, i])
+atop.scope <- as.data.frame(atop.scope)
+for(i in 1:ncol(atop.scope)){
+  atop.scope[, i] <- as.ordered(atop.scope[, i])
 }
 
 # Use Murray BFA approach
-latent.strength <- bfa_mixed(~ uncond.milsup + offense + defense + 
+latent.scope <- bfa_mixed(~ uncond.milsup + offense + defense + 
                                 neutral + consul + nonagg +
                                 milaid + base + ecaid + organ1 + 
                                 intcom + agpro.mult + noothall, 
-                          data = atop.str, num.factor = 1,
+                          data = atop.scope, num.factor = 1,
                          keep.scores = TRUE, loading.prior = "gdp", 
                          px = TRUE, imh.iter = 500, imh.burn = 500,
                          nburn = 10000, nsim = 20000, thin = 20, print.status = 2000)
 
 # Little bit of diagnosis
-plot(get_coda(latent.strength))
+plot(get_coda(latent.scope))
 
 # Diagnosis of convergence with coda
-lcap.sam <- get_coda(latent.strength, scores = TRUE)
+lcap.sam <- get_coda(latent.scope, scores = TRUE)
 effectiveSize(lcap.sam)
 diag.geweke  <- geweke.diag(lcap.sam)
 
@@ -143,25 +142,25 @@ lines(density(rnorm(10000, 0, 1)))
 
 
 # get posterior scores of latent factor: mean and variance
-post.score <- get_posterior_scores(latent.strength)
-atop$latent.str.mean <- as.numeric(t(latent.strength$post.scores.mean))
-atop$latent.str.var <- as.numeric(t(latent.strength$post.scores.var))
-atop$latent.str.sd <- sqrt(atop$latent.str.var)
+post.score <- get_posterior_scores(latent.scope)
+atop$latent.scope.mean <- as.numeric(t(latent.scope$post.scores.mean))
+atop$latent.scope.var <- as.numeric(t(latent.scope$post.scores.var))
+atop$latent.scope.sd <- sqrt(atop$latent.scope.var)
 
 
 # Plot two measures by ATOPID
-ggplot(atop, aes(x = atopid, y = latent.str.mean)) + geom_point()
-ggplot(atop, aes(x = atopid, y = str.index)) +
+ggplot(atop, aes(x = atopid, y = latent.scope.mean)) + geom_point()
+ggplot(atop, aes(x = atopid, y = scope.index)) +
   geom_point(position = position_dodge(2))
 
-# Histogram of latent strength- all ATOP alliances 
-ggplot(atop, aes(x = latent.str.mean)) + geom_histogram() +
-  theme_classic() + labs(x = "Mean Latent Strength", y = "Treaties")
+# Histogram of latent scope- all ATOP alliances 
+ggplot(atop, aes(x = latent.scope.mean)) + geom_histogram() +
+  theme_classic() + labs(x = "Mean Latent Scope", y = "Treaties")
 
-# Strength by year of formation
-ggplot(atop, aes(x = begyr, y = latent.str.mean)) + geom_point() +
-  geom_errorbar(aes(ymin = latent.str.mean - latent.str.sd, 
-                    ymax = latent.str.mean + latent.str.sd,
+# Scope by year of formation
+ggplot(atop, aes(x = begyr, y = latent.scope.mean)) + geom_point() +
+  geom_errorbar(aes(ymin = latent.scope.mean - latent.scope.sd, 
+                    ymax = latent.scope.mean + latent.scope.sd,
                     width=.01), position = position_dodge(0.1)) +
   geom_point(position = position_dodge(0.1))
 
@@ -169,7 +168,7 @@ ggplot(atop, aes(x = begyr, y = latent.str.mean)) + geom_point() +
 
 # Summarize latent strength: treaties with military support only
 atop.milsup <- filter(atop, offense == 1 | defense == 1) 
-summary(atop.milsup$latent.str.mean)
+summary(atop.milsup$latent.scope.mean)
 # weakest is 1870 France-UK offense/neutrality pact- meant to ensure Belgian neutrality
 # median is ATOP 1180- UK, Fr and Austria during Crimean war
 
@@ -177,19 +176,19 @@ summary(atop.milsup$latent.str.mean)
 nrow(atop.milsup)
 
 # histogram
-ls.hist <- ggplot(atop.milsup, aes(x = latent.str.mean)) + geom_histogram() +
-  theme_classic() + labs(x = "Mean Latent Strength", y = "Treaties")
+ls.hist <- ggplot(atop.milsup, aes(x = latent.scope.mean)) + geom_histogram() +
+  theme_classic() + labs(x = "Mean Latent Scope", y = "Treaties")
 ls.hist
 
 
-# Strength against year of formation for treaties with military support
+# Scope against year of formation for treaties with military support
 # Add error bars to plot
-ls.styear <- ggplot(atop.milsup, aes(x = begyr, y = latent.str.mean)) +
-  geom_errorbar(aes(ymin = latent.str.mean - latent.str.sd, 
-    ymax = latent.str.mean + latent.str.sd,
+ls.styear <- ggplot(atop.milsup, aes(x = begyr, y = latent.scope.mean)) +
+  geom_errorbar(aes(ymin = latent.scope.mean - latent.scope.sd, 
+    ymax = latent.scope.mean + latent.scope.sd,
     width=.01), position = position_dodge(0.1)) +
   geom_point(position = position_dodge(0.1)) +
-  labs(x = "Start Year", y = "Latent Strength of Treaty") +
+  labs(x = "Start Year", y = "Latent Scope of Treaty") +
   theme_classic()
 ls.styear
 # Combine plots 
@@ -200,17 +199,17 @@ multiplot.ggplot(ls.hist, ls.styear)
 # highlight NATO
 atop %>% 
   mutate(NATO = ifelse(atopid == 3180, T, F)) %>% 
-  ggplot(aes(x = begyr, y = latent.str.mean, color = NATO)) +
+  ggplot(aes(x = begyr, y = latent.scope.mean, color = NATO)) +
   geom_point() +
   scale_color_manual(values = c('#595959', 'red'))
 
 
 
-# compare three different measures of strength
-commitment.str <- select(atop, atopid, 
-                         uncond.milsup, str.index,
-                         latent.str.mean)
-heatmap(as.matrix(commitment.str[, 2:4]), scale="column")
+# compare three different measures of scope
+commitment.scope <- select(atop, atopid, 
+                         uncond.milsup, scope.index,
+                         latent.scope.mean)
+heatmap(as.matrix(commitment.scope[, 2:4]), scale="column")
 
 
 
@@ -260,7 +259,7 @@ atop$ussr.mem[atop$begyr < 1945] <- 0
 atop$num.mem <-  apply(atop[, 72:130], 1, function(x) sum(!is.na(x)))
 
 # Plot alliance strength against size
-ggplot(atop, aes(x = latent.str.mean, y = num.mem)) +
+ggplot(atop, aes(x = num.mem, y = latent.scope.mean)) +
   geom_point()
 
 # identify non-aggression only pacts
@@ -294,25 +293,21 @@ all.fpsim.first <- filter(all.fp.sim, year == yr1) %>%
 atop <- left_join(atop, all.fpsim.first)
 
 
-# Add measures of FP similiarity in first year observed
-atop <- left_join(atop, all.fpsim.first)
-
-
-# Look at correlation between FP similarity and strength
+# Look at correlation between FP similarity and scope
 # Full ATOP data
-cor.test(atop$mean.kap.sc, atop$latent.str.mean)
-cor.test(atop$low.kap.sc, atop$latent.str.mean)
+cor.test(atop$mean.kap.sc, atop$latent.scope.mean)
+cor.test(atop$low.kap.sc, atop$latent.scope.mean)
 
-ggplot(atop, aes(x = mean.kap.sc, y = latent.str.mean)) + 
+ggplot(atop, aes(x = mean.kap.sc, y = latent.scope.mean)) + 
   geom_point() + theme_classic()
 
 
 # Treaties with military support
 atop.milsup <- filter(atop, offense == 1 | defense == 1) 
-cor.test(atop.milsup$mean.kap.sc, atop.milsup$latent.str.mean)
-cor.test(atop.milsup$low.kap.sc, atop.milsup$latent.str.mean)
+cor.test(atop.milsup$mean.kap.sc, atop.milsup$latent.scope.mean)
+cor.test(atop.milsup$low.kap.sc, atop.milsup$latent.scope.mean)
 
-ggplot(atop.milsup, aes(x = mean.kap.sc, y = latent.str.mean)) + 
+ggplot(atop.milsup, aes(x = mean.kap.sc, y = latent.scope.mean)) + 
   geom_point() + theme_classic()
 
 
