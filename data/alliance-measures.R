@@ -253,7 +253,65 @@ rm(us.mem)
 
 # limit US and USSR to Cold War Treaties
 atop$us.mem[atop$begyr < 1945] <- 0
-atop$ussr.mem[atop$begyr < 1945] <- 0
+atop$ussr.mem[atop$begyr < 1945 | atop$begyr > 1991] <- 0
+
+
+# create a superpower membership dummy
+atop$super.mem <- ifelse(atop$us.mem == 1 | atop$ussr.mem == 1, 1, 0)
+
+
+# Create a major power membership dummy 
+atop <- atop %>%
+             select(c(begyr, (72:130))) %>% 
+             mutate_all(funs(
+                   (. == 2 & begyr > 1898) | # US 
+                   (. == 255 & begyr <= 1918)  | # Germany: 1816 to 1918
+                   (. == 255 & begyr >= 1925 & begyr <= 1945) | # Germany 1925 to 1945
+                   (. == 255 & begyr >= 1991) | # Germany 1991 to present  
+                   (. == 200) | # UK
+                   (. == 365 & begyr <= 1917) | # Russia: 1816 to 1917
+                   (. == 365 & begyr >= 1922) | # Russia: 1922 to present
+                   (. == 220 & begyr <= 1940) | # France 1816 to 1940
+                   (. == 220 & begyr >= 1945) | # France 1945 to present 
+                   (. == 710 & begyr >= 1950) | # China
+                   (. == 300 & begyr <= 1918) | # Austria-Hungary
+                   (. == 325 & begyr >= 1860 & begyr <= 1943) | # Italy
+                   (. == 740 & begyr <= 1945 & begyr >= 1895) | # Japan 1895 to 1940
+                   (. == 740 & begyr >= 1991))# Japan 1991 to present
+             ) %>% 
+  reduce(`|`) %>%
+  as.integer %>%
+  bind_cols(atop, mp.mem = .) 
+sum(atop$mp.mem, na.rm = TRUE)
+# only 1s for major power members 
+atop$mp.mem[is.na(atop$mp.mem)] <- 0
+
+# count number of major powers in an alliance- need to capture symmetric major power treaties
+atop.mem.list <- atop %>%
+  select(c(begyr, (72:130)))
+atop.mem.list$mp.count <- rowSums(
+                (atop.mem.list == 2 & atop.mem.list$begyr > 1898) | # US 
+                (atop.mem.list == 255 & atop.mem.list$begyr <= 1918)  | # Germany: 1816 to 1918
+                (atop.mem.list == 255 & atop.mem.list$begyr >= 1925 & atop.mem.list$begyr <= 1945) | # Germany 1925 to 1945
+                (atop.mem.list == 255 & atop.mem.list$begyr >= 1991) | # Germany 1991 to present  
+                (atop.mem.list == 200) | # UK
+                (atop.mem.list == 365 & atop.mem.list$begyr <= 1917) | # Russia: 1816 to 1917
+                (atop.mem.list == 365 & atop.mem.list$begyr >= 1922) | # Russia: 1922 to present
+                (atop.mem.list == 220 & atop.mem.list$begyr <= 1940) | # France 1816 to 1940
+                (atop.mem.list == 220 & atop.mem.list$begyr >= 1945) | # France 1945 to present 
+                (atop.mem.list == 710 & atop.mem.list$begyr >= 1950) | # China
+                (atop.mem.list == 300 & atop.mem.list$begyr <= 1918) | # Austria-Hungary
+                (atop.mem.list == 325 & atop.mem.list$begyr >= 1860 & atop.mem.list$begyr <= 1943) | # Italy
+                (atop.mem.list == 740 & atop.mem.list$begyr <= 1945 & atop.mem.list$begyr >= 1895) | # Japan 1895 to 1940
+                (atop.mem.list == 740 & atop.mem.list$begyr >= 1991), 
+                na.rm = TRUE
+                )
+
+# assign count to ATOP data
+atop$mp.count <- atop.mem.list$mp.count
+rm(atop.mem.list)
+             
+
 
 # count number of members: non-missing membership variables
 atop$num.mem <-  apply(atop[, 72:130], 1, function(x) sum(!is.na(x)))
@@ -261,6 +319,25 @@ atop$num.mem <-  apply(atop[, 72:130], 1, function(x) sum(!is.na(x)))
 # Plot alliance strength against size
 ggplot(atop, aes(x = num.mem, y = latent.scope.mean)) +
   geom_point()
+
+
+
+# Generate a measure of asymmetric capability
+atop <- atop %>%
+  mutate(
+    non.maj.only = 
+      ifelse(
+        mp.mem == 0 & super.mem == 0, 1, 0
+      ),
+    asymm.cap = 
+      ifelse(
+        super.mem == 1 | # super powers always generate asymm cap (no alliance only with each other)
+          (mp.mem > 0 & (mp.count < num.mem)), # major powers with non-major allies
+        1, 0
+      )
+  )
+
+
 
 # identify non-aggression only pacts
 # Also, recode arms requirements and military aid variables from ATOP into dummy 

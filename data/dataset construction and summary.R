@@ -32,7 +32,7 @@ alliance.char <- select(atop, atopid,
                     uncond.milsup, scope.index, latent.scope.mean,
                     offense, defense, consul, neutral, nonagg, base,
                     armred.rc, organ1, milaid.rc, us.mem, ussr.mem,
-                    num.mem, nonagg.only, wartime, asymm, low.kap.sc)
+                    num.mem, nonagg.only, wartime, asymm, asymm.cap, low.kap.sc)
 
 # Expand alliance characteristics data to make it alliance characteristic-year data
 # Don't care about truncation here, just need to know if alliance is operational
@@ -303,7 +303,7 @@ state.vars <- state.vars %>%
                         (ccode == 255 & year >= 1991) | # Germany 1991 to present  
                         (ccode == 200) | # UK
                         (ccode == 365 & year <= 1917) | # Russia: 1816 to 1917
-                        (ccode == 365 & year >= 1922) | # Russia: 1992 to present
+                        (ccode == 365 & year >= 1922) | # Russia: 1922 to present
                         (ccode == 220 & year <= 1940) | # France 1816 to 1940
                         (ccode == 220 & year >= 1945) | # France 1945 to present 
                         (ccode == 710 & year >= 1950) | # China
@@ -311,10 +311,16 @@ state.vars <- state.vars %>%
                         (ccode == 325 & year >= 1860 & year <= 1943) | # Italy
                         (ccode == 740 & year <= 1945 & year >= 1895) | # Japan 1895 to 1940
                         (ccode == 740 & year >= 1991), # Japan 1991 to present
-                        1, 0) 
+                        1, 0),
+                     super.power = ifelse(
+                       (ccode == 2 & year >= 1945) | # US 1945 to present
+                      (ccode == 365 & year >= 1945 & year <= 1991), # Russia: 1992 to present
+                     1, 0)
                     )
-
-major.powers <- filter(state.vars, majpower == 1)
+# Create a new variable marking superpower status
+state.vars$status <- 0 # all non-major powers
+state.vars$status[state.vars$majpower == 1 & state.vars$super.power == 0] <- 1 # major powers not superpowers
+state.vars$status[state.vars$super.power == 1] <- 2 # id the superpowers 
 
 
 
@@ -669,24 +675,6 @@ state.mem.mat$obs <- as.numeric(row.names(state.mem.mat))
 state.mem.mat <- select(state.mem.mat, obs, mp.id, everything())
 
 
-# move to long form 
-state.mem.long <- gather(state.mem.mat, atopid, allied.cap, `1020`:`6035`)
-dim(state.mem.long)
-sum(state.mem.long$allied.cap == 0)
-sum(state.mem.long$allied.cap != 0)
-
-# filter out observations where states capability status does not include an alliance 
-state.mem.long <- filter(state.mem.long, (mp.id == 1 & atopid %in% colnames(state.mem.min)) |
-                           (mp.id == 2 & atopid %in% colnames(state.mem.maj))
-)
-# Check results- mean should increase as 0s are removed
-dim(state.mem.long)
-sum(state.mem.long$allied.cap == 0)
-sum(state.mem.long$allied.cap != 0)
-
-# index by capability and treaty
-state.mem.long$lambda.id <- state.mem.long %>% group_indices(mp.id, atopid)
-
 
 # create a state index variable
 reg.state.comp$state.id <- reg.state.comp %>% group_indices(ccode)
@@ -703,7 +691,7 @@ reg.state.comp$mp.id <- reg.state.comp %>% group_indices(majpower)
 # Make the alliance characteristics data match the membership matrix
 reg.all.data <- filter(alliance.char, atopid %in% colnames(state.mem.mat)) %>%
   select(atopid, latent.scope.mean, num.mem, low.kap.sc,
-         avg.democ, wartime, asymm, us.mem, ussr.mem)
+         avg.democ, wartime, asymm, asymm.cap)
 
 
 # Remove alliances w/ missing FPsim- one member not in system
