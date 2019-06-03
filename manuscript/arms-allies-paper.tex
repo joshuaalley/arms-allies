@@ -59,9 +59,11 @@ This paper addresses this theoretical and empirical division, clarifying when al
 In doing so, it helps clarify a longstanding debate about alliance politics.
 
 
-Debate between the force multiplier and foreign entanglement perspectives largely ignores heterogeneity among alliances, which prior scholarship shows is closely connected to the risk of war \citep{Leeds2003, LeedsAnac2005, Mattes2012, Benson2012}.  
-Differences between alliances imply that participation could increase or decrease defense expenditures. 
-I use state capability and treaty scope to explain when alliance treaty participation increases or decreases military spending. 
+Debate between the force multiplier and foreign entanglement perspectives largely ignores heterogeneity among alliances, which is a factor in other work on alliance politics \citep{Morrow1991, Leeds2003, LeedsAnac2005, Fordham2010, Mattes2012, Benson2012, Poast2013, Johnsonetal2015}.  
+Given substantial differences in alliance treaty design and membership, alliance participation could increase or decrease defense expenditures. 
+Therefore, I use state capability and treaty scope to explain when alliance treaty participation increases or decreases military spending. 
+
+
 Treaties with wider scope add depth to promises of military support by promising other forms of cooperation.
 Greater treaty scope means the agreement covers multiple issues beyond a commitment of military aid, including extra defense cooperation, forming international organizations, or improving economic ties.  
 Changing treaty scope alters the consequences of alliance participation for military spending. 
@@ -69,17 +71,18 @@ How treaty scope modifies the impact of alliance participation depends on state 
 
 
 Major powers use a mix of alliances and military spending to increase their influence--- shaping international relations to match their interests.
-When major powers form alliances, they often increase their military spending to support the treaty and uphold their influence. 
+When major powers form alliances, they often increase their military spending to support the treaty and sustain influence. 
 Greater treaty scope gives more influence through issue-linkages.
-By adding to major power influence, deep treaties reduce the need for additional military spending. 
-Thus, deep treaty commitments lead to lower growth in major power military spending than shallow treaties.  
+By adding to major power influence, broad treaties reduce the need for additional military spending. 
+Thus, participation in broad treaty commitments leads to lower growth in major power military spending than participation in a narrow treaties.  
 
 
 Non-major powers use alliances and defense expenditures to ensure their territorial security.
 Due to higher opportunity costs of military spending \citep{Powell1993, Fearon2018}, these states will rely on their allies for security whenever possible, so alliance participation will often reduce growth in non-major power military spending.   
 Increasing treaty scope constrains non-major powers tendency to reduce defense spending through alliance participation. 
 Adding further cooperation makes the treaty more valuable and gives partners greater influence through issue linkages. 
-Thus, deeper treaties increase growth in non-major power military expenditures, relative to shallow treaties. 
+Thus, participation in broad treaties increases growth in non-major power military expenditures relative to narrow treaties. 
+
 
 I employ a novel research design to test my argument.
 First, I develop a latent measure of alliance treaty scope. 
@@ -115,6 +118,7 @@ Then I describe my state capability and treaty scope argument in more detail.
 The third and fourth sections present the research design and results. 
 I then briefly use the argument to illustrate how formal NATO treaty commitments shaped military spending by the US and its allies. 
 The final section concludes with a discussion of the results and implications for scholarship and policy.  
+
 
 
 \section{Force Multiplier or Foreign Entanglement?}
@@ -677,6 +681,7 @@ The agreement between France and Belgium formed deeper ties, which led Belgium t
 
 This brief example and the theoretical logic suggest that treaty scope modifies the impact of alliance participation on non-major power military spending. 
 Though non-major powers often lower levels of spending due to alliances, greater treaty scope will constrain this tendency. 
+Treaties with greater scope will have higher growth in military spending than treaties with limited scope. 
 
 
 % Prediction (H2 here) 
@@ -902,7 +907,7 @@ I can simultaneously make inferences about the impact of individual treaties and
 To facilitate computation and interpretation, I fit the multilevel model using Bayesian estimation in STAN \citep{Carpenteretal2016}.\footnote{See the appendix for details of the weakly informative prior distributions and evidence the chains converged.}
 
 
-This research design adds complexity to a more traditional panel data specification. 
+This research design is more complicated than a traditional panel data model. 
 But the additional components match the argument and data structure, while also generating novel inferences. 
 Multilevel modeling connects the argument and research design. 
 My predictions emphasizes treaty scope as a source of heterogeneous alliance effects, so an alliance level regression in this multilevel model contains the corresponding coefficient.
@@ -922,7 +927,7 @@ Partial pooling of these alliance-specific parameters generates reasonable estim
 
 In summary, multilevel modeling provides useful inferences about alliance participation and military spending. 
 This model matches my argument that treaty scope modifies the impact of alliance participation on military spending. 
-Furthermore, by estimating the cumulative impact of participation in each alliance treaty, the model generates new evidence to help test my predictions. 
+Furthermore, by estimating the impact of participation in particular alliance treaties, the model generates new evidence to help test my predictions. 
 The next section summarizes the model specification. 
  
 
@@ -969,7 +974,7 @@ States can be members of multiple treaties at once, so observations are not neat
 This specification allows each alliance to have a unique impact on military spending, even when states participate in multiple treaties. 
 
 
-$\lambda$ is a vector of parameters which estimate the impact of participation in specific alliances. 
+$\lambda$ is a vector of parameters which estimate the impact of participation in specific alliances on military spending. 
 Because the non-zero elements of $Z$ are allied spending, the $\lambda$ parameters capture alliance members' responsiveness to greater allied capability. 
 Each alliance has a unique $\lambda$ and the $\lambda$ parameters have a common distribution. 
 The shared distribution assumes alliances are similar but different in how they impact growth in military spending. 
@@ -978,8 +983,8 @@ I then use alliance treaty scope and other alliance characteristics to predict d
 
 % Alliance-level regression:
 The second part of the multilevel model uses alliance characteristics to predict how allied spending is associated with growth in military spending. 
-The $\lambda$ parameters are the dependent variable in an alliance-level regression.
-Therefore the impact of an alliance on members military spending depends on treaty characteristics, including scope. 
+The $\lambda$ parameters are the outcome in an alliance-level regression.
+Therefore the impact of alliance participation on members military spending depends on treaty characteristics, including scope. 
 I focus on this second-level regression, where: 
 
 \begin{equation}
@@ -998,10 +1003,11 @@ The second-level regression includes treaty scope, and each $\beta$ parameter mo
 The $\beta$ parameters are like marginal effects in an interaction. 
 
 
-Treaty scope is connected to military spending by changing the consequences of alliance participation.
+Treaty scope impacts military spending by changing the consequences of alliance participation.
 This is an indirect link, but it matches my argument that scope modifies the impact of alliance participation on military spending.  
-A change in treaty scope changes $\lambda$, which in turn affects growth in military spending.
-Hypothesis 1 predicts $\beta_1$ will be negative among major powers, and Hypothesis 2 expects $\beta_1$ will be positive for non-major powers.  
+A change in treaty scope shifts $\lambda$, which in turn affects growth in military spending.
+Hypothesis 1 predicts $\beta_1$ will be negative among major powers, and Hypothesis 2 expects $\beta_1$ will be positive for non-major powers.
+Moreover, $\beta_1$ compares broad and narrow treaties. 
 
 
 % Provide an example observation
@@ -1020,8 +1026,8 @@ Argentine participation in the Rio Pact and OAS also changes growth in spending 
 \end{equation}
 
 
-$\lambda_{OAS}$ and $\lambda_{Rio}$ are a function of the alliance level regression. 
-The institutional design and membership of these treaties alter the $\lambda$ parameter.
+$\lambda_{OAS}$ and $\lambda_{Rio}$ capture the impact of participating in those alliances and are a function of the alliance level regression. 
+The institutional design and membership of these treaties alter their $\lambda$ parameters.
 Other alliances have no impact on growth in Argentine military spending. 
 
 
@@ -1159,7 +1165,7 @@ In both the major and non-major power samples, the expected impact of higher tre
 
 
 I also assess substantive importance by looking at patterns in the $\lambda$ parameters. 
-Each $\lambda$ parameter measures the aggregate impact of treaty participation as function of treaty characteristics. 
+Each $\lambda$ parameter measures the impact of treaty participation as function of treaty characteristics. 
 If greater treaty scope has a large influence on alliances, there will be a clear trend in the mean of $\lambda$ across the range of alliance treaty scope.
 We should observe a negative trend in the expected value of $\lambda$ as treaty scope increases in major power alliances. 
 There will be a positive trend in $\lambda$ for non-major power alliances. 
@@ -1185,7 +1191,7 @@ In non-major powers, shallow treaties tend to reduce growth in military spending
 Because other treaty characteristics and unmeasured factors also influence the $\lambda$ estimates, not all treaties conform to the expectations of decreasing or increasing growth in spending. 
 
 
-Because $\lambda$ captures the total impact of an alliance, trends in these parameters across the range of treaty scope suggests that changing treaty scope has an important role. 
+Because each $\lambda$ captures the impact of participating in an alliance, trends in these parameters across the range of treaty scope suggests that treaty scope has a substantial impact. 
 Even after accounting for other alliance characteristics, alliance strength drives the overall effect of allied spending down for major powers, and up for non-major powers. 
 Alliance treaty scope is a key source of heterogeneity in how alliance participation impacts military spending. 
 Making these comparisons underlines the benefits of the multilevel model estimates. 
@@ -1353,63 +1359,50 @@ The argument and findings have implications for scholars and policymakers.
 
 \section{Conclusion}
 
+% tie it all together
+Alliance participation will not uniformly increase or decrease military spending. 
+Rather, the connection between alliance participation and military expenditures depends on treaty scope and state capability.  
+Both the force multiplier and foreign entanglement views of alliance participation are correct, each in different circumstances.
+Alliances are more foreign entanglement for major powers and more force multiplier for non-major powers.
+
 
 % Start conclusion
-There are several ways scholars can build on these results. 
-First, my findings reinforce calls to consider heterogeneity among alliances \citep{Leeds2003, DigiuseppePoast2016}.
-Scholars should also consider the distributional consequences of changes in military spending and assess a wider range of empirical evidence. 
+The prevailing view of alliances and military spending is divided between force multiplier and foreign entanglement views. 
+I reconcile disagreement between these perspectives by arguing that state capability and treaty scope modify the impact of alliance participation on military spending. 
+I test the argument by developing a measure of treaty scope and estimating a multilevel model connecting participation in multiple alliance treaties with growth in military spending. 
+I find that treaty scope decreases growth in major power military spending from alliance participation, while increasing growth in spending from alliance participation for non-major powers. 
+ 
+
+There are several implications of these findings. 
+First, they reinforce the importance of heterogeneity among alliances \citep{Leeds2003, Benson2012, DigiuseppePoast2016}.
+Just as alliance participation does not have a uniform impact on military spending, it has heterogeneous effects on military spending. 
 
 
 % Add paragraph on distributional consequences.
+The distributional consequences of changes in military spending within states and among alliance members are another salient implication.  
 Changes in military spending from alliance participation have important distributional consequences. 
 By altering growth in military spending, the design of international alliances alters the domestic political economy of member states. 
 But the domestic economic consequences of alliance politics are not well understood. 
 
 
-% Next steps: extend argument to other treaty characteristics
-Besides exploring the domestic political economy of alliance participation, future work should apply differences between major and non-major powers to other alliance characteristics. 
-If major and non-major powers employ alliances for different ends, then other alliance characteristics may have different impacts on military spending. 
-Other treaty design considerations, such as asymmetric obligations, should have different effects for major and non-major powers. 
-
-
-% Next steps: More interp of lambdas
-Another task for future research is making more detailed comparisons of the $\lambda$ parameters. 
-Each $\lambda$ captures the aggregate impact of alliance participation for individual treaties.
-Due to space limitations, this paper offers a brief treatment of these estimates. 
-But these parameters are a novel measurement, giving additional evidence of when alliance participation increases or decreases military spending. 
-
-
-% Case studies
-The multilevel model estimates alone cannot establish causality \citep{Seawright2016}. 
-I provided a brief illustration using NATO, but selected that case for its illustrative value and policy importance, not for inference. 
-This leaves room for more precise selection of cases to corroborate the regression results. 
-One possible design is using the five largest and smallest $\lambda$ values for major and minor powers to select cases. 
-Process tracing in these cases could then examine theoretical mechanisms and validate measurement \citep{Seawright2016}. 
-
-
-% ML model and other cases of multiple membership 
-Beyond the immediate issue of alliance participation and military spending, the research design in this paper applies to other international relations questions.
-If scholars are interested in a class of international organizations where membership in multiple organizations is not nested and institutional characteristics generate heterogeneous effects, the multilevel model addresses all of these concerns.
-For example, international political economy scholars could apply this model to trade agreements. 
-Studies of international law could examine the impact of membership in different conventions and international organizations on human rights. 
-
-
 % The argument indicates tradeoff
 Besides their scholarly value, the argument and evidence have important consequences for policy debates. 
 The tradeoffs major and non-major powers face in alliance treaty design can guide our understanding of why some treaties lead to ``free-riding'' and potential responses. 
-US policymakers must consider the major power tradeoff between foreign entanglement and influence in deep treaties. 
+Articulating when non-major powers have more freedom to lower growth in defense spending clarifies what policies could counteract that tendency. 
+Major powers may be able to check allied free-riding through increasing the scope of their alliance commitments. 
 Greater influence can limit allied free-riding, but it requires deeper engagement abroad. 
 
 
 % Implications for policy. 
 The United States is currently wrestling with the implications of treaty scope. 
 Washington has often decried ``free-riding'' by allies who provide too little for their own defense \citep{Lanoszka2015}. 
-But allies are able to free-ride because the US makes relatively limited formal alliance commitments. 
-``Entangling alliances'' may provide more influence to curb falling allied defense spending. 
+But allies are able to free-ride partly because the US makes relatively limited formal alliance commitments. 
+``Foreign entanglements'' may provide more influence to curb falling allied defense spending. 
 
  
-Therefore, growing institutionalization of NATO, including the agreement for all allies to spend at least 2\% of GDP on defense, may be effective.
-A deeper formal structure will tie the US more closely to Europe, but it is probably a better check on allied free-riding than the usual verbal exhortations. 
+Therefore, growing institutionalization of NATO, including the agreement for all allies to spend at least 2\% of GDP on defense, may lead to higher defense spending.
+Increasing obligations within NATO tie the US more closely to Europe, but it is probably a better check on allied free-riding than the usual verbal exhortations. 
+Issue linkage bargaining that connects economic cooperation and defense spending could also lead to higher allied military spending.
 Threatening to leave the alliance is not credible and risks undermining US gains from alliances. 
 Given limited formal ties, US leaders will lack leverage in intra-alliance bargaining. 
 
@@ -1417,14 +1410,12 @@ Given limited formal ties, US leaders will lack leverage in intra-alliance barga
 The US could use deeper formal commitments as a substitute for greater defense effort in reassuring allies.
 The danger is that increasing treaty scope could create a situation where obligations exceed capabilities \citep{Kennedy1987}. 
 Emboldening junior partners with a deep treaty might have deterrent value \citep{Bensonetal2014}, or increase the risk of conflict \citep{Benson2012}.
-Every change in alliance treaty scope generates different risks and tradeoffs--- policymakers must strike an appropriate balance. 
+Changes in alliance treaty scope generates other risks.
+Thus, while greater treaty scope can reduce the impact of alliance participation on growth in major power military spending and increase non-major power spending growth, greater scope has other consequences. 
+The tradeoffs surrounding alliance treaty scope and how to manage them are beyond the scope of this article, but it is an important issue for scholars and policymakers to consider. 
+Efforts to increase allied military spending will have other consequences, so the policy implications of my findings are not straightforward. 
+
  
-
-% tie it all together
-Alliance participation will not uniformly increase or decrease military spending. 
-Rather, the connection between alliance participation and military expenditures depends on treaty scope and state capability.  
-Both the force multiplier and foreign entanglement views of alliance participation are correct, each in different circumstances. 
-
 
 
 
