@@ -30,6 +30,33 @@ set.seed(12)
 # the scripts alliance-measures.R and dataset construction and summary.R 
 
 
+# Define illustrative hypothethetical curves of impact of alliance participation against scope
+# Major powers 
+eq.maj <- function(x){(2^(-x*2))}
+
+# non-major powers
+eq.min <- function(x){-(2^(-x*2))}
+
+# plot curves
+illus.plot <- ggplot(data.frame(x = c(0, 2)), aes(x = x))
+illus.plot <- illus.plot + stat_function(fun = eq.maj, geom = "line", size = 2)
+illus.plot <- illus.plot + stat_function(fun = eq.min, geom = "line", size = 2) +
+  xlab("Treaty Scope") + ylab("Impact of Alliance Participation on Mil. Ex.") +
+  geom_hline(yintercept = 0, size = 2) + 
+  theme_classic(base_size = 18, base_line_size = 1.5) + 
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  geom_text(label = "Major Power", x = 1, y = 0.5, size = 5) +
+  geom_text(label = "Non-Major Power", x = 1, y = -0.5, size = 5) +
+  geom_text(label = "0", y = .05, x = -.07, size = 5)
+illus.plot
+ggsave("figures/illus-arg.png")
+
+
+# look at distribution of outcome across the two groups: transformed for ease of viewing
+ggplot(reg.state.comp, aes(x = asinh(growth.milex), color = as.factor(majpower))) +
+  geom_density()
 
 
 ### transform data into matrices for STAN
@@ -39,33 +66,68 @@ reg.state.mat <- as.matrix(reg.state.comp[, 4:10])
 # check correlations among state-level regressors
 cor(reg.state.mat, method = "pearson")
 
-# State membership in alliances
-# pull the alliance-level regressors into a matrix
-alliance.reg.mat <- as.matrix(reg.all.data[, 2: ncol(reg.all.data)])
-cor(alliance.reg.mat, method = "pearson")
+# Get alliances for major and non-major power members
+state.mem.min <- as.matrix(state.mem.mat[, colnames(state.mem.mat) %in% colnames(state.mem.min)])
+state.mem.maj <- as.matrix(state.mem.mat[, colnames(state.mem.mat) %in% colnames(state.mem.maj)])
 
-# Add a constant to the alliance-level regression 
-cons <- rep(1, length = nrow(alliance.reg.mat))
-alliance.reg.mat <- cbind(cons, alliance.reg.mat)
 
+# Create the matrix of alliance-level variables for major and non-major power groups
+# non-major powers
+# Make the alliance characteristics data match the membership matrix
+reg.all.data.min <- filter(alliance.char, atopid %in% colnames(state.mem.min)) %>%
+  select(latent.scope.mean, num.mem, low.kap.sc, 
+         avg.democ, wartime, asymm, us.mem, ussr.mem)
+
+
+# Remove two alliances where members are not in COW system: no kappa 
+reg.all.data.min <- reg.all.data.min[complete.cases(reg.all.data.min), ]
+
+# define non-major power alliance matrix
+cons <- rep(1, nrow(reg.all.data.min))
+alliance.reg.mat.min <- cbind(cons, reg.all.data.min)
+alliance.reg.mat.min <- as.matrix(alliance.reg.mat.min)
+
+
+# Make the alliance characteristics data match the membership matrix
+reg.all.data.maj <- filter(alliance.char, atopid %in% colnames(state.mem.maj)) %>%
+  select(latent.scope.mean, num.mem, low.kap.sc,
+         avg.democ, wartime, asymm, us.mem, ussr.mem)
+
+
+# Remove two alliances where non-major members are not in COW system: ATOPID 1118 and 1320
+reg.all.data.maj <- reg.all.data.maj[complete.cases(reg.all.data.maj), ]
+
+# define major power alliance matrix 
+cons <- rep(1, nrow(reg.all.data.maj))
+alliance.reg.mat.maj <- cbind(cons, reg.all.data.maj)
+alliance.reg.mat.maj <- as.matrix(alliance.reg.mat.maj)
+
+
+# Create Appropriate id variables in each subsample
+maj.id <- filter(reg.state.comp, majpower == 1) %>% select(state.id, year.id)
+min.id <- filter(reg.state.comp, majpower == 0) %>% select(state.id, year.id)
 
 # run model on the full sample
+
 # Define the data list 
 reg.state.comp <- as.data.frame(reg.state.comp)
-stan.data <- list(N = nrow(reg.state.comp), y = reg.state.comp[, 3],
-                      state = reg.state.comp$state.id, S = length(unique(reg.state.comp$state.id)),
-                      year = reg.state.comp$year.id, T = length(unique(reg.state.comp$year.id)),
-                      cap = reg.state.comp$mp.id, J = length(unique(reg.state.comp$mp.id)),
-                      A = ncol(state.mem.mat), L = ncol(alliance.reg.mat),
-                      Z = state.mem.mat, 
-                      X = alliance.reg.mat,
-                      W = reg.state.mat, M = ncol(reg.state.mat)
+stan.data <- list(y_min = reg.state.comp.min$growth.milex, y_maj = reg.state.comp.maj$growth.milex,
+                  state_min = min.id$state.id, state_maj = maj.id$state.id, S = length(unique(reg.state.comp$state.id)),
+                  year_min = min.id$year.id, year_maj = maj.id$year.id, T = length(unique(reg.state.comp$year.id)),
+                  cap = reg.state.comp$mp.id, J = length(unique(reg.state.comp$mp.id)),
+                  A_min = ncol(state.mem.min), Z_min = state.mem.min,  # non-major membership
+                  A_maj = ncol(state.mem.maj), Z_maj = state.mem.maj,  # major membership 
+                  X_min = alliance.reg.mat.min, X_maj = alliance.reg.mat.maj, 
+                  L = ncol(alliance.reg.mat.min),
+                  N_min = nrow(state.mem.min), N_maj = nrow(state.mem.maj),
+                  W_min = reg.state.mat.min, W_maj = reg.state.mat.maj, M = ncol(reg.state.mat.min)
 )
+
 
 # Compile the model code
 model.1 <- stan_model(file = "data/multi-member ML model.stan")
 
-# Variational Bayes- use to check posterior predictions
+# Variational Bayes- use to check model will run 
 ml.model.vb <- vb(model.1, data = stan.data, seed = 12)
 
 # posterior predictive check from variational Bayes- did not converge
@@ -87,15 +149,16 @@ system.time(
 )
 
 # diagnose full model
-launch_shinystan(ml.model)
+# only run shinystan line from console- can't run whole script otherwise
+# launch_shinystan(ml.model)
 
 check_hmc_diagnostics(ml.model)
 
 # Traceplots for the regression parameters
 traceplot(ml.model, pars = "beta")
 traceplot(ml.model, pars = "gamma")
-traceplot(ml.model, pars = "L_Omega_gamma")
-traceplot(ml.model, pars = "tau_gamma")
+traceplot(ml.model, pars = "L_Omega_beta")
+traceplot(ml.model, pars = "tau_beta")
 
 # Pairs plots to see sources of autocorrelation in the chains: Select only some intercept parameters
 # Check for correlation between the means and variances of the state intercepts
@@ -111,23 +174,12 @@ pairs(ml.model, pars = c("alpha", "sigma_year", "alpha_year[2]", "alpha_year[14]
 pairs(ml.model, pars = c("alpha", "alpha_state[2]", "alpha_year[14]", "alpha_state[25]", 
                          "alpha_year[35]"))
 
-# Check correlation among the parameters
-# Alliance-level variables
-pairs(ml.model, pars = c("beta[1]", "beta[2]", "beta[3]", "beta[4]",
-                         "beta[5]", "beta[6]", "beta[7]", "beta[8]"))
-
-# State-level variables
-pairs(ml.model, pars = c("gamma[1,1]", "gamma[1,2]", "gamma[1,3]", "gamma[1,4]",
-                         "gamma[1,5]", "gamma[1,6]", "gamma[1,7]"))
-# State-level variables
-pairs(ml.model, pars = c("gamma[2,1]", "gamma[2,2]", "gamma[2,3]", "gamma[2,4]",
-                         "gamma[2,5]", "gamma[2,6]", "gamma[2,7]"))
 
 
 # Extract coefficients from the model
-ml.model.sum <- extract(ml.model, pars = c("beta", "gamma", "lambda", 
-                                           "sigma", "sigma_year", "sigma_state",
-                                           "sigma_all", "y_pred"),
+ml.model.sum <- extract(ml.model, pars = c("beta", "gamma", "lambda_min", "lambda_maj",
+                                           "sigma", "sigma_year", "sigma_state", "sigma_cap",
+                                           "sigma_all_min", "sigma_all_maj"),
                         permuted = TRUE)
 
 # Posterior predictive distributions relative to observed data
@@ -138,40 +190,76 @@ ml.model.sum <- ml.model.sum[1:7]
 ppc_dens_overlay(y, yrep.full)
 
 
-
-
-
 # Plot all the beta coefficients and calculate posterior probabilities
 # label columns
 colnames(ml.model.sum$beta) <- colnames(alliance.reg.mat)
 
+# latent scope
+mean(ml.model.sum$beta[, 1, 2] > 0) # non-major
+mean(ml.model.sum$beta[, 2, 2] < 0) # major
+# number of members
+mean(ml.model.sum$beta[, 1, 3] > 0) # non-major
+mean(ml.model.sum$beta[, 2, 3] > 0) # major
+# FP disagreement 
+mean(ml.model.sum$beta[, 1, 4] > 0) # non-major
+mean(ml.model.sum$beta[, 2, 4] < 0) # major
+# democratic proportion
+mean(ml.model.sum$beta[, 1, 5] < 0) # non-major
+mean(ml.model.sum$beta[, 2, 5] < 0) # major
+# wartime
+mean(ml.model.sum$beta[, 1, 6] > 0) # non-major
+mean(ml.model.sum$beta[, 2, 6] < 0) # major
+# asymmetric obligations 
+mean(ml.model.sum$beta[, 1, 7] < 0) # non-major
+mean(ml.model.sum$beta[, 2, 7] > 0) # major
+# US membership
+mean(ml.model.sum$beta[, 1, 8] < 0) # non-major
+mean(ml.model.sum$beta[, 2, 8] < 0) # major
+# USSR membership
+mean(ml.model.sum$beta[, 1, 9] < 0) # non-major
+mean(ml.model.sum$beta[, 2, 9] < 0) # major
 
-mean(ml.model.sum$beta[, 2] > 0) # latent strength
-mean(ml.model.sum$beta[, 3] > 0) # number of members
-mean(ml.model.sum$beta[, 4] < 0) # democratic proportion
-mean(ml.model.sum$beta[, 5] < 0) # wartime
-mean(ml.model.sum$beta[, 6] > 0) # asymmetric obligations 
-mean(ml.model.sum$beta[, 7] < 0) # US membership
-mean(ml.model.sum$beta[, 8] > 0) # USSR membership
 
+# this is not going well- need to figure out array indexin
+dimnames(ml.model.sum$beta)[[3]] <- c("Constant", "Latent Scope", 
+                                      "Number Members", "FP Disagreement",
+                                      "Democratic Membership", 
+                                      "Wartime", "Asymmetric",
+                                      "US Member", "USSR Member")
+dimnames(ml.model.sum$beta)[[2]] <- c("Non-Major", "Major")
 
-beta.melt <- melt(ml.model.sum$beta)
-
-# Plot density of the coefficients
-ggplot(beta.melt, aes(x=value, fill = Var.2)) +
-  geom_density(alpha=0.25) +
-  ggtitle("Posterior Distribution of Alliance-Level Regression Coefficients")
+mcmc_areas(ml.model.sum$beta, 
+           prob = .9)
 
 # Summarize intervals
-beta.summary <- summary(ml.model, pars = c("beta", "sigma_all"), probs = c(0.05, 0.95))$summary
+beta.summary <- summary(ml.model, pars = c("beta"), 
+                        probs = c(0.05, 0.95))$summary
 beta.summary <- beta.summary[, -2]
-rownames(beta.summary) <- c("Constant", "Latent Str.", 
-                            "Number Members","Democratic Membership", 
-                            "Wartime", "Asymmetric",
-                            "US Member", "USSR Member", "sigma Alliances")
+rownames(beta.summary) <- c("Constant: Non-Major", "Latent Scope: Non-Major", 
+                            "Number Members: Non-Major", "FP Disagreement: Major",
+                            "Democratic Membership: Non-Major", 
+                            "Wartime: Non-Major", "Asymmetric: Non-Major",
+                            "US Member: Non-Major", "USSR Member: Non-Major", "Constant: Major", "Latent Scope: Major", 
+                            "Number Members: Major", "FP Disagreement: Major",
+                            "Democratic Membership: Major", 
+                            "Wartime: Major", "Asymmetric: Major",
+                            "US Member: Major", "USSR Member: Major")
 
 print(beta.summary)
 xtable(beta.summary, digits = 3)
+
+
+# Create plot of the scope parameters
+scope.dens.joint <- cbind(ml.model.sum$beta[, 2, 2], ml.model.sum$beta[, 1, 2])
+colnames(scope.dens.joint) <- c("Major", "Non-Major")
+scope.dens.joint <- melt(scope.dens.joint)
+
+ggplot(scope.dens.joint, aes(x = value,  fill = X2)) +
+  geom_density(alpha = 0.25) +
+  scale_fill_manual(name = "Sample", values=c("#999999", "#000000")) +
+  ggtitle("Posterior Distributions of Treaty Scope: Major and Non-Major Powers") +
+  theme_classic()
+ggsave("figures/scope-dens-joint.png", height = 6, width = 8)
 
 
 # Similar calculations for the state-level variables
@@ -186,22 +274,22 @@ mean(ml.model.sum$gamma[, 4] > 0) # gdp growth
 mean(ml.model.sum$gamma[, 5] < 0) # POLITY
 mean(ml.model.sum$gamma[, 6] > 0) # Cold war years 
 mean(ml.model.sum$gamma[, 7] > 0) # number of disputes
-mean(ml.model.sum$gamma[, 8] > 0) # major power 
 
 gamma.melt <- melt(ml.model.sum$gamma)
 
 # Plot density of the coefficients
-ggplot(gamma.melt, aes(x=value,  fill = Var2)) +
+ggplot(gamma.melt, aes(x=value,  fill = Var.2)) +
   geom_density(alpha=0.25) +
   ggtitle("Posterior Distribution of State-Level Covariates")
 
 
 # summarize posterior intervals
-gamma.summary <- summary(ml.model, pars = c("gamma", "sigma_state", "alpha"), probs = c(0.05, 0.95))$summary
+gamma.summary <- summary(ml.model, pars = c("gamma", "sigma_state", "alpha_cap[1]", "alpha_cap[2]"),
+                         probs = c(0.05, 0.95))$summary
 gamma.summary <- gamma.summary[, -2]
 rownames(gamma.summary) <- c("Wartime", "Civil War", "Rival Mil. Expenditure", 
-                            "ln(GDP)", "Polity", "Cold War", "Disputes", "Major Power",
-                            "Sigma State", "Constant")
+                            "ln(GDP)", "Polity", "Cold War", "Disputes",
+                            "Sigma State", "Intercept: Non-Major", "Intercept: Major")
 print(gamma.summary)
 xtable(gamma.summary)
 
@@ -211,13 +299,14 @@ positive.check <- function(x){
   mean(x > 0)
 }
 
-beta.probs <- apply(ml.model.sum$beta, 2, positive.check)
+beta.probs.min <- apply(ml.model.sum$beta[, 1, ], 2, positive.check)
+beta.probs.maj <- apply(ml.model.sum$beta[, 2, ], 2, positive.check)
 gamma.probs <- apply(ml.model.sum$gamma, 2, positive.check)
 
 # append in a dataframe to be used for plotting
 coef.probs <- as.data.frame(append(beta.probs, gamma.probs))
 colnames(coef.probs) <- c("Posterior Probability of Positive Coefficient")
-rownames(coef.probs) <- c("Alliance Model Constant", "Latent Str.", 
+rownames(coef.probs) <- c("Alliance Model Constant", "Latent Scope", 
                             "Number Members","Democratic Membership", 
                           "Wartime", "Asymmetric",
                           "US Member", "USSR Member",
@@ -235,161 +324,151 @@ ggsave("figures/post-prob.png", height = 6, width = 8)
 
 
 
-# Calculate substantive impact of an unconditional military support
-# LRM = beta / (1 - alpha), where alpha is the coef on the lagged DV
-lrm.uncond <- ml.model.sum$beta[, 2] / (1 - ml.model.sum$gamma[, 1])
-summary(lrm.uncond)
 
-positive.check(lrm.uncond)
-
-lrm.dem <- ml.model.sum$gamma[, 6] / (1 - ml.model.sum$gamma[, 1])
-summary(lrm.dem)
-mean(lrm.dem < 0)
-mean(lrm.uncond > lrm.dem)
 
 
 
 #### Plots lambdas
-## Extract lambdas from fit and combine with covariates
-lambda_means <- get_posterior_mean(ml.model, pars = "lambda")
-lambda_df <- data_frame(lambda = lambda_means[, 5]) %>%  # add lambdas to df
-  bind_cols(filter(alliance.char, atopid %in% colnames(state.mem.mat)))
-                                              
-                                                                                           
-## Violin plot for lambdas
-ggplot(lambda_df, aes(x = latent.str.mean, y = lambda)) +
-#  geom_violin() +  # add violin
-  geom_point(position = position_jitter(width = 0.1),  # jitter points to prevent overlap
-             alpha = 0.5,  # somewhat trasparent
-             aes(size = num.mem)) +  # make size and shape corresponde to number of members
-  ggtitle("Distribution of Mean Predicted Alliance Coefficients by Alliance Strength and Size") +
-  theme_classic()
-ggsave("figures/lambda-box.png", height = 6, width = 8)
+# compare trends in lambdas across treaty scope in major and minor
+
+## Start with major powers
+lambda.means.maj <- get_posterior_mean(ml.model, pars = "lambda_maj")
+lambda.df.maj <- data_frame(lambda = lambda.means.maj[, 5]) %>%  # add lambdas to df
+  bind_cols(filter(reg.all.data, atopid %in% colnames(state.mem.maj)))
+cor.test(lambda.df.maj$lambda, lambda.df.maj$latent.scope.mean,
+         alternative = "less", method = "spearman")
 
 
-# Plot mean lambdas against latent measure of treaty strength
-ggplot(lambda_df, aes(x = latent.str.mean, y = lambda)) +
-      geom_point() + 
-      geom_smooth() + theme_classic()
+# plot major powers
+lambda.scope.maj <- ggplot(lambda.df.maj, aes(x = latent.scope.mean, y = lambda)) +
+  geom_point() +
+  geom_smooth(method = "lm") + theme_classic() +
+  labs(x = "Latent Treaty Scope", y = "Effect of Allied Spending") +
+  ggtitle("Major Powers")
+lambda.scope.maj
 
-# Use random forest to assess variable importance
-rf <- cforest(lambda ~ ., data = lambda_df)  # fit forest
-vi <- varimp(rf)  # calculate variable importance
-vi_df <- data_frame(var_name = names(vi), importance = vi) %>%  # put importance in a df
+
+# Use random forest to assess variable importance: major powers
+rf.maj <- cforest(lambda ~ ., data = lambda.df.maj)  # fit forest
+vi.maj <- varimp(rf.maj)  # calculate variable importance
+vi.df.maj <- data_frame(var_name = names(vi.maj), importance = vi.maj) %>%  # put importance in a df
   mutate(var_name = reorder(var_name, importance))  # order factor var_name by importance
 
 # Plot importance
-ggplot(vi_df, aes(x = var_name, y = importance)) + 
+ggplot(vi.df.maj, aes(x = var_name, y = importance)) + 
   geom_col() + 
   coord_flip() +
-  ggtitle("Importance of Alliance Covariates from a Random Forest Model")
-ggsave("figures/varimp.png", height = 6, width = 8)
+  ggtitle("Importance of Alliance Covariates from a Random Forest Model: Major Powers")
+ggsave("figures/varimp-maj.png", height = 6, width = 8)
 
 
 
+## Non-major powers
+lambda.means.min <- get_posterior_mean(ml.model, pars = "lambda_min")
+lambda.df.min <- data_frame(lambda = lambda.means.min[, 5]) %>%  # add lambdas to df
+  bind_cols(filter(reg.all.data, atopid %in% colnames(state.mem.min)))
+cor.test(lambda.df.min$lambda, lambda.df.min$latent.scope.mean, 
+         alternative = "greater", method = "spearman")
 
-## Violin plot for lambdas, broken down by military aid
-ggplot(lambda_df, aes(x = as.factor(milaid.rc), y = lambda)) +
-  geom_violin() +
-  geom_point(position = position_jitter(width = 0.1),  # jitter points to prevent overlap
-             alpha = 0.5,  # somewhat trasparent
-             aes(size = num.mem))  +  # make size and shape corresponde to number of members
-  ggtitle("Distribution of Mean Predicted Alliance Coefficients by Military Aid and Size") +
-  theme_classic()
-
-## plot for lambdas, broken down by wartime
-ggplot(lambda_df, aes(x = as.factor(wartime), y = lambda)) +
-  geom_violin() +
-  geom_point(position = position_jitter(width = 0.1),  # jitter points to prevent overlap
-             alpha = 0.5,  # somewhat trasparent
-             aes(size = num.mem)) +  # make size and shape corresponde to number of members
-  ggtitle("Distribution of Mean Predicted Alliance Coefficients by Wartime and Size")
-
-## plot for lambdas, broken down by instititutionalization
-ggplot(lambda_df, aes(x = as.factor(organ1), y = lambda)) +
-  geom_violin() +
-  geom_point(position = position_jitter(width = 0.1),  # jitter points to prevent overlap
-             alpha = 0.5,  # somewhat trasparent
-             aes(size = num.mem)) +  # make size and shape corresponde to number of members
-  ggtitle("Distribution of Mean Predicted Alliance Coefficients by Alliance Institutionalization and Size")
+# plot non-major powers
+lambda.scope.min <- ggplot(lambda.df.min, aes(x = latent.scope.mean, y = lambda)) +
+  geom_point() +
+  geom_smooth(method = "lm") + theme_classic() +
+  labs(x = "Latent Treaty Scope", y = "Effect of Allied Spending") +
+  ggtitle("Non-Major Powers")
+lambda.scope.min
+                                              
 
 
+# Use random forest to assess variable importance
+rf.min <- cforest(lambda ~ ., data = lambda.df.min)  # fit forest
+vi.min <- varimp(rf.min)  # calculate variable importance
+vi.df.min <- data_frame(var_name = names(vi.min), importance = vi.min) %>%  # put importance in a df
+  mutate(var_name = reorder(var_name, importance))  # order factor var_name by importance
 
-## plot for lambdas, broken down by asymmetric obligations and size
-ggplot(lambda_df, aes(x = as.factor(asymm), y = lambda)) +
-  geom_violin() +
-  geom_point(position = position_jitter(width = 0.1),  # jitter points to prevent overlap
-             alpha = 0.5,  # somewhat trasparent
-             aes(size = num.mem)) +  # make size and shape corresponde to number of members
-  ggtitle("Distribution of Mean Predicted Alliance Coefficients by Asymmetric Obligations and Size")
+# Plot importance
+ggplot(vi.df.min, aes(x = var_name, y = importance)) + 
+  geom_col() + 
+  coord_flip() +
+  ggtitle("Importance of Alliance Covariates from a Random Forest Model: Non-Major Powers")
+ggsave("figures/varimp-min.png", height = 6, width = 8)
 
 
 
-### Summarize the distribution of the estimated lambdas
-# General density plot of the means
-ggplot(lambda_df, aes(x = lambda)) + geom_density() + ggtitle("Density of Posterior Means for all Alliance Coefficients")
 
 # Check how many lambda parameters can be reliably distinguished from zero:
-lambda.probs <- apply(ml.model.sum$lambda, 2, positive.check)
-lambda.probs <- cbind.data.frame(reg.all.data$atopid, round(lambda_df$lambda, digits = 4), lambda_df$latent.str.mean, lambda.probs)
-colnames(lambda.probs) <- c("atopid", "lambda.mean", "latent.str.mean", "pos.post.prob")
+lambda.probs.maj <- apply(ml.model.sum$lambda_maj, 2, positive.check)
+lambda.probs.maj <- cbind.data.frame(colnames(state.mem.maj), round(lambda.df.maj$lambda, digits = 4), lambda.df.maj$latent.scope.mean, lambda.probs.maj)
+colnames(lambda.probs.maj) <- c("atopid", "lambda.mean", "latent.scope.mean", "pos.post.prob")
 # binary indicator if posterior probability is greater than 90% for positive or negative
-lambda.probs$non.zero <- ifelse(lambda.probs$pos.post.prob >= .90 | lambda.probs$pos.post.prob <= .10, 1, 0)
-sum(lambda.probs$non.zero) # total number of non-zero alliances
+lambda.probs.maj$non.zero <- ifelse(lambda.probs.maj$pos.post.prob >= .90 | lambda.probs.maj$pos.post.prob <= .10, 1, 0)
+sum(lambda.probs.maj$non.zero) # total number of non-zero alliances
 
 # Plot posterior probabilities
-lambda.probs$atopid <- reorder(lambda.probs$atopid, lambda.probs$pos.post.prob)
+lambda.probs.maj$atopid <- reorder(lambda.probs.maj$atopid, lambda.probs.maj$pos.post.prob)
 
 # For all alliances
-ggplot(lambda.probs, aes(x = atopid, y = pos.post.prob, fill = latent.str.mean)) + 
+ggplot(lambda.probs.maj, aes(x = atopid, y = pos.post.prob, fill = latent.scope.mean)) + 
   geom_col() +
   coord_flip()
 
 # For non-zero alliances 
-lambda.probs %>% 
+lambda.probs.maj %>% 
   filter(non.zero == 1) %>% 
-  ggplot(mapping = aes(x = atopid, y = pos.post.prob, latent.str.mean)) + 
+  ggplot(mapping = aes(x = atopid, y = pos.post.prob, fill = latent.scope.mean)) + 
   geom_col() +
-  scale_fill_brewer(palette = "Greys") +
+  scale_fill_continuous(type = "viridis") +
   geom_text(aes(label = pos.post.prob), nudge_y = .04) +
   coord_flip()
-  
-# Plot the lambda means, coloring by type
-lambda.probs$atopid <- reorder(lambda.probs$atopid, lambda.probs$lambda.mean)
-ggplot(lambda.probs, aes(x = atopid, y = lambda.mean, fill = latent.str.mean)) + 
-  geom_col() 
+ggsave("figures/non-zero-alliances-min.png", height = 6, width = 8)
 
+
+
+
+
+# Check how many lambda parameters can be reliably distinguished from zero:
+lambda.probs.min <- apply(ml.model.sum$lambda_min, 2, positive.check)
+lambda.probs.min <- cbind.data.frame(colnames(state.mem.min), round(lambda.df.min$lambda, digits = 4), lambda.df.min$latent.scope.mean, lambda.probs.min)
+colnames(lambda.probs.min) <- c("atopid", "lambda.mean", "latent.scope.mean", "pos.post.prob")
+# binary indicator if posterior probability is greater than 90% for positive or negative
+lambda.probs.min$non.zero <- ifelse(lambda.probs.min$pos.post.prob >= .90 | lambda.probs.min$pos.post.prob <= .10, 1, 0)
+sum(lambda.probs.min$non.zero) # total number of non-zero alliances
+
+# Plot posterior probabilities
+lambda.probs.min$atopid <- reorder(lambda.probs.min$atopid, lambda.probs.min$pos.post.prob)
+
+# For all alliances
+ggplot(lambda.probs.min, aes(x = atopid, y = pos.post.prob, fill = latent.scope.mean)) + 
+  geom_col() +
+  coord_flip()
 
 # For non-zero alliances 
-lambda.probs %>% 
+lambda.probs.min %>% 
   filter(non.zero == 1) %>% 
-  ggplot(mapping = aes(x = atopid, y = lambda.mean, fill = latent.str.mean)) + 
+  ggplot(mapping = aes(x = atopid, y = pos.post.prob, fill = latent.scope.mean)) + 
   geom_col() +
-  scale_fill_brewer(palette = "Greys") +
-  geom_text(aes(label = lambda.mean), nudge_y = 0.01, size = 4) +
-  labs(y = "Posterior Mean of Alliance Parameter") +
-  coord_flip() + theme_classic()
-ggsave("figures/non-zero alliances.png", height = 6, width = 8)
+  scale_fill_continuous(type = "viridis") +
+  geom_text(aes(label = pos.post.prob), nudge_y = .04) +
+  coord_flip()
+ggsave("figures/non-zero-alliances-min.png", height = 6, width = 8)
 
 
 
 
 ### 
-# Plot posterior densities of variance parameters
-sigma.df <- cbind(ml.model.sum$sigma_year, ml.model.sum$sigma_state, ml.model.sum$sigma_all)
-colnames(sigma.df) <- c("sigma.year", "sigma.state", "sigma.all")
+# Plot posterior densities of variance parameters, expect for capability
+sigma.df <- cbind(ml.model.sum$sigma_year, ml.model.sum$sigma_state, ml.model.sum$sigma_all_min, 
+                  ml.model.sum$sigma_all_maj)
+colnames(sigma.df) <- c("sigma.year", "sigma.state", "sigma.all.min", "sigma.all.maj")
 sigma.df <- as.data.frame(sigma.df)
 
 ggplot(sigma.df, aes(x = sigma.year)) + geom_density() + ggtitle("Posterior Density of Year Variance Parameter")
 ggplot(sigma.df, aes(x = sigma.state)) + geom_density() + ggtitle("Posterior Density of State Variance Parameter")
-ggplot(sigma.df, aes(x = sigma.all)) + geom_density() + ggtitle("Posterior Density of Alliance Variance Parameter")
+ggplot(sigma.df, aes(x = sigma.all.min)) + geom_density() + ggtitle("Posterior Density of Alliance Variance Parameter: Non-Major Powers")
+ggplot(sigma.df, aes(x = sigma.all.maj)) + geom_density() + ggtitle("Posterior Density of Alliance Variance Parameter: Major Powers")
 
-# check the extent of overlap
-mean(sigma.df$sigma.state > sigma.df$sigma.all)
-mean(sigma.df$sigma.year > sigma.df$sigma.all)
-mean(sigma.df$sigma.year > sigma.df$sigma.state)
 
-# plot all three variance parameters together
+# plot all variance parameters together
 sigma.df.melt <- melt(sigma.df) 
 
 ggplot(sigma.df.melt, aes(x = value, fill = variable)) + geom_density() +
@@ -399,27 +478,44 @@ ggsave("figures/variance-hyperparam-plot.png", height = 6, width = 8)
 
 rm(list = c("sigma.df", "sigma.df.melt"))
 
-# Calculate the R^2 of the alliance level model
-theta_means <- get_posterior_mean(ml.model, pars = "theta")
-1 - (mean(ml.model.sum$sigma_all)^2 / var(theta_means[, 5]))
+# Calculate the R^2 of the alliance level model: really odd answers
+# non-major 
+theta.means.min <- get_posterior_mean(ml.model, pars = "theta_min")
+1 - (mean(ml.model.sum$sigma_all_min)^2 / var(theta.means.min[, 5]))
+# Major 
+theta.means.maj <- get_posterior_mean(ml.model, pars = "theta_maj")
+1 - (mean(ml.model.sum$sigma_all_maj)^2 / var(theta.means.maj[, 5]))
 
-# Calculate the R^2 of the state level model
-yhat_means <- get_posterior_mean(ml.model, pars = "y_hat")
-1 - (mean(ml.model.sum$sigma)^2 / var(yhat_means[, 5]))
 
-###
-# Check what types of alliances the US and Russia are part of in the estimation sample
-filter(reg.all.data, us.mem == 1) %>%
-  summarize(
-    us.uncond = mean(latent.str.mean, na.rm = TRUE)
-  )
-summary(subset(reg.all.data, us.mem == 1)$latent.str.mean)
 
-filter(reg.all.data, ussr.mem == 1) %>%
-  summarize(
-    russ.uncond = mean(latent.str.mean, na.rm = TRUE)
-  )
-summary(subset(reg.all.data, ussr.mem == 1)$latent.str.mean)
+# matrix multiplication of membership matrix by mean lambda 
+agg.all.maj  <- state.mem.maj%*%lambda.means.maj[, 5]
+
+summary(agg.all.maj)
+agg.all.maj <- cbind.data.frame(reg.state.comp.maj$ccode,
+                     reg.state.comp.maj$year, agg.all.maj)
+colnames(agg.all.maj) <- c("ccode", "year", "agg.all.impact")
+
+ggplot(agg.all.maj, aes(x = agg.all.impact)) + geom_histogram()
+
+# matrix multiplication of membership matrix by mean lambda 
+agg.all.min  <- state.mem.min%*%lambda.means.min[, 5]
+
+summary(agg.all.min)
+agg.all.min <- cbind.data.frame(reg.state.comp.min$ccode,
+                     reg.state.comp.min$year, agg.all.min)
+colnames(agg.all.min) <- c("ccode", "year", "agg.all.impact")
+
+ggplot(agg.all.min, aes(x = agg.all.impact)) + geom_histogram()
+
+
+
+
+
+# Remove stan object from workspace- save separately to conserve memory
+saveRDS(ml.model, "ml.model.rds")
+rm(ml.model)
+
 
 
 # summarize session info

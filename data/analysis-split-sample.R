@@ -38,14 +38,6 @@ set.seed(12)
 
 
 # Create the matrix of alliance-level variables
-# Make the alliance characteristics data match the membership matrix
-reg.all.data.maj <- filter(alliance.char, atopid %in% colnames(state.mem.maj)) %>%
-  select(atopid, latent.scope.mean, num.mem, low.kap.sc,
-         avg.democ, wartime, asymm, us.mem, ussr.mem)
-
-
-# Remove two alliances where non-major members are not in COW system: ATOPID 1118 and 1320
-reg.all.data.maj <- reg.all.data.maj[complete.cases(reg.all.data.maj), ]
 state.mem.maj <- state.mem.maj[, colnames(state.mem.maj) %in% reg.all.data.maj$atopid]
 
 
@@ -64,9 +56,18 @@ reg.state.mat.maj <- as.matrix(reg.state.comp.maj[, 4:10])
 
 # State membership in alliances
 # pull the alliance-level regressors into a matrix
-alliance.reg.mat.maj <- as.matrix(reg.all.data.maj[, 2: ncol(reg.all.data.maj)])
+reg.all.data.maj <- filter(alliance.char, atopid %in% colnames(state.mem.maj)) %>%
+  select(atopid, latent.scope.mean, num.mem, low.kap.sc,
+         avg.democ, wartime, asymm, asymm.cap)
+
+
+# Filter out alliance with missing FPsim
+reg.all.data.maj <- reg.all.data.maj[complete.cases(reg.all.data.maj), ] 
+state.mem.maj <- state.mem.maj[, colnames(state.mem.maj) %in% reg.all.data.maj$atopid]
+
 
 # Add a constant to the alliance-level regression 
+alliance.reg.mat.maj <- as.matrix(reg.all.data.maj[, 2: ncol(reg.all.data.maj)])
 cons.maj <- rep(1, length = nrow(alliance.reg.mat.maj))
 alliance.reg.mat.maj <- cbind(cons.maj, alliance.reg.mat.maj)
 
@@ -109,19 +110,6 @@ ggsave("appendix/trace-all-maj.png", height = 6, width = 8)
 
 ### Now move to non-major powers
 
-
-# Create the matrix of alliance-level variables
-# Make the alliance characteristics data match the membership matrix
-reg.all.data.min <- filter(alliance.char, atopid %in% colnames(state.mem.min)) %>%
-  select(atopid, latent.scope.mean, num.mem, low.kap.sc, 
-         avg.democ, wartime, asymm, us.mem, ussr.mem)
-
-
-# Remove two alliances where members are not in COW system: no kappa 
-reg.all.data.min <- reg.all.data.min[complete.cases(reg.all.data.min), ]
-state.mem.min <- state.mem.min[, colnames(state.mem.min) %in% reg.all.data.min$atopid]
-
-
 # create a state index variable
 reg.state.comp.min$state.id <- reg.state.comp.min %>% group_indices(ccode)
 # Create a year index variable 
@@ -129,18 +117,26 @@ reg.state.comp.min$year.id <- reg.state.comp.min %>% group_indices(year)
 
 
 
-
 ### transform data into matrices for STAN
-# State-level characeristics
-reg.state.mat.min <- as.matrix(reg.state.comp.min[, 4:10])
-
-# State membership in alliances
+# alliance regressors 
 # pull the alliance-level regressors into a matrix
-alliance.reg.mat.min <- as.matrix(reg.all.data.min[, 2: ncol(reg.all.data.min)])
+reg.all.data.min <- filter(alliance.char, atopid %in% colnames(state.mem.min)) %>%
+  select(atopid, latent.scope.mean, num.mem, low.kap.sc,
+         avg.democ, wartime, asymm, asymm.cap)
+
+# Filter out alliance with missing FPsim
+reg.all.data.min <- reg.all.data.min[complete.cases(reg.all.data.min), ] 
+state.mem.min <- state.mem.min[, colnames(state.mem.min) %in% reg.all.data.min$atopid]
+
 
 # Add a constant to the alliance-level regression 
+alliance.reg.mat.min <- as.matrix(reg.all.data.min[, 2: ncol(reg.all.data.min)])
 cons.min <- rep(1, length = nrow(alliance.reg.mat.min))
 alliance.reg.mat.min <- cbind(cons.min, alliance.reg.mat.min)
+
+
+# State-level characeristics
+reg.state.mat.min <- as.matrix(reg.state.comp.min[, 4:10])
 
 
 # run model on the full sample
@@ -233,7 +229,7 @@ colnames(coef.min$gamma) <- colnames(reg.state.mat.min)
 mean(coef.maj$beta[, 2] < 0) # latent scope: major
 mean(coef.min$beta[, 2] > 0) # latent scope: non-major
 
-# Create a nice comparison plot: secret weapon 
+# Create a nice comparison plot: secret weapon
 scope.dens <- cbind(coef.maj$beta[, 2], coef.min$beta[, 2])
 colnames(scope.dens) <- c("Major", "Non-Major")
 scope.dens <- melt(scope.dens)
@@ -243,7 +239,7 @@ ggplot(scope.dens, aes(x = value,  fill = X2)) +
   scale_fill_manual(name = "Sample", values=c("#999999", "#000000")) +
   ggtitle("Posterior Distributions of Treaty Scope: Major and Non-Major Powers") +
   theme_classic()
-ggsave("figures/scope-dens.png", height = 6, width = 8)
+ggsave("figures/scope-dens-split.png", height = 6, width = 8)
 
 
 

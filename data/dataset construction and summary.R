@@ -516,6 +516,7 @@ alliance.year <- atop.cow.year %>%
     avg.democ = mean(polity2, na.rm = TRUE),
     total.cap = sum(cinc, na.rm = TRUE),
     total.expend = sum(ln.milex, na.rm = TRUE),
+    total.gdp = sum(ln.gdp),
     num.mem = n()
   )
 
@@ -556,22 +557,23 @@ atop.cow.year$ln.milex[is.na(atop.cow.year$ln.milex)] <- 0
 # Create the dataset
 state.mem.cap <- atop.cow.year %>% 
   filter(defense == 1 | offense == 1) %>%
-  select(atopid, ccode, year, ln.milex) %>% 
+  select(atopid, ccode, year, ln.milex, ln.gdp) %>% 
   left_join(alliance.year) %>%
-  mutate(alliance.contrib = ln.milex / total.expend) %>%
-   mutate( ally.spend = total.expend - ln.milex) %>%
+  mutate(alliance.contrib = ln.milex / total.expend,
+         ally.spend = total.expend - ln.milex,
+         contrib.gdp = ln.gdp / total.gdp) %>%
   distinct(atopid, ccode, year, .keep_all = TRUE) %>%
-  select(ccode, atopid, year, ally.spend, avg.democ, alliance.contrib) 
+  select(ccode, atopid, year, ally.spend, avg.democ, alliance.contrib, contrib.gdp) 
 
 # Replace missing values with zero if atopid = 0 (no alliance)
 state.mem.cap$ally.spend[is.na(state.mem.cap$ally.spend) & state.mem.cap$atopid == 0] <- 0
 state.mem.cap$alliance.contrib[is.na(state.mem.cap$alliance.contrib) & state.mem.cap$atopid == 0] <- 0
 state.mem.cap$avg.democ[is.na(state.mem.cap$avg.democ) & state.mem.cap$atopid == 0] <- 0
-
+state.mem.cap$contrib.gdp[is.na(state.mem.cap$contrib.gdp) & state.mem.cap$atopid == 0] <- 0
 
 # export data to test of public goods theory
 write.csv(state.mem.cap, 
-          "/../Research/Dissertation/public-goods-test/data/state-mem-cap.csv", 
+          "../Dissertation/public-goods-test/data/state-mem-cap.csv", 
           row.names = F)
 
 
@@ -580,7 +582,7 @@ state.ally.year <- left_join(atop.cow.year, state.mem.cap)
 
 # Write to Olson and Zeckhauser reanalysis paper
 write.csv(state.ally.year, 
-          "/../Research/Dissertation/public-goods-test/data/alliance-state-year.csv", 
+          "../Dissertation/public-goods-test/data/alliance-state-year.csv", 
           row.names = F)
 
 
@@ -691,10 +693,26 @@ reg.state.comp$mp.id <- reg.state.comp %>% group_indices(majpower)
 # Make the alliance characteristics data match the membership matrix
 reg.all.data <- filter(alliance.char, atopid %in% colnames(state.mem.mat)) %>%
   select(atopid, latent.scope.mean, num.mem, low.kap.sc,
-         avg.democ, wartime, asymm, asymm.cap)
+         avg.democ, wartime, asymm, us.mem, ussr.mem)
+
+
+# Remove two alliances where members are not in COW system: no kappa 
+reg.all.data <- reg.all.data[complete.cases(reg.all.data), ]
+
+# define non-major power alliance matrix
+cons <- rep(1, nrow(reg.all.data))
+alliance.reg.mat <- cbind(cons, reg.all.data)
+alliance.reg.mat <- as.matrix(alliance.reg.mat)
 
 
 # Remove alliances w/ missing FPsim- one member not in system
 reg.all.data <- reg.all.data[complete.cases(reg.all.data), ] 
 state.mem.mat <- state.mem.mat[, colnames(state.mem.mat) %in% reg.all.data$atopid]
+
+
+###
+# Check what types of alliances the US and Russia are part of in the estimation sample
+summary(subset(reg.all.data, us.mem == 1)$latent.scope.mean)
+summary(subset(reg.all.data, ussr.mem == 1)$latent.scope.mean)
+
 
