@@ -200,7 +200,7 @@ mean(ml.model.sum$beta[, 2, 2] < 0) # major
 # number of members
 mean(ml.model.sum$beta[, 1, 3] > 0) # non-major
 mean(ml.model.sum$beta[, 2, 3] > 0) # major
-# FP disagreement 
+# FP Similarity
 mean(ml.model.sum$beta[, 1, 4] > 0) # non-major
 mean(ml.model.sum$beta[, 2, 4] < 0) # major
 # democratic proportion
@@ -220,9 +220,9 @@ mean(ml.model.sum$beta[, 1, 9] < 0) # non-major
 mean(ml.model.sum$beta[, 2, 9] < 0) # major
 
 
-# this is not going well- need to figure out array indexin
+# Figure out way to combine below intervals 
 dimnames(ml.model.sum$beta)[[3]] <- c("Constant", "Latent Scope", 
-                                      "Number Members", "FP Disagreement",
+                                      "Number Members", "FP Similarity",
                                       "Democratic Membership", 
                                       "Wartime", "Asymmetric",
                                       "US Member", "USSR Member")
@@ -238,11 +238,11 @@ beta.summary <- summary(ml.model, pars = c("beta"),
                         probs = c(0.05, 0.95))$summary
 beta.summary <- beta.summary[, -2]
 rownames(beta.summary) <- c("Constant: Non-Major", "Latent Scope: Non-Major", 
-                            "Number Members: Non-Major", "FP Disagreement: Non-Major",
+                            "Number Members: Non-Major", "FP Similarity: Non-Major",
                             "Democratic Membership: Non-Major", 
                             "Wartime: Non-Major", "Asymmetric: Non-Major",
                             "US Member: Non-Major", "USSR Member: Non-Major", "Constant: Major", "Latent Scope: Major", 
-                            "Number Members: Major", "FP Disagreement: Major",
+                            "Number Members: Major", "FP Similarity: Major",
                             "Democratic Membership: Major", 
                             "Wartime: Major", "Asymmetric: Major",
                             "US Member: Major", "USSR Member: Major")
@@ -401,6 +401,8 @@ ggplot(vi.df.min, aes(x = var_name, y = importance)) +
 ggsave("figures/varimp-min.png", height = 6, width = 8)
 
 
+# Plot major and non-major trends together
+multiplot.ggplot(lambda.scope.maj, lambda.scope.min)
 
 
 # Check how many lambda parameters can be reliably distinguished from zero:
@@ -427,7 +429,7 @@ lambda.probs.maj %>%
   scale_fill_continuous(type = "viridis") +
   geom_text(aes(label = pos.post.prob), nudge_y = .04) +
   coord_flip()
-ggsave("figures/non-zero-alliances-min.png", height = 6, width = 8)
+ggsave("figures/non-zero-alliances-maj.png", height = 6, width = 8)
 
 
 

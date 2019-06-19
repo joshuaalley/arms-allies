@@ -14,8 +14,7 @@
 
 \singlespace
 \title{\textbf{Appendix to Paper: Arms, Alliances and Alliance Treaty Design}}
-\author{Joshua Alley\footnote{Graduate Student,
-Department of Political Science, Texas A\&M University.}}
+\author{Joshua Alley}
 \date{{\normalsize \today}}
 
 \bibliographystyle{apsr}
@@ -54,7 +53,7 @@ $ p(\nu) \sim gamma(2, 0.1)$
 \end{table} 
 
 
-\section{HMC Diagnostics}
+\section{Hamiltonian Monte Carlo Diagnostics}
 
 There were no divergent iterations running 4 chains for 2,000 iterations in either sample. The $\hat{R}$ is less than 1.1 for all parameters in both samples. 
 
@@ -76,18 +75,68 @@ Trace plots in \autoref{fig:trace-all-min} and \autoref{fig:trace-all-maj} indic
 \end{figure}
 
 
+\section{Fake Data Simulation Check}
+
+
+Another way to ensure the hierarchical model generates reasonable estimates is simulating fake data and seeing if the model can recover known parameters. 
+Fake-data simulation is an essential aspect of model checking. 
+This section summarizes results from fitting the multilevel model to fake data.
+
+
+I simulated a dataset of 2000 t-distributed observations with 50 states observed for 200 years and 100 alliances. 
+The outcome has a slightly different scale than the military spending growth variable in the paper, so coefficient values will be different. 
+I then simulated two state and alliance level variables and a sparse matrix of state membership in alliances. 
+Last, I ran the model without evaluating the likelihood, generating a posterior prediction of the outcome based on the fake data.
+
+
+To check whether the model could recover known parameters, I took the 12th draw of the posterior distribution.
+This draw included a simulated outcome for each observation and the associated coefficients. 
+I then fit the multilevel model to this draw of the simulated posterior, and checked whether the credible intervals contained the corresponding parameter values. 
+Credible interval coverage shows whether the model captures the parameter. 
+
+
+The model recovers known parameters with a high degree of accuracy. 
+As shown by \autoref{fig:beta-sim-res}, the two credible intervals of the alliance-level regression include the known values.
+Credible interval coverage for the hyperparameters and $\gamma$ parameters is also acceptable. 
+
+
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.95\textwidth]{beta-sim-res.png}
+	\caption{Posterior distributions of $\beta$ parameters from fitting multilevel model to fake data. The black vertical line marks the known parameter value, and the grey area is the 90\% credible interval.}
+	\label{fig:beta-sim-res}
+\end{figure}
+
+
+ 
+The 100 $\lambda$ parameters are harder to plot, so I offer a descriptive summary here. 
+Among the $\lambda$ parameters, 93 of 100 intervals contain the known $\lambda$ value.
+Given the large number of parameters and smaller sample, this is acceptable accuracy. 
+Even the 7 inaccurate confidence intervals were quite close--- all missed the true parameter by .015 or less.\footnote{Fine margins around these intervals implies that accuracy in coverage of $\lambda$ are very sensitive to simulation variance.}
+
+
+In summary, convergence diagnostics and fake data fitting both suggest that the multilevel model is working well. 
+No convergence diagnostics indicate problems exploring the posterior. 
+Just as importantly, the model can recover known parameters from fake data. 
+The next section provides more detail on results from the major and non-major power samples. 
+
 
 
 \section{Posterior Intervals} 
 
-I do not present tabular summaries of all the alliance-level parameters in the manuscript for parsimony. The next two tables summarize the posteriors of the alliance-level parameters. The use of 90\% credible intervals implies there is a 90\% chance the coefficient is between the 5\% and 95\% values. Because Hypotheses 1 and 2 are directional, I report the positive and negative posterior probabilities in the manuscript.  
+
+I do not present tabular summaries of all the alliance-level parameters in the manuscript for parsimony. 
+The next two tables summarize the posteriors of the alliance-level parameters. 
+Using a 90\% credible intervals implies there is a 90\% chance the coefficient is between the 5\% and 95\% values. 
+Because Hypotheses 1 and 2 are directional, I report the positive and negative posterior probabilities in the manuscript.  
 
 \subsection{Major Powers}
 
 
-\autoref{tab:alliance-level-maj} summarizes the 90\% credible intervals for the alliance parameters in the major power sample, as well as the number of effective samples and $\hat{R}$ for each marginal posterior.\footnote{I report 90\% credible intervals because 95\% interval estimates can be unstable.} $\sigma$ Alliances is the variance hyperparameter for the $\lambda$ estimates. 
-
-The $\hat{R}$ statistics are all close to one, indicating convergence. The number of effective samples is adequate for most parameters. 
+\autoref{tab:alliance-level-maj} summarizes the 90\% credible intervals for the alliance parameters in the major power sample, as well as the number of effective samples and $\hat{R}$ for each marginal posterior.\footnote{I report 90\% credible intervals because 95\% interval estimates can be unstable.} 
+$\sigma$ Alliances is the variance hyperparameter for the $\lambda$ estimates. 
+The $\hat{R}$ statistics are all close to one, indicating convergence. 
+The number of effective samples is adequate for most parameters. 
 
 
 \begin{table}[ht]
@@ -115,7 +164,9 @@ Constant & 0.038 & 0.038 & -0.025 & 0.102 & 3380.954 & 1.000 \\
 
 \subsection{Non-major Powers} 
 
-\autoref{tab:alliance-level-min} summarize the 90\% credible intervals for the alliance-level regression parameters in the non-major power sample. The $\hat{R}$ statistics are all close to one, indicating convergence. The number of effective samples is adequate for all parameters.
+\autoref{tab:alliance-level-min} summarize the 90\% credible intervals for the alliance-level regression parameters in the non-major power sample. 
+The $\hat{R}$ statistics are all close to one, indicating convergence. 
+Again, the number of effective samples is adequate for all parameters.
 
 \begin{table}[ht]
 \centering
@@ -124,7 +175,7 @@ Constant & 0.038 & 0.038 & -0.025 & 0.102 & 3380.954 & 1.000 \\
  & mean & sd & 5\% & 95\% & n\_eff & $\hat{R}$ \\ 
   \hline
 Constant & -0.018 & 0.018 & -0.047 & 0.012 & 2211.374 & 1.000 \\ 
-  Latent Str. & 0.026 & 0.017 & -0.002 & 0.054 & 2191.382 & 1.000 \\ 
+  Latent Scope. & 0.026 & 0.017 & -0.002 & 0.054 & 2191.382 & 1.000 \\ 
   Number Members & 0.000 & 0.001 & -0.001 & 0.001 & 4000.000 & 1.000 \\ 
   Democratic Membership & -0.031 & 0.015 & -0.056 & -0.009 & 3213.621 & 1.000 \\ 
   Wartime & 0.041 & 0.023 & 0.002 & 0.078 & 4000.000 & 1.000 \\ 
@@ -137,6 +188,7 @@ Constant & -0.018 & 0.018 & -0.047 & 0.012 & 2211.374 & 1.000 \\
 \caption{90\% Credible intervals non-major power alliance-level parameters}
 \label{tab:alliance-level-min}
 \end{table}
+
 
 
 \section{Varying Slopes Model}
@@ -231,7 +283,7 @@ Again, the number of effective samples indicates little autocorrelation in the c
   Constant: Non-Major & -0.023 & 0.026 & -0.066 & 0.022 & 4000.000 & 1.000 \\ 
   Latent Scope: Non-Major & 0.025 & 0.017 & -0.003 & 0.051 & 4000.000 & 1.000 \\ 
   Number Members: Non-Major & 0.000 & 0.001 & -0.001 & 0.002 & 4000.000 & 1.000 \\ 
-  FP Disagreement: Non-Major & -0.011 & 0.025 & -0.053 & 0.029 & 4000.000 & 0.999 \\ 
+  FP Similarity: Non-Major & -0.011 & 0.025 & -0.053 & 0.029 & 4000.000 & 0.999 \\ 
   Democratic Membership: Non-Major & -0.002 & 0.001 & -0.005 & -0.000 & 4000.000 & 0.999 \\ 
   Wartime: Non-Major & 0.039 & 0.024 & -0.001 & 0.078 & 4000.000 & 1.000 \\ 
   Asymmetric: Non-Major & -0.030 & 0.022 & -0.066 & 0.007 & 4000.000 & 1.000 \\ 
@@ -240,7 +292,7 @@ Again, the number of effective samples indicates little autocorrelation in the c
   Constant: Major & 0.068 & 0.038 & 0.005 & 0.131 & 4000.000 & 1.002 \\ 
   Latent Scope: Major & -0.037 & 0.025 & -0.078 & 0.003 & 4000.000 & 1.000 \\ 
   Number Members: Major & -0.000 & 0.001 & -0.002 & 0.002 & 4000.000 & 1.000 \\ 
-  FP Disagreement: Major.1 & -0.059 & 0.034 & -0.116 & -0.004 & 4000.000 & 1.001 \\ 
+  FP Similarity: Major.1 & -0.059 & 0.034 & -0.116 & -0.004 & 4000.000 & 1.001 \\ 
   Democratic Membership: Major & -0.001 & 0.002 & -0.004 & 0.002 & 4000.000 & 1.000 \\ 
   Wartime: Major & -0.043 & 0.028 & -0.091 & 0.003 & 4000.000 & 1.000 \\ 
   Asymmetric: Major & 0.022 & 0.023 & -0.015 & 0.061 & 4000.000 & 1.001 \\ 
