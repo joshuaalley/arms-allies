@@ -31,7 +31,7 @@ Department of Political Science, Texas A\&M University.}}
 \section{Priors}
 
 \autoref{tab:priors} summarizes the prior distributions in the multilevel model. 
-All these priors are meant to be weakly informative relative to the scale of the data. 
+All these priors are weakly informative relative to the scale of the data. 
 $\nu$ is the degrees of freedom for the t-distribution, and the gamma prior is the recommended default prior for STAN. 
 
 \begin{table} % Create a table of priors.
@@ -139,8 +139,121 @@ Constant & -0.018 & 0.018 & -0.047 & 0.012 & 2211.374 & 1.000 \\
 \end{table}
 
 
+\section{Varying Slopes Model}
+
+Splitting the sample is a simple way to capture differences between major and non-major powers in the alliance level regression. 
+Estimating varying slopes across major and non-major power observations is another way to express the same distinction. 
+I do not report the varying slopes specification in the paper because it is more complicated and computationally intensive.\footnote{The varying slopes model takes just over 4 days to run on a desktop with 2 cores and 2GB of RAM.}  
+
+
+Letting the $\beta$ and $\lambda$ parameters of the multilevel model vary across major and non-major powers is not a trivial problem. 
+The challenge is that some alliances only have major power members, and others only have non-major power members. 
+As a result, a $2 \times a$ matrix of $\lambda$ parameters where there are two groups of state-year observations and $a$ alliances includes parameters with no underlying variation. 
+Such a model cannot be estimated. 
+
+
+To allow the $\beta$ parameters to vary across groups, I constructed two separate local models, one for major powers, the other for non-major powers. 
+The two models are connected through shared parameters, so they share information.
+This is just an alternative way of expressing a multilevel model \citet[pg. 263]{GelmanHill2007}. 
+
+
+There are three levels to this varying slopes model--- first is major/non-major power status, the second is the alliance level, and the third is state-year observations. 
+My theory does not anticipate differences in state-year factors such as conflict participation, so the local regressions share $\gamma$ parameters as well as state and year varying intercepts. 
+The $\beta$ coefficients in the alliance level regression vary by major or non-major power status. 
+
+
+Formally, I express the varying slopes model as follows. 
+Within each of the $j$ groups of state capability, for $i$ in $1 ... n_j$: 
+\begin{equation}
+y_i \sim student_t(\nu_j, \alpha_j + \alpha^{st} + \alpha^{yr} +\textbf{W}_{i} \gamma  + \textbf{Z}_{ji} \lambda_{j}, \sigma_j) 
+\end{equation} 
+
+Where the alliance participation coefficients lambda are equal to:
+\begin{equation}
+\lambda_{j} \sim N(\theta_{j}, \sigma^{all}_{j})
+\end{equation} 
+and 
+\begin{equation}
+\theta_{j} = \alpha^{all}_{j} + \textbf{X} \beta_j
+\end{equation}
+
+
+I give $\beta_j$ a multivariate normal prior with prior scale $\tau$:
+\begin{equation}
+\beta_j \sim MVN(\mu_{\beta_j}, \Sigma_{\beta}) 
+\end{equation}
+
+ 
+Major powers and non-major powers have different $\beta$ estimates, which come from a common distribution. 
+Each set of $\lambda_j$ parameters has a different number of alliances, so they have separate normal priors. 
+Because the number of alliances varies, I define separate $Z$ matrices for major and non-major powers. 
+
+
+Again, the shared parameters $\gamma$, $\alpha^{st}$ and $\alpha^{yr}$ shares information across groups. 
+I implement this model with non-centered priors for the varying intercepts and $\beta$s, as well as sparse matrix representations of both alliance membership matrices. 
+Results are based on four chains with 2,000 total samples and 1,000 warmup iterations. 
+The inferences from this varying slopes model are comparable to those from the split samples. 
+
+
+\subsection{Varying Slopes Results}
+
+
+In the varying slopes model, the preponderance of evidence matches the predictions of Hypotheses 1 and 2. 
+\autoref{fig:scope-dens-joint} plots the full posterior distributions of the latent scope coefficients among major and non-major powers. 
+There is a 94\% chance that increasing treaty scope lowers the impact of alliance participation on military spending for major powers. 
+Meanwhile, there is a 93\% chance that increasing treaty scope raises the impact of alliance participation on military spending for non-major powers. 
+Approximately 8\% of the posterior mass overlaps between the two distributions. 
+
+
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.95\textwidth]{scope-dens-joint.png}
+	\caption{Posterior Distributions of Latent Scope in for major and non-major powers in a varying slopes model of alliance participation and military spending from 1816 to 2007. 94\% of the major power posterior mass is negative. 93\% of the non-major power posterior mass is positive.}
+	\label{fig:scope-dens-joint}
+\end{figure}
+
+
+Because the varying slopes model shares information across major and non-major power observations, there is less uncertainty in the major power estimates in this model. 
+Varying slopes also shrinks the posterior mean from -0.06 to -0.04, which indicates slightly smaller substantive effect of treaty scope. 
+Even so, the amount of negative posterior mass is similar for major powers in the varying slopes and split samples. 
+
+
+\autoref{tab:vary-slopes-alliance} summarizes the 90\% credible intervals for all the alliance level parameters. 
+Again, the number of effective samples indicates little autocorrelation in the chains and $\hat{R}$ statistics suggest convergence. 
+
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrrrrrr}
+  \hline
+ & mean & sd & 5\% & 95\% & n\_eff & Rhat \\ 
+  \hline
+  Constant: Non-Major & -0.023 & 0.026 & -0.066 & 0.022 & 4000.000 & 1.000 \\ 
+  Latent Scope: Non-Major & 0.025 & 0.017 & -0.003 & 0.051 & 4000.000 & 1.000 \\ 
+  Number Members: Non-Major & 0.000 & 0.001 & -0.001 & 0.002 & 4000.000 & 1.000 \\ 
+  FP Disagreement: Non-Major & -0.011 & 0.025 & -0.053 & 0.029 & 4000.000 & 0.999 \\ 
+  Democratic Membership: Non-Major & -0.002 & 0.001 & -0.005 & -0.000 & 4000.000 & 0.999 \\ 
+  Wartime: Non-Major & 0.039 & 0.024 & -0.001 & 0.078 & 4000.000 & 1.000 \\ 
+  Asymmetric: Non-Major & -0.030 & 0.022 & -0.066 & 0.007 & 4000.000 & 1.000 \\ 
+  US Member: Non-Major & 0.010 & 0.018 & -0.019 & 0.040 & 4000.000 & 1.000 \\ 
+  USSR Member: Non-Major & 0.016 & 0.040 & -0.051 & 0.083 & 4000.000 & 1.000 \\ 
+  Constant: Major & 0.068 & 0.038 & 0.005 & 0.131 & 4000.000 & 1.002 \\ 
+  Latent Scope: Major & -0.037 & 0.025 & -0.078 & 0.003 & 4000.000 & 1.000 \\ 
+  Number Members: Major & -0.000 & 0.001 & -0.002 & 0.002 & 4000.000 & 1.000 \\ 
+  FP Disagreement: Major.1 & -0.059 & 0.034 & -0.116 & -0.004 & 4000.000 & 1.001 \\ 
+  Democratic Membership: Major & -0.001 & 0.002 & -0.004 & 0.002 & 4000.000 & 1.000 \\ 
+  Wartime: Major & -0.043 & 0.028 & -0.091 & 0.003 & 4000.000 & 1.000 \\ 
+  Asymmetric: Major & 0.022 & 0.023 & -0.015 & 0.061 & 4000.000 & 1.001 \\ 
+  US Member: Major & -0.009 & 0.027 & -0.056 & 0.035 & 4000.000 & 1.001 \\ 
+  USSR Member: Major & 0.001 & 0.023 & -0.039 & 0.039 & 4000.000 & 0.999 \\ 
+   \hline
+\end{tabular}
+\caption{90\% Credible intervals of alliance-level parameters in varying slopes model.}
+\label{tab:vary-slopes-alliance}
+\end{table}
+
   
-% \bibliography{../../MasterBibliography} 
+\bibliography{../../MasterBibliography} 
 
 
 

@@ -228,7 +228,9 @@ dimnames(ml.model.sum$beta)[[3]] <- c("Constant", "Latent Scope",
                                       "US Member", "USSR Member")
 dimnames(ml.model.sum$beta)[[2]] <- c("Non-Major", "Major")
 
-mcmc_areas(ml.model.sum$beta, 
+mcmc_intervals(ml.model.sum$beta[, 1, ], 
+               prob = .9)
+mcmc_intervals(ml.model.sum$beta[, 2, ], 
            prob = .9)
 
 # Summarize intervals
@@ -236,7 +238,7 @@ beta.summary <- summary(ml.model, pars = c("beta"),
                         probs = c(0.05, 0.95))$summary
 beta.summary <- beta.summary[, -2]
 rownames(beta.summary) <- c("Constant: Non-Major", "Latent Scope: Non-Major", 
-                            "Number Members: Non-Major", "FP Disagreement: Major",
+                            "Number Members: Non-Major", "FP Disagreement: Non-Major",
                             "Democratic Membership: Non-Major", 
                             "Wartime: Non-Major", "Asymmetric: Non-Major",
                             "US Member: Non-Major", "USSR Member: Non-Major", "Constant: Major", "Latent Scope: Major", 
@@ -259,7 +261,12 @@ ggplot(scope.dens.joint, aes(x = value,  fill = X2)) +
   scale_fill_manual(name = "Sample", values=c("#999999", "#000000")) +
   ggtitle("Posterior Distributions of Treaty Scope: Major and Non-Major Powers") +
   theme_classic()
-ggsave("figures/scope-dens-joint.png", height = 6, width = 8)
+ggsave("appendix/scope-dens-joint.png", height = 6, width = 8)
+
+# Calculate posterior overlap
+beta.overlap <- overlap(list(ml.model.sum$beta[, 1, 2], ml.model.sum$beta[, 2, 2]), nbins = 1000, plot = TRUE)
+beta.overlap$OV
+
 
 
 # Similar calculations for the state-level variables
