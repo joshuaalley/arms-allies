@@ -14,8 +14,8 @@
 
 \singlespace
 \title{\textbf{Appendix to Paper: Arms, Alliances and Alliance Treaty Design}}
-\author{Joshua Alley}
-\date{{\normalsize \today}}
+%\author{Joshua Alley}
+\date{}
 
 \bibliographystyle{apsr}
 
@@ -30,7 +30,7 @@
 \section{Priors}
 
 \autoref{tab:priors} summarizes the prior distributions in the multilevel model. 
-All these priors are weakly informative relative to the scale of the data. 
+All priors are weakly informative relative to the scale of the data. 
 $\nu$ is the degrees of freedom for the t-distribution, and the gamma prior is the recommended default prior for STAN. 
 
 \begin{table} % Create a table of priors.
@@ -55,9 +55,10 @@ $ p(\nu) \sim gamma(2, 0.1)$
 
 \section{Hamiltonian Monte Carlo Diagnostics}
 
-There were no divergent iterations running 4 chains for 2,000 iterations in either sample. The $\hat{R}$ is less than 1.1 for all parameters in both samples. 
-
+There were no divergent iterations in either sample running 4 chains for 2,000 iterations with 1,000 warmup iterations. 
+The $\hat{R}$ is less than 1.1 for all parameters in both samples. 
 Trace plots in \autoref{fig:trace-all-min} and \autoref{fig:trace-all-maj} indicate good mixing of the chains for the alliance-level parameters. 
+Taken together, all of this implies that the chains adequately explored the posterior distribution. 
 
 \begin{figure}[htbp]
 	\centering
@@ -78,26 +79,27 @@ Trace plots in \autoref{fig:trace-all-min} and \autoref{fig:trace-all-maj} indic
 \section{Fake Data Simulation Check}
 
 
-Another way to ensure the hierarchical model generates reasonable estimates is simulating fake data and seeing if the model can recover known parameters. 
+Given the complexity of the model, simulating fake data and seeing if the model can recover known parameters is another way to validate the estimates. 
 Fake-data simulation is an essential aspect of model checking. 
 This section summarizes results from fitting the multilevel model to fake data.
 
 
 I simulated a dataset of 2000 t-distributed observations with 50 states observed for 200 years and 100 alliances. 
-The outcome has a slightly different scale than the military spending growth variable in the paper, so coefficient values will be different. 
+The outcome has a different scale than the military spending growth variable in the paper.
+Thus coefficient values here will not match reported values in the paper.  
 I then simulated two state and alliance level variables and a sparse matrix of state membership in alliances. 
 Last, I ran the model without evaluating the likelihood, generating a posterior prediction of the outcome based on the fake data.
 
 
 To check whether the model could recover known parameters, I took the 12th draw of the posterior distribution.
-This draw included a simulated outcome for each observation and the associated coefficients. 
-I then fit the multilevel model to this draw of the simulated posterior, and checked whether the credible intervals contained the corresponding parameter values. 
-Credible interval coverage shows whether the model captures the parameter. 
+This draw included a simulated outcome for each observation and a set of coefficients. 
+I then fit the multilevel model on the simulated outcome values and checked whether the credible intervals contained the corresponding parameter values. 
+If a parameter is within the 90\% credible interval, the model captures it. 
 
 
 The model recovers known parameters with a high degree of accuracy. 
 As shown by \autoref{fig:beta-sim-res}, the two credible intervals of the alliance-level regression include the known values.
-Credible interval coverage for the hyperparameters and $\gamma$ parameters is also acceptable. 
+Credible interval coverage for the variance hyperparameters and $\gamma$ parameters is also acceptable. 
 
 
 \begin{figure}[htbp]
@@ -112,7 +114,7 @@ Credible interval coverage for the hyperparameters and $\gamma$ parameters is al
 The 100 $\lambda$ parameters are harder to plot, so I offer a descriptive summary here. 
 Among the $\lambda$ parameters, 93 of 100 intervals contain the known $\lambda$ value.
 Given the large number of parameters and smaller sample, this is acceptable accuracy. 
-Even the 7 inaccurate confidence intervals were quite close--- all missed the true parameter by .015 or less.\footnote{Fine margins around these intervals implies that accuracy in coverage of $\lambda$ are very sensitive to simulation variance.}
+Even the seven inaccurate confidence intervals were quite close--- all were within .015 of the known parameter.\footnote{Fine margins around these intervals implies that the exact number of accurate $\lambda$ intervals is very sensitive to simulation variance.}
 
 
 In summary, convergence diagnostics and fake data fitting both suggest that the multilevel model is working well. 
@@ -125,10 +127,11 @@ The next section provides more detail on results from the major and non-major po
 \section{Posterior Intervals} 
 
 
-I do not present tabular summaries of all the alliance-level parameters in the manuscript for parsimony. 
+I do not present tabular summaries of all the alliance-level parameters in the manuscript. 
 The next two tables summarize the posteriors of the alliance-level parameters. 
 Using a 90\% credible intervals implies there is a 90\% chance the coefficient is between the 5\% and 95\% values. 
 Because Hypotheses 1 and 2 are directional, I report the positive and negative posterior probabilities in the manuscript.  
+Like a one-tailed hypothesis test, the positive and negative posterior probabilities match the hypotheses better. 
 
 \subsection{Major Powers}
 
@@ -143,7 +146,7 @@ The number of effective samples is adequate for most parameters.
 \centering
 \begin{tabular}{rrrrrrr}
   \hline
- & mean & S.D. & 5\% & 95\% & n\_eff & $\hat{R}$ \\ 
+ & Mean & S.D. & 5\% & 95\% & Num. Eff. & $\hat{R}$ \\ 
   \hline
 Constant & 0.038 & 0.038 & -0.025 & 0.102 & 3380.954 & 1.000 \\ 
   Latent Str. & -0.054 & 0.031 & -0.107 & -0.005 & 3278.923 & 1.000 \\ 
@@ -172,7 +175,7 @@ Again, the number of effective samples is adequate for all parameters.
 \centering
 \begin{tabular}{rrrrrrr}
   \hline
- & mean & sd & 5\% & 95\% & n\_eff & $\hat{R}$ \\ 
+ & Mean & S.D. & 5\% & 95\% & Num. Eff. & $\hat{R}$ \\ 
   \hline
 Constant & -0.018 & 0.018 & -0.047 & 0.012 & 2211.374 & 1.000 \\ 
   Latent Scope. & 0.026 & 0.017 & -0.002 & 0.054 & 2191.382 & 1.000 \\ 
@@ -195,22 +198,22 @@ Constant & -0.018 & 0.018 & -0.047 & 0.012 & 2211.374 & 1.000 \\
 
 Splitting the sample is a simple way to capture differences between major and non-major powers in the alliance level regression. 
 Estimating varying slopes across major and non-major power observations is another way to express the same distinction. 
-I do not report the varying slopes specification in the paper because it is more complicated and computationally intensive.\footnote{The varying slopes model takes just over 4 days to run on a desktop with 2 cores and 2GB of RAM.}  
+I do not report the varying slopes specification in the paper because it is more complicated and computationally intensive.\footnote{The varying slopes model takes over 4 days to run on a desktop with 2 cores and 2GB of RAM.}  
 
 
-Letting the $\beta$ and $\lambda$ parameters of the multilevel model vary across major and non-major powers is not a trivial problem. 
+Letting the $\beta$ and $\lambda$ parameters of the multilevel model vary across major and non-major powers is not trivial. 
 The challenge is that some alliances only have major power members, and others only have non-major power members. 
-As a result, a $2 \times a$ matrix of $\lambda$ parameters where there are two groups of state-year observations and $a$ alliances includes parameters with no underlying variation. 
-Such a model cannot be estimated. 
+As a result, a $2 \times a$ matrix of $\lambda$ parameters where there are major and non-major power groups and $a$ alliances includes $\lambda$ parameters without variation in membership for one of the groups. 
+Without changes in membership within major or non-major powers, those parameters and the model cannot be estimated. 
 
 
-To allow the $\beta$ parameters to vary across groups, I constructed two separate local models, one for major powers, the other for non-major powers. 
-The two models are connected through shared parameters, so they share information.
-This is just an alternative way of expressing a multilevel model \citet[pg. 263]{GelmanHill2007}. 
+To allow the $\beta$ and $\lambda$ parameters to vary across groups, I constructed two separate local models, one for major powers, the other for non-major powers. 
+The local models are connected through shared parameters, so they share information.
+Defining separate local models is an alternative way of expressing a multilevel model \citet[pg. 263]{GelmanHill2007}. 
 
 
 There are three levels to this varying slopes model--- first is major/non-major power status, the second is the alliance level, and the third is state-year observations. 
-My theory does not anticipate differences in state-year factors such as conflict participation, so the local regressions share $\gamma$ parameters as well as state and year varying intercepts. 
+My theory does not articulate differences in state-year factors such as conflict participation, so the local regressions share $\gamma$ parameters as well as state and year varying intercepts. 
 The $\beta$ coefficients in the alliance level regression vary by major or non-major power status. 
 
 
@@ -237,14 +240,14 @@ I give $\beta_j$ a multivariate normal prior with prior scale $\tau$:
 
  
 Major powers and non-major powers have different $\beta$ estimates, which come from a common distribution. 
-Each set of $\lambda_j$ parameters has a different number of alliances, so they have separate normal priors. 
-Because the number of alliances varies, I define separate $Z$ matrices for major and non-major powers. 
+Each set of $\lambda_j$ parameters has a different number of alliances, so they have separate distributions. 
+Because the number of alliances varies, I define separate \textbf{Z} matrices for major and non-major powers. 
 
 
-Again, the shared parameters $\gamma$, $\alpha^{st}$ and $\alpha^{yr}$ shares information across groups. 
+Again, the common parameters $\gamma$, $\alpha^{st}$ and $\alpha^{yr}$ share information across groups. 
 I implement this model with non-centered priors for the varying intercepts and $\beta$s, as well as sparse matrix representations of both alliance membership matrices. 
 Results are based on four chains with 2,000 total samples and 1,000 warmup iterations. 
-The inferences from this varying slopes model are comparable to those from the split samples. 
+Inferences from this varying slopes model are comparable to findings in the split samples. 
 
 
 \subsection{Varying Slopes Results}
@@ -265,8 +268,8 @@ Approximately 8\% of the posterior mass overlaps between the two distributions.
 \end{figure}
 
 
-Because the varying slopes model shares information across major and non-major power observations, there is less uncertainty in the major power estimates in this model. 
-Varying slopes also shrinks the posterior mean from -0.06 to -0.04, which indicates slightly smaller substantive effect of treaty scope. 
+Because the varying slopes model shares information across major and non-major power groups, there is less uncertainty in the major power estimates in this model. 
+Varying slopes also shrinks the major power posterior mean from -0.06 to -0.04, which indicates slightly smaller substantive effect of treaty scope. 
 Even so, the amount of negative posterior mass is similar for major powers in the varying slopes and split samples. 
 
 
@@ -278,7 +281,7 @@ Again, the number of effective samples indicates little autocorrelation in the c
 \centering
 \begin{tabular}{rrrrrrr}
   \hline
- & mean & sd & 5\% & 95\% & n\_eff & Rhat \\ 
+ & Mean & S.D. & 5\% & 95\% & Num. Eff. & $\hat{R}$ \\ 
   \hline
   Constant: Non-Major & -0.023 & 0.026 & -0.066 & 0.022 & 4000.000 & 1.000 \\ 
   Latent Scope: Non-Major & 0.025 & 0.017 & -0.003 & 0.051 & 4000.000 & 1.000 \\ 
