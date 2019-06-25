@@ -716,3 +716,54 @@ summary(subset(reg.all.data, us.mem == 1)$latent.scope.mean)
 summary(subset(reg.all.data, ussr.mem == 1)$latent.scope.mean)
 
 
+
+### transform data into matrices for STAN
+# State-level characeristics
+reg.state.mat <- as.matrix(reg.state.comp[, 4:10])
+
+# check correlations among state-level regressors
+cor(reg.state.mat, method = "pearson")
+
+# Get alliances for major and non-major power members
+state.mem.min <- as.matrix(state.mem.mat[, colnames(state.mem.mat) %in% colnames(state.mem.min)])
+state.mem.maj <- as.matrix(state.mem.mat[, colnames(state.mem.mat) %in% colnames(state.mem.maj)])
+
+
+# Create the matrix of alliance-level variables for major and non-major power groups
+# non-major powers
+# Make the alliance characteristics data match the membership matrix
+reg.all.data.min <- filter(alliance.char, atopid %in% colnames(state.mem.min)) %>%
+  select(latent.scope.mean, num.mem, low.kap.sc, 
+         avg.democ, wartime, asymm, us.mem, ussr.mem)
+
+
+# Remove two alliances where members are not in COW system: no kappa 
+reg.all.data.min <- reg.all.data.min[complete.cases(reg.all.data.min), ]
+
+# define non-major power alliance matrix
+cons <- rep(1, nrow(reg.all.data.min))
+alliance.reg.mat.min <- cbind(cons, reg.all.data.min)
+alliance.reg.mat.min <- as.matrix(alliance.reg.mat.min)
+
+
+# Make the alliance characteristics data match the membership matrix
+reg.all.data.maj <- filter(alliance.char, atopid %in% colnames(state.mem.maj)) %>%
+  select(latent.scope.mean, num.mem, low.kap.sc,
+         avg.democ, wartime, asymm, us.mem, ussr.mem)
+
+
+# Remove two alliances where non-major members are not in COW system: ATOPID 1118 and 1320
+reg.all.data.maj <- reg.all.data.maj[complete.cases(reg.all.data.maj), ]
+
+# define major power alliance matrix 
+cons <- rep(1, nrow(reg.all.data.maj))
+alliance.reg.mat.maj <- cbind(cons, reg.all.data.maj)
+alliance.reg.mat.maj <- as.matrix(alliance.reg.mat.maj)
+
+
+# Create Appropriate id variables in each subsample
+maj.id <- filter(reg.state.comp, majpower == 1) %>% select(state.id, year.id)
+min.id <- filter(reg.state.comp, majpower == 0) %>% select(state.id, year.id)
+
+
+
