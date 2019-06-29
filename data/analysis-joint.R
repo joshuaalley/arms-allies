@@ -258,33 +258,6 @@ positive.check <- function(x){
   mean(x > 0)
 }
 
-beta.probs.min <- apply(ml.model.sum$beta[, 1, ], 2, positive.check)
-beta.probs.maj <- apply(ml.model.sum$beta[, 2, ], 2, positive.check)
-gamma.probs <- apply(ml.model.sum$gamma, 2, positive.check)
-
-# append in a dataframe to be used for plotting
-coef.probs <- as.data.frame(append(beta.probs, gamma.probs))
-colnames(coef.probs) <- c("Posterior Probability of Positive Coefficient")
-rownames(coef.probs) <- c("Alliance Model Constant", "Latent Scope", 
-                            "Number Members","Democratic Membership", 
-                          "Wartime", "Asymmetric",
-                          "US Member", "USSR Member",
-                          "At War", "Civil War", "Rival Mil. Expenditure", 
-                          "ln(GDP)", "Polity", "Cold War", "Disputes", "Major Power")
-coef.probs$variable <- rownames(coef.probs)
-coef.probs$variable <- reorder(coef.probs$variable, coef.probs$`Posterior Probability of Positive Coefficient`)
-  
-# Plot
-ggplot(coef.probs, aes(x = variable, y = `Posterior Probability of Positive Coefficient`)) + 
-  geom_col() +
-  geom_text(aes(label = `Posterior Probability of Positive Coefficient`), nudge_y = .0675) +
-  coord_flip()
-ggsave("figures/post-prob.png", height = 6, width = 8)
-
-
-
-
-
 
 
 #### Plots lambdas

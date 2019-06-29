@@ -593,6 +593,7 @@ write.csv(state.ally.year,
 # not just absent combinations as in the above membership matrix
 summary(state.mem.cap$ally.spend)
 state.mem.cap <- state.mem.cap[complete.cases(state.mem.cap$ally.spend), ]
+ggplot(state.mem.cap, aes(x = ally.spend)) + geom_histogram()
 
 # filter to ensure alliances match: 
 state.mem.cap <- filter(state.mem.cap, atopid %in% alliance.char$atopid)
@@ -600,6 +601,9 @@ state.mem.cap <- filter(state.mem.cap, atopid %in% alliance.char$atopid)
 
 # rescale the ally expenditures variable by two standard deviations
 state.mem.cap$ally.spend <- rescale(state.mem.cap$ally.spend)
+# state.mem.cap$ally.spend <- log(state.mem.cap$ally.spend + 1)
+summary(state.mem.cap$ally.spend)
+ggplot(state.mem.cap, aes(x = ally.spend)) + geom_histogram()
 
 # Create another membership matrix with contribution to the alliance
 state.mem.contrib <- select(state.mem.cap, atopid, ccode, year, alliance.contrib) %>%
@@ -665,19 +669,6 @@ ggplot(reg.state.comp, aes(growth.milex)) + geom_density()
 
 
 
-# Create a matrix of state membership in alliances (Z in STAN model)
-state.mem.mat <- select(reg.state.comp, c(majpower, 12: ncol(reg.state.comp)))
-# Create a major power index variable 
-state.mem.mat$mp.id <- state.mem.mat %>% group_indices(majpower)
-state.mem.mat <- select(state.mem.mat, - c(majpower))
-# Create a row index 
-state.mem.mat$obs <- as.numeric(row.names(state.mem.mat))
-
-# reorder variables in dataframe
-state.mem.mat <- select(state.mem.mat, obs, mp.id, everything())
-
-
-
 # create a state index variable
 reg.state.comp$state.id <- reg.state.comp %>% group_indices(ccode)
 # Create a year index variable 
@@ -689,33 +680,6 @@ reg.state.comp$mp.id <- reg.state.comp %>% group_indices(majpower)
 
 
 
-# Create the matrix of alliance-level variables
-# Make the alliance characteristics data match the membership matrix
-reg.all.data <- filter(alliance.char, atopid %in% colnames(state.mem.mat)) %>%
-  select(atopid, latent.scope.mean, num.mem, low.kap.sc,
-         avg.democ, wartime, asymm, us.mem, ussr.mem)
-
-
-# Remove two alliances where members are not in COW system: no kappa 
-reg.all.data <- reg.all.data[complete.cases(reg.all.data), ]
-
-# define non-major power alliance matrix
-cons <- rep(1, nrow(reg.all.data))
-alliance.reg.mat <- cbind(cons, reg.all.data)
-alliance.reg.mat <- as.matrix(alliance.reg.mat)
-
-
-# Remove alliances w/ missing FPsim- one member not in system
-reg.all.data <- reg.all.data[complete.cases(reg.all.data), ] 
-state.mem.mat <- state.mem.mat[, colnames(state.mem.mat) %in% reg.all.data$atopid]
-
-
-###
-# Check what types of alliances the US and Russia are part of in the estimation sample
-summary(subset(reg.all.data, us.mem == 1)$latent.scope.mean)
-summary(subset(reg.all.data, ussr.mem == 1)$latent.scope.mean)
-
-
 
 ### transform data into matrices for STAN
 # State-level characeristics
@@ -724,21 +688,18 @@ reg.state.mat <- as.matrix(reg.state.comp[, 4:10])
 # check correlations among state-level regressors
 cor(reg.state.mat, method = "pearson")
 
-# Get alliances for major and non-major power members
-state.mem.min <- as.matrix(state.mem.mat[, colnames(state.mem.mat) %in% colnames(state.mem.min)])
-state.mem.maj <- as.matrix(state.mem.mat[, colnames(state.mem.mat) %in% colnames(state.mem.maj)])
-
 
 # Create the matrix of alliance-level variables for major and non-major power groups
 # non-major powers
 # Make the alliance characteristics data match the membership matrix
 reg.all.data.min <- filter(alliance.char, atopid %in% colnames(state.mem.min)) %>%
-  select(latent.scope.mean, num.mem, low.kap.sc, 
-         avg.democ, wartime, asymm, us.mem, ussr.mem)
+  select(atopid, latent.scope.mean, num.mem, low.kap.sc, 
+         avg.democ, wartime, asymm, us.mem, ussr.mem) %>%
+  na.omit
 
+state.mem.min <- state.mem.min[, colnames(state.mem.min) %in% reg.all.data.min$atopid]
 
-# Remove two alliances where members are not in COW system: no kappa 
-reg.all.data.min <- reg.all.data.min[complete.cases(reg.all.data.min), ]
+reg.all.data.min <- select(reg.all.data.min, -c(atopid))
 
 # define non-major power alliance matrix
 cons <- rep(1, nrow(reg.all.data.min))
@@ -748,17 +709,19 @@ alliance.reg.mat.min <- as.matrix(alliance.reg.mat.min)
 
 # Make the alliance characteristics data match the membership matrix
 reg.all.data.maj <- filter(alliance.char, atopid %in% colnames(state.mem.maj)) %>%
-  select(latent.scope.mean, num.mem, low.kap.sc,
-         avg.democ, wartime, asymm, us.mem, ussr.mem)
+  select(atopid, latent.scope.mean, num.mem, low.kap.sc,
+         avg.democ, wartime, asymm, us.mem, ussr.mem) %>%
+  na.omit
 
+state.mem.maj <- state.mem.maj[, colnames(state.mem.maj) %in% reg.all.data.maj$atopid]
 
-# Remove two alliances where non-major members are not in COW system: ATOPID 1118 and 1320
-reg.all.data.maj <- reg.all.data.maj[complete.cases(reg.all.data.maj), ]
+reg.all.data.maj <- select(reg.all.data.maj, -c(atopid))
 
 # define major power alliance matrix 
 cons <- rep(1, nrow(reg.all.data.maj))
 alliance.reg.mat.maj <- cbind(cons, reg.all.data.maj)
 alliance.reg.mat.maj <- as.matrix(alliance.reg.mat.maj)
+
 
 
 # Create Appropriate id variables in each subsample

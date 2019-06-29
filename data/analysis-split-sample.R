@@ -36,40 +36,11 @@ set.seed(12)
 
 ### Start with Major powers
 
-
-# Create the matrix of alliance-level variables
-state.mem.maj <- state.mem.maj[, colnames(state.mem.maj) %in% reg.all.data.maj$atopid]
-
-
-
-
 # create a state index variable
 reg.state.comp.maj$state.id <- reg.state.comp.maj %>% group_indices(ccode)
 # Create a year index variable 
 reg.state.comp.maj$year.id <- reg.state.comp.maj %>% group_indices(year)
 
-
-
-### transform data into matrices for STAN
-# State-level characeristics
-reg.state.mat.maj <- as.matrix(reg.state.comp.maj[, 4:10])
-
-# State membership in alliances
-# pull the alliance-level regressors into a matrix
-reg.all.data.maj <- filter(alliance.char, atopid %in% colnames(state.mem.maj)) %>%
-  select(atopid, latent.scope.mean, num.mem, low.kap.sc,
-         avg.democ, wartime, asymm, asymm.cap)
-
-
-# Filter out alliance with missing FPsim
-reg.all.data.maj <- reg.all.data.maj[complete.cases(reg.all.data.maj), ] 
-state.mem.maj <- state.mem.maj[, colnames(state.mem.maj) %in% reg.all.data.maj$atopid]
-
-
-# Add a constant to the alliance-level regression 
-alliance.reg.mat.maj <- as.matrix(reg.all.data.maj[, 2: ncol(reg.all.data.maj)])
-cons.maj <- rep(1, length = nrow(alliance.reg.mat.maj))
-alliance.reg.mat.maj <- cbind(cons.maj, alliance.reg.mat.maj)
 
 
 # run model on the full sample
@@ -116,31 +87,6 @@ reg.state.comp.min$state.id <- reg.state.comp.min %>% group_indices(ccode)
 reg.state.comp.min$year.id <- reg.state.comp.min %>% group_indices(year)
 
 
-
-### transform data into matrices for STAN
-# alliance regressors 
-# pull the alliance-level regressors into a matrix
-reg.all.data.min <- filter(alliance.char, atopid %in% colnames(state.mem.min)) %>%
-  select(atopid, latent.scope.mean, num.mem, low.kap.sc,
-         avg.democ, wartime, asymm, asymm.cap)
-
-# Filter out alliance with missing FPsim
-reg.all.data.min <- reg.all.data.min[complete.cases(reg.all.data.min), ] 
-state.mem.min <- state.mem.min[, colnames(state.mem.min) %in% reg.all.data.min$atopid]
-
-
-# Add a constant to the alliance-level regression 
-alliance.reg.mat.min <- as.matrix(reg.all.data.min[, 2: ncol(reg.all.data.min)])
-cons.min <- rep(1, length = nrow(alliance.reg.mat.min))
-alliance.reg.mat.min <- cbind(cons.min, alliance.reg.mat.min)
-
-
-# State-level characeristics
-reg.state.mat.min <- as.matrix(reg.state.comp.min[, 4:10])
-
-
-# run model on the full sample
-# Define the data list 
 reg.state.comp.min <- as.data.frame(reg.state.comp.min)
 stan.data.min <- list(N = nrow(reg.state.comp.min), y = reg.state.comp.min[, 3],
                       state = reg.state.comp.min$state.id, S = length(unique(reg.state.comp.min$state.id)),
@@ -204,8 +150,8 @@ print(beta.summary.min)
 
 
 # Create an object with all three estimates and plot (Gelman's Secret Weapon)
-lscoef.summary <- rbind(beta.summary[2, ], beta.summary.maj[2, ], beta.summary.min[2, ])
-row.names(lscoef.summary) <- c("Full Sample", "Major Powers", "Minor Powers")
+lscoef.summary <- rbind(beta.summary.maj[2, ], beta.summary.min[2, ])
+row.names(lscoef.summary) <- c("Major Powers", "Minor Powers")
 lscoef.summary <- as.data.frame(lscoef.summary)
 
 ggplot(lscoef.summary, aes(x = row.names(lscoef.summary), y = mean)) +
@@ -361,7 +307,7 @@ sum.maj.post <- extract(ml.model.maj, pars = c("beta", "gamma", "lambda"),
 
 # Check how many lambda parameters can be reliably distinguished from zero:
 lambda.probs.maj <- apply(sum.maj.post$lambda, 2, positive.check)
-lambda.probs.maj <- cbind.data.frame(reg.all.data.maj$atopid, round(lambda.df.maj$lambda, digits = 4), lambda.df.maj$latent.scope.mean, lambda.probs.maj)
+lambda.probs.maj <- cbind.data.frame(colnames(state.mem.maj), round(lambda.df.maj$lambda, digits = 4), lambda.df.maj$latent.scope.mean, lambda.probs.maj)
 colnames(lambda.probs.maj) <- c("atopid", "lambda.mean", "latent.scope.mean", "pos.post.prob")
 # binary indicator if posterior probability is greater than 90% for positive or negative
 lambda.probs.maj$non.zero <- ifelse(lambda.probs.maj$pos.post.prob >= .90 | lambda.probs.maj$pos.post.prob <= .10, 1, 0)
@@ -394,7 +340,7 @@ sum.min.post <- extract(ml.model.min, pars = c("beta", "gamma", "lambda"),
 
 # Check how many lambda parameters can be reliably distinguished from zero:
 lambda.probs.min <- apply(sum.min.post$lambda, 2, positive.check)
-lambda.probs.min <- cbind.data.frame(reg.all.data.min$atopid, round(lambda.df.min$lambda, digits = 4), lambda.df.min$latent.scope.mean, lambda.probs.min)
+lambda.probs.min <- cbind.data.frame(colnames(state.mem.min), round(lambda.df.min$lambda, digits = 4), lambda.df.min$latent.scope.mean, lambda.probs.min)
 colnames(lambda.probs.min) <- c("atopid", "lambda.mean", "latent.scope.mean", "pos.post.prob")
 # binary indicator if posterior probability is greater than 90% for positive or negative
 lambda.probs.min$non.zero <- ifelse(lambda.probs.min$pos.post.prob >= .90 | lambda.probs.min$pos.post.prob <= .10, 1, 0)
