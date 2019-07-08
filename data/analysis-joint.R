@@ -92,7 +92,7 @@ ppc_dens_overlay(y, vb.model.sum$y_pred[1:100, ])
 rm(list = c("ml.model.vb", "vb.model.sum"))
 
  
-# Regular STAN
+# Regular STAN: takes about 4 days w/ 2 cores. 
 system.time(
   ml.model <- sampling(model.1, data = stan.data, 
                        iter = 2000, warmup = 1000, chains = 4,
@@ -143,8 +143,6 @@ ppc_dens_overlay(y, yrep.full)
 
 
 # Plot all the beta coefficients and calculate posterior probabilities
-# label columns
-colnames(ml.model.sum$beta) <- colnames(alliance.reg.mat)
 
 # latent scope
 mean(ml.model.sum$beta[, 1, 2] > 0) # non-major
@@ -153,7 +151,7 @@ mean(ml.model.sum$beta[, 2, 2] < 0) # major
 mean(ml.model.sum$beta[, 1, 3] > 0) # non-major
 mean(ml.model.sum$beta[, 2, 3] > 0) # major
 # FP Similarity
-mean(ml.model.sum$beta[, 1, 4] > 0) # non-major
+mean(ml.model.sum$beta[, 1, 4] < 0) # non-major
 mean(ml.model.sum$beta[, 2, 4] < 0) # major
 # democratic proportion
 mean(ml.model.sum$beta[, 1, 5] < 0) # non-major
@@ -355,7 +353,6 @@ lambda.probs.maj %>%
   geom_text(aes(label = pos.post.prob), nudge_y = .04) +
   coord_flip()
 ggsave("figures/non-zero-alliances-maj.png", height = 6, width = 8)
-
 
 
 

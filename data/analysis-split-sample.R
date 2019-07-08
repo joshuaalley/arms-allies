@@ -1,6 +1,6 @@
 # Joshua Alley
 # Texas A&M University
-# Analysis of how alliance credibility affects arms decisions: Split Major and minor powers
+# Analysis of how alliance scope affects arms decisions: Split Major and minor powers
 
 # Load packages
 library(here)
@@ -149,7 +149,7 @@ print(beta.summary.min)
 
 
 
-# Create an object with all three estimates and plot (Gelman's Secret Weapon)
+# Create an object with both estimates and plot (Gelman's Secret Weapon)
 lscoef.summary <- rbind(beta.summary.maj[2, ], beta.summary.min[2, ])
 row.names(lscoef.summary) <- c("Major Powers", "Minor Powers")
 lscoef.summary <- as.data.frame(lscoef.summary)

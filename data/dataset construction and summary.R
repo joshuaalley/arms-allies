@@ -601,7 +601,6 @@ state.mem.cap <- filter(state.mem.cap, atopid %in% alliance.char$atopid)
 
 # rescale the ally expenditures variable by two standard deviations
 state.mem.cap$ally.spend <- rescale(state.mem.cap$ally.spend)
-# state.mem.cap$ally.spend <- log(state.mem.cap$ally.spend + 1)
 summary(state.mem.cap$ally.spend)
 ggplot(state.mem.cap, aes(x = ally.spend)) + geom_histogram()
 
@@ -611,15 +610,13 @@ state.mem.contrib <- select(state.mem.cap, atopid, ccode, year, alliance.contrib
                             value = alliance.contrib, fill = 0)
 
 # This dataframe  contains the spending for the alliances states are a member of in a given year
-state.mem.cap <- select(state.mem.cap, atopid, ccode, year, ally.spend) %>%
+state.mem.spread <- select(state.mem.cap, atopid, ccode, year, ally.spend) %>%
   spread(key = atopid, value = ally.spend, fill = 0)
-
 
 
 
 # Combine State and alliance data 
 ########
-
 
 
 # Define a state-year level dataset with no missing observations
@@ -629,7 +626,7 @@ reg.state.data <- state.vars %>%
          cold.war, disputes, majpower) 
 
 # Add state membership in alliances to this data
-reg.state.data <-  left_join(reg.state.data, state.mem.cap) 
+reg.state.data <-  left_join(reg.state.data, state.mem.spread) 
 
 
 # Replace missing alliance values with zero 
