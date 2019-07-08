@@ -42,9 +42,9 @@ ggplot(lambda.summary, aes(x = begyr, y = lambda.mean)) +
 
 # Compare lambdas for alliances with major and minor power members
 lambda.mix.full <- lambda.df.min %>%
-  select(atopid, begyr, lambda, latent.str.mean) %>%
-  left_join(select(lambda.df.maj, atopid, begyr, lambda, latent.str.mean), 
-            by = c("atopid", "begyr", "latent.str.mean")) %>% 
+  select(atopid, begyr, lambda, latent.scope.mean) %>%
+  left_join(select(lambda.df.maj, atopid, begyr, lambda, latent.scope.mean), 
+            by = c("atopid", "begyr", "latent.scope.mean")) %>% 
   rename(
     lambda.min = lambda.x,
     lambda.maj = lambda.y
@@ -59,32 +59,32 @@ ggplot(lambda.mix.full, aes(x = begyr, y = c(lambda))) +
 ggsave("presentation/lambda-est-full.png", height = 6, width = 8)
 
 
-# Plot histogram of mean latent strength
-ggplot(atop.milsup, aes(x = latent.str.mean)) + geom_histogram() +
-  theme_carly_presents() + labs(x = "Mean Latent Strength", y = "Treaties") 
+# Plot histogram of mean latent Scope
+ggplot(atop.milsup, aes(x = latent.scope.mean)) + geom_histogram() +
+  theme_carly_presents() + labs(x = "Mean Latent Scope", y = "Treaties") 
 ggsave("presentation/ls-hist.png", height = 6, width = 8)
 
 # Show UAR
-ggplot(atop.milsup, aes(x = latent.str.mean)) + geom_histogram() +
-  theme_carly_presents() + labs(x = "Mean Latent Strength", y = "Treaties") +
+ggplot(atop.milsup, aes(x = latent.scope.mean)) + geom_histogram() +
+  theme_carly_presents() + labs(x = "Mean Latent Scope", y = "Treaties") +
   geom_vline(xintercept = 1.9969987829, linetype = "dashed", size = 1)  + 
-  geom_text(label="United Arab Rep.", x = 1.9969987829, y = 40, hjust = 1, size = 5)  # UAR
-ggsave("presentation/ls-hist-strong.png", height = 6, width = 8)
+  geom_text(label="United Arab Rep.", x = 1.9969987829, y = 30, hjust = 1, size = 5)  # UAR
+ggsave("presentation/ls-hist-broad.png", height = 6, width = 8)
 
 
 # Show Weak treaty
-ggplot(atop.milsup, aes(x = latent.str.mean)) + geom_histogram() +
-  theme_carly_presents() + labs(x = "Mean Latent Strength", y = "Treaties") +
+ggplot(atop.milsup, aes(x = latent.scope.mean)) + geom_histogram() +
+  theme_carly_presents() + labs(x = "Mean Latent Scope", y = "Treaties") +
   geom_vline(xintercept = -0.017, linetype = "dashed", size = 1)  + 
-  geom_text(label="UK-France 1870", x = -0.017, y = 45, hjust = -0.01, size = 5) # Ukraine-India neutrality and non-aggression
-ggsave("presentation/ls-hist-weak.png", height = 6, width = 8)
+  geom_text(label="UK-France 1870", x = -0.017, y = 35, hjust = -0.01, size = 5) # Ukraine-India neutrality and non-aggression
+ggsave("presentation/ls-hist-narrow.png", height = 6, width = 8)
 
 
 # Show typical treaty
-ggplot(atop.milsup, aes(x = latent.str.mean)) + geom_histogram() +
-  theme_carly_presents() + labs(x = "Mean Latent Strength", y = "Treaties") +
+ggplot(atop.milsup, aes(x = latent.scope.mean)) + geom_histogram() +
+  theme_carly_presents() + labs(x = "Mean Latent Scope", y = "Treaties") +
   geom_vline(xintercept = 0.90289, linetype = "dashed", size = 1)  + 
-  geom_text(label="Crimean War 1854", x = 0.90289, y = 45, hjust = 1, size = 5) # France-Czech consul 1938
+  geom_text(label="Crimean War 1854", x = 0.90289, y = 38, hjust = 1, size = 5) # France-Czech consul 1938
 ggsave("presentation/ls-hist-median.png", height = 6, width = 8)
 
   
@@ -93,7 +93,7 @@ ggsave("presentation/ls-hist-median.png", height = 6, width = 8)
 
 
 # Plot results
-ggplot(str.dens, aes(x = value,  fill = X2)) +
+ggplot(scope.dens, aes(x = value,  fill = X2)) +
   geom_density(alpha = .75) + geom_vline(xintercept = 0, size = 1.5) + 
   scale_fill_brewer(name = "Sample", palette = "Dark2") +
   theme_carly_presents() +
@@ -102,7 +102,7 @@ ggplot(str.dens, aes(x = value,  fill = X2)) +
   annotate("text", x = 0.08, y = 12, 
   label = ".935", size = 8, parse = TRUE) # Note for non-major 
   
-ggsave("presentation/str-post.png", height = 6, width = 8)
+ggsave("presentation/scope-post.png", height = 6, width = 8)
 
  
 #### Plot the Means of the Lambda Parameters
@@ -119,20 +119,20 @@ lambda.probs %>%
 
 
 
-### Plot treaty strength against lambda
+### Plot treaty Scope against lambda
 # non-major powers
-ggplot(lambda.df.min, aes(x = latent.str.mean, y = lambda)) +
+ggplot(lambda.df.min, aes(x = latent.scope.mean, y = lambda)) +
   geom_point() +
   geom_smooth(method = "lm") + 
-  labs(x = "Latent Treaty Strength", y = "Effect of Allied Spending") +
+  labs(x = "Latent Treaty Scope", y = "Alliance Part. Impact") +
   theme_carly_presents()
 ggsave("presentation/ls-lambda-min.png", height = 6, width = 8)
 
 # Major powers 
-ggplot(lambda.df.maj, aes(x = latent.str.mean, y = lambda)) +
+ggplot(lambda.df.maj, aes(x = latent.scope.mean, y = lambda)) +
   geom_point() +
   geom_smooth(method = "lm") + 
-  labs(x = "Latent Treaty Strength", y = "Effect of Allied Spending") +
+  labs(x = "Latent Treaty Scope", y = "Alliance Part. Impact") +
   theme_carly_presents()
 ggsave("presentation/ls-lambda-maj.png", height = 6, width = 8)
 
