@@ -49,7 +49,7 @@
 % Here's my point. 
  \begin{frame}[standout]
 
-How alliance treaty participation affects military spending depends on alliance treaty scope and state capability. 
+How alliance participation affects military spending depends on treaty scope and state capability. 
 
  \end{frame}
 
@@ -127,7 +127,7 @@ Horowitz et al 2017 &  & X & \\
 %------------------------------------------------
  \begin{frame}[standout]
 
-I use alliance treaty scope and state capability to explain some of these differences between alliances. 
+I use treaty scope and state capability to explain some of these differences between alliances. 
 
  \end{frame}
 
@@ -200,6 +200,14 @@ Greater treaty scope generates a tradeoff between:
 \pause
 \item Freedom of action. 
 \end{enumerate}  
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[standout]
+
+The implications of treaty scope depend on state capability. 
 
 \end{frame}
 
@@ -593,7 +601,7 @@ US spent \$36.0 billion on NATO in 2018, or 5.5\% of the total defense spending.
 
 %------------------------------------------------
 
-\begin{frame}{NATO}
+\begin{frame}{Foreign Entanglement and Formal Obligations}
 
 \begin{figure}
 	\centering
@@ -604,6 +612,54 @@ US spent \$36.0 billion on NATO in 2018, or 5.5\% of the total defense spending.
 
 \end{frame}
 
+%------------------------------------------------
+
+\begin{frame}[standout]
+
+\large ``The Parties agree that an armed attack against one or more of them in Europe or North America shall be considered an attack against them all...'' 
+
+ \end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[standout]
+
+\large ``assist the Party or Parties so attacked by taking forthwith, individually and in concert with the other Parties, such action as it deems necessary, including the use of armed force'' 
+
+ \end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[standout]
+
+\huge ``such action as it deems necessary, including the use of armed force'' 
+
+ \end{frame}
+
+%------------------------------------------------
+
+\begin{frame}{NATO Scope} 
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.95\textwidth]{ls-hist-nato.png}
+\end{figure}
+
+
+ \end{frame}
+
+%------------------------------------------------
+
+\begin{frame}{Impact of NATO on Growth in US Military Spending} 
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.95\textwidth]{nato-imp-us.png}
+\end{figure}
+
+\end{frame}
+
+
 %-----------------------------------------------
 
 \section{Conclusion}
@@ -612,7 +668,7 @@ US spent \$36.0 billion on NATO in 2018, or 5.5\% of the total defense spending.
 
 \begin{frame}{Conclusion}
 
-How alliance treaty participation affects military spending depends on state capability and alliance treaty scope.  
+How alliance participation affects military spending depends on state capability and treaty scope.  
 
 \end{frame}
 
@@ -632,13 +688,12 @@ How alliance treaty participation affects military spending depends on state cap
 
 %-----------------------------------------------
 
-\begin{frame}[standout]
+\begin{frame}{Alliance Participation and US Military Spending}
 
 \begin{figure}[htbp]
 	\centering
-		\includegraphics[width=0.95\textwidth]{trump-nato.jpg}
+		\includegraphics[width=0.95\textwidth]{us-agg-imp.png}
 \end{figure}
-
 
 \end{frame}
 
@@ -712,14 +767,50 @@ jkalley14@tamu.edu
 
 \begin{enumerate}
 \item Domestic political economy of military spending. 
-\pause 
 \item Measurement error and missing data. 
-\pause 
 \item Strategic alliance design
 \end{enumerate}
 
 \end{frame}
 
+
+%-----------------------------------------------
+
+\begin{frame}{Spending Growth and the Hypotheses}
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.95\textwidth]{illus-arg.png}
+	\label{fig:illus-arg}
+\end{figure}
+
+
+\end{frame}
+
+
+%-----------------------------------------------
+
+\begin{frame}{Trace plots: Major}
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.95\textwidth]{beta-trace-maj.png}
+\end{figure}
+
+
+\end{frame}
+
+%-----------------------------------------------
+
+\begin{frame}{Trace plots: Non-Major}
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.95\textwidth]{beta-trace-maj.png}
+\end{figure}
+
+
+\end{frame}
 
 
 %------------------------------------------------
@@ -821,6 +912,127 @@ $ p(\nu) \sim gamma(2, 0.1)$
 \item Generalized double Pareto prior for the factor loading--- flexible generalized Laplace distribution with a spike at zero and heavy tails. 
 \end{itemize} 
 
+
+\end{frame}
+
+
+%------------------------------------------------
+
+\begin{frame}{Notable Major Power Alliances}
+
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.95\textwidth]{non-zero-maj.png}
+	\label{fig:non-zero-maj}
+\end{figure}
+
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}{Notable Non-Major Power Alliances}
+
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.95\textwidth]{non-zero-min.png}
+	\label{fig:non-zero-min}
+\end{figure}
+
+
+\end{frame}
+
+
+%------------------------------------------------
+
+\begin{frame}{Non-Major Powers in NATO: Belgium}
+
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.95\textwidth]{bel-agg-imp.png}
+\end{figure}
+
+
+\end{frame}
+
+
+%------------------------------------------------
+
+\begin{frame}{Impact of NATO on Belgium}
+
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.95\textwidth]{bel-nato-imp.png}
+\end{figure}
+
+
+\end{frame}
+
+
+%------------------------------------------------
+
+\begin{frame}{Impact of EU on Belgium}
+
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.95\textwidth]{bel-eu-imp.png}
+\end{figure}
+
+
+\end{frame}
+
+
+
+
+%------------------------------------------------
+
+\begin{frame}{Varying Slopes Model}
+
+Within each of the $j$ groups of state capability, for $i$ in $1 ... n_j$: 
+\begin{equation}
+y_i \sim student_t(\nu_j, \alpha_j + \alpha^{st} + \alpha^{yr} +\textbf{W}_{i} \gamma  + \textbf{Z}_{ji} \lambda_{j}, \sigma_j) 
+\end{equation} 
+
+\begin{equation}
+\lambda_{j} \sim N(\theta_{j}, \sigma^{all}_{j})
+\end{equation} 
+
+\begin{equation}
+\theta_{j} = \alpha^{all}_{j} + \textbf{X} \beta_j
+\end{equation}
+
+I give $\beta_j$ a multivariate normal prior with prior scale $\tau$:
+\begin{equation}
+\beta_j \sim MVN(\mu_{\beta_j}, \Sigma_{\beta}) 
+\end{equation}
+
+\end{frame}
+
+
+%------------------------------------------------
+
+\begin{frame}{Varying Slopes Results: Scope}
+
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.95\textwidth]{var-slopes-scope.png}
+\end{figure}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}{Full Varying Slopes Results}
+
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.95\textwidth]{vs-res-full.png}
+\end{figure}
 
 \end{frame}
 

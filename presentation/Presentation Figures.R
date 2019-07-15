@@ -87,10 +87,16 @@ ggplot(atop.milsup, aes(x = latent.scope.mean)) + geom_histogram() +
   geom_text(label="Crimean War 1854", x = 0.90289, y = 38, hjust = 1, size = 5) # France-Czech consul 1938
 ggsave("presentation/ls-hist-median.png", height = 6, width = 8)
 
+
+# Show typical treaty
+ggplot(atop.milsup, aes(x = latent.scope.mean)) + geom_histogram() +
+  theme_carly_presents() + labs(x = "Mean Latent Scope", y = "Treaties") +
+  geom_vline(xintercept = 0.66128237, linetype = "dashed", size = 1)  + 
+  geom_text(label="NATO", x = 0.66128237, y = 38, hjust = 1, size = 5) # NATO
+ggsave("presentation/ls-hist-nato.png", height = 6, width = 8)
+
   
   
-
-
 
 # Plot results
 ggplot(scope.dens, aes(x = value,  fill = X2)) +
@@ -138,80 +144,148 @@ ggsave("presentation/ls-lambda-maj.png", height = 6, width = 8)
 
 
 
+## Impact of alliances
+# Start with NATO
 
- 
+# plot for the US
+nato.imp.maj.sum %>%
+  filter(ccode == 2 & year >= 1949) %>%
+  ggplot(aes(y = agg.all.impact, x = year)) + 
+  geom_point() + 
+  geom_errorbar(aes(ymax = h.90, ymin = l.05)) +
+  geom_hline(yintercept = 0) +
+  labs(x = "Year", y = "NATO Impact") +
+  theme_carly_presents()
+ggsave("presentation/nato-imp-us.png", height = 6, width = 8)
+
+
+# add a plot of impact of US alliance participation on growth in milex
+agg.all.maj.sum %>%
+  filter(ccode == 2 & year >= 1942) %>%
+  ggplot(aes(y = agg.all.impact, x = year)) + 
+  geom_point() + 
+  geom_errorbar(aes(ymax = h.90, ymin = l.05)) +
+  geom_hline(yintercept = 0) +
+  xlab("Year") + ylab("Agg. Impact") +
+  theme_carly_presents()
+ggsave("presentation/us-agg-imp.png", height = 6, width = 8)
+
+
+
+# for NATO members, much of perceived free-riding may be the result of EU participation
+# not NATO
+# Use Belgium as the example 
+
+# The full picture for Belgium
+ggplot(bel.agg.melt, aes(x = value, y = year, group = year)) + 
+  scale_y_reverse() +
+  geom_vline(xintercept = 0) +
+  geom_density_ridges(rel_min_height = 0.03, scale = 3) + 
+  labs(x = "Aggregate Alliance Impact", y = "Year") +
+  theme_ridges(grid = FALSE, center_axis_labels = TRUE) +
+  xlim(-0.07, 0.05) 
+ggsave("presentation/bel-agg-imp.png", height = 6, width = 8)
+
+# NATO for Belgium
+nato.imp.min.sum %>%
+  filter(ccode == 211 & year >= 1949) %>%
+  ggplot(aes(y = agg.all.impact, x = year)) + 
+  geom_point() + 
+  labs(y = "NATO Impact", x = "Year") +
+  geom_errorbar(aes(ymax = h.90, ymin = l.05)) +
+  geom_hline(yintercept = 0) +
+  theme_carly_presents()
+ggsave("presentation/bel-nato-imp.png", height = 6, width = 8)
+
+# EU for Belgium
+eu.imp.min.sum %>%
+  filter(ccode == 211 & year >= 1992) %>%
+  ggplot(aes(y = agg.all.impact, x = year)) + 
+  geom_point() + 
+  labs(y = "EU Impact", x = "Year") +
+  geom_errorbar(aes(ymax = h.90, ymin = l.05)) +
+  geom_hline(yintercept = 0) +
+  theme_carly_presents()
+ggsave("presentation/bel-eu-imp.png", height = 6, width = 8)
+
+
+
+### Appendix Slides
+illus.plot + theme_carly_presents()
+ggsave("presentation/illus-arg.png", height = 6, width = 9)
+
+
+
+# Non-zero major power alliances
+lambda.probs.maj %>% 
+  filter(non.zero == 1) %>% 
+  ggplot(mapping = aes(x = atopid, y = lambda.mean, fill = latent.scope.mean)) + 
+  geom_col() +
+  scale_fill_continuous(type = "viridis") +
+  labs(x = "ATOPID", y = "Impact of Alliance",
+       fill = "Scope") +
+  theme_carly_presents() +
+  coord_flip() 
+ggsave("presentation/non-zero-maj.png", height = 6, width = 8)
+
+
+# non-major powers
+lambda.probs.min %>% 
+  filter(non.zero == 1) %>% 
+  ggplot(mapping = aes(x = atopid, y = lambda.mean, fill = latent.scope.mean)) + 
+  geom_col() +
+  scale_fill_continuous(type = "viridis") +
+  labs(x = "ATOPID", y = "Impact of Alliance",
+       fill = "Scope") +
+  theme_carly_presents() +
+  coord_flip() 
+ggsave("presentation/non-zero-min.png", height = 6, width = 8)
+
+
+
+# Plot of varying slopes results for scope
+ggplot(scope.dens.joint, aes(x = value,  fill = X2)) +
+  geom_density(alpha = .75) + 
+  scale_fill_brewer(name = "Sample", palette = "Dark2") +
+  theme_carly_presents() +
+  annotate("text", x = -.12, y = 12, 
+           label = ".93", size = 8, parse = TRUE) + # Note for major
+  annotate("text", x = 0.07, y = 12, 
+           label = ".93", size = 8, parse = TRUE) + # Note for non-major
+  annotate("text", x = 0.00, y = 2, 
+           label = ".08", size = 5, parse = TRUE) + # Note for overlap
+  theme_carly_presents()
+ggsave("presentation/var-slopes-scope.png", height = 6, width = 8)
+
+
+# All the coefficients from the varying slopes model
+# non-major powers
+non.maj.vs <- mcmc_intervals(ml.model.sum$beta[, 1, ], 
+               prob = .9) + 
+               ggtitle("Non-Major") +
+               theme_carly_presents()
+
+maj.vs <- mcmc_intervals(ml.model.sum$beta[, 2, ], 
+               prob = .9) + 
+               ggtitle("Major") +
+               theme_carly_presents()
+multiplot.ggplot(non.maj.vs, maj.vs) # need to save manually 
+
+
 #### Graphical comparison of coefficients with Bayesplot
 # Set the color scheme here
 color_scheme_set("red")
 
-# Create a dataframe with beta parameters
-beta.pars <- as.data.frame(ml.model.sum$beta)
-
-# Plot posterior density and Fill the negative region
-# Uncoditional treaties 
-uncond.dens <- ggplot(data = beta.pars, mapping = aes(x = uncond.milsup)) +
-  + theme(axis.text=element_text(size=12),
-          axis.title=element_text(size=14))
-  geom_density() + geom_vline(xintercept = 0, size = 1.5) 
-
-d <- ggplot_build(uncond.dens)$data[[1]] # build the density plot for filling
-
-uncond.dens + geom_area(data = subset(d, x < 0), aes(x=x, y=y), fill="#d95f02") +
-   annotate("text", x = -.02, y = 40, label = ".934", size = 15, parse = TRUE)  + 
-  theme_carly_presents() + labs(x = "Posterior: Unconditional Military Support")
-ggsave("presentation/uncond post_prob.png", height = 6, width = 8)
 
 
-
-# Plot intervals
-mcmc_areas(ml.model.sum$beta, pars = c("uncond.milsup"), prob = .9) +
-  ggplot2::labs(
-    title = "Posterior distributions of Unconditional Alliance Parameter",
-    subtitle = "with median and 90% interval")
-
-# Compare unconditional and proportion of democracies
-mcmc_areas(ml.model.sum$beta, pars = c("dem.prop", "uncond.milsup"), prob = .9)+
-  ggplot2::labs( 
-   title = "Posterior distributions of Democratic Proportion and Unconditional Parameters",
-    subtitle = "with medians and 90% intervals")
-
-# Plot alliance-level regression positive posterior probabilities
-beta.probs <- cbind.data.frame(beta.probs, c("Alliance Model Constant", "Uncond. Mil. Supp.", "Offense", 
-                                             "Number Members","Democratic Membership", 
-                                             "Wartime", "IO Form.", "Military Aid", "Asymmetric",
-                                             "US Member", "USSR Member"))
-
-colnames(beta.probs) <- c("post.prob", "variable")
-beta.probs$variable <- reorder(beta.probs$variable, beta.probs$post.prob)
-
-# Plot
-ggplot(beta.probs, aes(x = variable, y = post.prob)) + 
-  geom_col() +
-  geom_text(aes(label = post.prob), nudge_y = .0675) +
-  labs(y = "Posterior Probability of Positive Coefficient") +
-  coord_flip()
-ggsave("presentation/post-prob-beta.png", height = 6, width = 8)
-
-
-
-
-### Plot the non-zero lambdas
-# For non-zero alliances 
-lambda.probs %>% 
-  filter(non.zero == 1) %>% 
-  ggplot(mapping = aes(x = atopid, y = lambda.mean, fill = factor(uncond.milsup))) + 
-  geom_col() +
-  scale_fill_brewer(palette = "Dark2") +
-  geom_text(aes(label = lambda.mean), nudge_y = 0.01, size = 4) +
-  labs(y = "Posterior Mean of Alliance Weight Parameter") +
-  coord_flip()
-ggsave("presentation/non-zero alliances.png", height = 6, width = 8)
 
 
 ### Add a posterior predictive check
 color_scheme_set("viridisC")
-ppc_hist(y, yrep.full[1:5, ])
-ggsave("presentation/ppc.png", height = 6, width = 8)
+traceplot(ml.model.maj, pars = "beta")
+ggsave("presentation/beta-trace-maj.png", height = 6, width = 8)
+traceplot(ml.model.min, pars = "beta")
+ggsave("presentation/beta-trace-min.png", height = 6, width = 8)
 
 
 
