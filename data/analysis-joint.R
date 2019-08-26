@@ -39,17 +39,17 @@ eq.min <- function(x){-(2^(-x*2))}
 
 # plot curves
 illus.plot <- ggplot(data.frame(x = c(0, 2)), aes(x = x))
-illus.plot <- illus.plot + stat_function(fun = eq.maj, geom = "line", size = 2)
+# illus.plot <- illus.plot + stat_function(fun = eq.maj, geom = "line", size = 2)
 illus.plot <- illus.plot + stat_function(fun = eq.min, geom = "line", size = 2) +
-  xlab("Treaty Scope") + ylab("Impact of Alliance Participation on Mil. Ex.") +
+  xlab("Treaty Depth") + ylab("Impact of Alliance Participation on Mil. Ex.") +
   geom_hline(yintercept = 0, size = 2) + 
   theme_classic(base_size = 18, base_line_size = 1.5) + 
   theme(axis.text.x = element_blank(),
         axis.text.y = element_blank(),
         axis.ticks = element_blank()) +
-  geom_text(label = "Major Power", x = 1, y = 0.5, size = 5) +
+#  geom_text(label = "Major Power", x = 1, y = 0.5, size = 5) +
   geom_text(label = "Non-Major Power", x = 1, y = -0.5, size = 5) +
-  geom_text(label = "0", y = .05, x = -.07, size = 5)
+  geom_text(label = "0", y = -.05, x = 0, size = 5)
 illus.plot
 ggsave("figures/illus-arg.png")
 
@@ -92,11 +92,11 @@ ppc_dens_overlay(y, vb.model.sum$y_pred[1:100, ])
 rm(list = c("ml.model.vb", "vb.model.sum"))
 
  
-# Regular STAN: takes about 4 days w/ 2 cores. 
+# Regular STAN: takes about 2 days. 
 system.time(
   ml.model <- sampling(model.1, data = stan.data, 
                        iter = 2000, warmup = 1000, chains = 4,
-                       control=list(adapt_delta = 0.9, max_treedepth = 15)
+                       control=list(adapt_delta = 0.95, max_treedepth = 15)
   )
 )
 
@@ -144,28 +144,28 @@ ppc_dens_overlay(y, yrep.full)
 
 # Plot all the beta coefficients and calculate posterior probabilities
 
-# latent scope
+# depth index
 mean(ml.model.sum$beta[, 1, 2] > 0) # non-major
 mean(ml.model.sum$beta[, 2, 2] < 0) # major
-# number of members
+# econonmic agreement
 mean(ml.model.sum$beta[, 1, 3] > 0) # non-major
-mean(ml.model.sum$beta[, 2, 3] > 0) # major
-# FP Similarity
+mean(ml.model.sum$beta[, 2, 3] < 0) # major
+# FP concessions
 mean(ml.model.sum$beta[, 1, 4] < 0) # non-major
 mean(ml.model.sum$beta[, 2, 4] < 0) # major
-# democratic proportion
+# number of members
 mean(ml.model.sum$beta[, 1, 5] < 0) # non-major
 mean(ml.model.sum$beta[, 2, 5] < 0) # major
-# wartime
+# FP similarity
 mean(ml.model.sum$beta[, 1, 6] > 0) # non-major
 mean(ml.model.sum$beta[, 2, 6] < 0) # major
-# asymmetric obligations 
+# avg democracy
 mean(ml.model.sum$beta[, 1, 7] < 0) # non-major
 mean(ml.model.sum$beta[, 2, 7] > 0) # major
-# US membership
+# wartime
 mean(ml.model.sum$beta[, 1, 8] < 0) # non-major
 mean(ml.model.sum$beta[, 2, 8] < 0) # major
-# USSR membership
+# asymmetric 
 mean(ml.model.sum$beta[, 1, 9] < 0) # non-major
 mean(ml.model.sum$beta[, 2, 9] < 0) # major
 
@@ -443,10 +443,9 @@ ggplot(agg.all.min, aes(x = agg.all.impact)) + geom_histogram()
 
 
 
-# Remove stan object from workspace- save separately to conserve memory
+# Given length of run for varying slopes model- save separately
 saveRDS(ml.model, "ml.model.rds")
-rm(ml.model)
-
+ml.model <- readRDS("ml.model.rds")
 
 
 # summarize session info

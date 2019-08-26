@@ -77,11 +77,11 @@ model {
   alpha_year_std ~ normal(0, 1);
   alpha_state_std ~ normal(0, 1); 
   lambda_std ~ normal(0, 1);
-  sigma_state ~ normal(0, 1);
-  sigma_year ~ normal(0, 1); 
-  sigma_all ~ normal(0, 1); 
-  beta ~  normal(0, 1);
-  gamma ~ normal(0, 1); 
+  sigma_state ~ normal(0, .5);
+  sigma_year ~ normal(0, .5); 
+  sigma_all ~ normal(0, .5); 
+  beta ~  normal(0, .5);
+  gamma ~ normal(0, .5); 
   nu ~ gamma(2, 0.1); // Prior for degrees of freedom in t-dist
   
   y ~ student_t(nu, y_hat, sigma);

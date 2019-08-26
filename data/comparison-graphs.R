@@ -102,6 +102,7 @@ ggplot(lambda.df.min, aes(x = num.mem, y = lambda)) +
 
 # matrix multiplication of membership matrix by mean lambda 
 lambda.maj.split <- extract(ml.model.maj, pars = c("lambda"), permuted = TRUE)
+lambda.maj.joint <- extract(ml.model, pars = c("lambda_maj"), permuted = TRUE)
 
 # agg.all.maj.full  <- state.mem.maj%*%t(ml.model.sum$lambda_maj)
 agg.all.maj.full  <- state.mem.maj%*%t(lambda.maj.split$lambda)
@@ -224,9 +225,10 @@ ggplot(fr.agg.melt, aes(x = value, y = year, group = year)) +
 
 # matrix multiplication of membership matrix by mean lambda 
 lambda.min.split <- extract(ml.model.min, pars = c("lambda"), permuted = TRUE)
+lambda.min.joint <- extract(ml.model, pars = c("lambda_min"), permuted = TRUE)
 
 # Multiply by state membeship matrix
-agg.all.min.full  <- state.mem.min%*%t(lambda.min.split$lambda)
+agg.all.min.full  <- state.mem.min%*%t(lambda.min.joint$lambda)
 
 # summarize the 90% credible interval 
 agg.all.min.sum <- t(apply(agg.all.min.full, 1, function(x) quantile(x, c(.05, .95))))
@@ -315,6 +317,31 @@ ggplot(esp.agg.melt, aes(x = value, y = year, group = year)) +
   theme_ridges(grid = FALSE, center_axis_labels = TRUE) +
   xlim(-0.1, 0.03) +
   ggtitle("Aggregate Impact of Alliance Participation on Spanish Defense Spending") 
+
+
+# Japan: check this out
+jp.agg.melt <- agg.all.min.full %>% 
+  filter(ccode == 740 & year >= 1950) %>%
+  melt(id.vars = c("ccode", "year")) %>%
+  filter(value != 0)
+
+
+agg.all.min.sum %>%
+  filter(ccode == 740 & year >= 1950) %>%
+  ggplot(aes(y = agg.all.impact, x = year)) + 
+  geom_point() + 
+  geom_errorbar(aes(ymax = h.90, ymin = l.05)) +
+  geom_hline(yintercept = 0) +
+  ggtitle("Aggregate Impact of Alliance Participation on Japanese Defense Spending") +
+  theme_bw()
+
+ggplot(jp.agg.melt, aes(x = value, y = year, group = year)) + 
+  scale_y_reverse() +
+  geom_vline(xintercept = 0) +
+  geom_density_ridges(rel_min_height = 0.03, scale = 3) + 
+  theme_ridges(grid = FALSE, center_axis_labels = TRUE) +
+  xlim(-0.04, 0.06) +
+  ggtitle("Aggregate Impact of Alliance Participation on Japanese Defense Spending") 
 
 
 # Egypt
@@ -419,7 +446,7 @@ nato.imp.maj.sum %>%
 
 
 # non-major powers
-nato.imp.min <- state.mem.min[, 68]%*%t(lambda.min.split$lambda[, 68])
+nato.imp.min <- state.mem.min[, 68]%*%t(lambda.min.joint$lambda[, 68])
 
 
 # summarize the 90% credible interval 

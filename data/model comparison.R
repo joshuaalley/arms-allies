@@ -4,7 +4,7 @@
 
 # Use this file after running
 # 1. dataset contruction and summary.R 
-# 2. analysis.R 
+# 2. analysis-joint.R 
 
 # load packages
 library(loo)
