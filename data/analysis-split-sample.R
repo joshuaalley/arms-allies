@@ -2,28 +2,6 @@
 # Texas A&M University
 # Analysis of how alliance depth affects arms decisions: Split Major and minor powers
 
-# Load packages
-library(here)
-library(dplyr)
-library(rstan)
-library(bayesplot)
-library(shinystan)
-library(reshape2)
-library(party)
-library(xtable)
-
-# Set working directory to current folder 
-setwd(here::here())
-getwd()
-
-# Set up RSTAN guidelines
-rstan_options(auto_write = TRUE)
-options(mc.cores = parallel::detectCores())
-
-
-# Set seed
-set.seed(12)
-
 
 # Environment is determined by use of projects and/or running this file in conjunction with
 # the scripts alliance-measures.R and dataset construction and summary.R 
@@ -252,45 +230,7 @@ lambda.depth.min <- ggplot(lambda.df.min, aes(x = latent.depth.mean, y = lambda)
 lambda.depth.min
 ggsave("figures/lambda-ld-nonmaj.png", height = 6, width = 8)
 
-# Compare all in one plot
-# Define multiplot function from http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_%28ggplot2%29/ 
-multiplot.ggplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
-  library(grid)
-  
-  # Make a list from the ... arguments and plotlist
-  plots <- c(list(...), plotlist)
-  
-  numPlots = length(plots)
-  
-  # If layout is NULL, then use 'cols' to determine layout
-  if (is.null(layout)) {
-    # Make the panel
-    # ncol: Number of columns of plots
-    # nrow: Number of rows needed, calculated from # of cols
-    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
-                     ncol = cols, nrow = ceiling(numPlots/cols))
-  }
-  
-  if (numPlots==1) {
-    print(plots[[1]])
-    
-  } else {
-    # Set up the page
-    grid.newpage()
-    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
-    
-    # Make each plot, in the correct location
-    for (i in 1:numPlots) {
-      # Get the i,j matrix positions of the regions that contain this subplot
-      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
-      
-      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
-                                      layout.pos.col = matchidx$col))
-    }
-  }
-}
-
-# Apply the function to major and non-major power plots  
+# Compare all in one plot w/ multiplot.ggplot function
 multiplot.ggplot(lambda.depth.maj, lambda.depth.min)
 
 

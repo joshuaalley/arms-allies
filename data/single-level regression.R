@@ -3,21 +3,6 @@
 # State-year regression models of alliance conditions and arms
 
 
-# Load packages
-library(here)
-library(coefplot)
-library(MASS)
-library(plm)
-library(dplyr)
-library(ggplot2)
-library(margins)
-library(interflex)
-library(ExtremeBounds)
-
-
-# Set seed
-set.seed(12)
-
 # Environment is determined by use of projects and/or using this file in conjunction with
 # the file dataset construction and summary.R 
 

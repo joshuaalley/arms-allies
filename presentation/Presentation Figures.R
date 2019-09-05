@@ -4,19 +4,7 @@
 
 
 # Environment is determined by use of projects and/or running this file in conjunction with
-# the script dataset construction and summary.R and analysis.R
-
-
-# Load packages if using as stand-alone file
-library(dplyr)
-library(coefplot)
-library(ggplot2)
-library(bayesplot)
-library(ggcarly)
-
-# Set working directory to current folder 
-setwd(here::here())
-getwd()
+# the script dataset construction and summary.R and analysis-joint.R and analysis-split-sample
 
 
 

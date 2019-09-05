@@ -3,17 +3,6 @@
 # Constructing Dataset for paper on arms-alliances tradeoff
 
 
-# Load packages
-library(here)
-library(reshape)
-library(arm)
-library(dplyr)
-library(zoo)
-library(ggplot2)
-library(tidyr)
-library(countrycode)
-
-
 
 ### This First section creates data on state membership in alliances
 # Uses ATOP data from alliance-measures script

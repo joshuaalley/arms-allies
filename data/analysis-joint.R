@@ -2,29 +2,6 @@
 # Texas A&M University
 # Analysis of how alliance credibility affects arms decisions
 
-# Load packages
-library(here)
-library(arm)
-library(dplyr)
-library(rstan)
-library(bayesplot)
-library(shinystan)
-library(reshape2)
-library(party)
-library(xtable)
-
-# Set working directory to current folder 
-setwd(here::here())
-getwd()
-
-# Set up RSTAN guidelines
-rstan_options(auto_write = TRUE)
-options(mc.cores = parallel::detectCores())
-
-
-# Set seed
-set.seed(12)
-
 
 # Environment is determined by use of projects and/or running this file in conjunction with
 # the scripts alliance-measures.R and dataset construction and summary.R 
@@ -249,13 +226,6 @@ rownames(gamma.summary) <- c("Wartime", "Civil War", "Rival Mil. Expenditure",
                             "Sigma State", "Intercept: Non-Major", "Intercept: Major")
 print(gamma.summary)
 xtable(gamma.summary)
-
-
-# Plot posterior probabilities that a given coefficient is positive
-positive.check <- function(x){
-  mean(x > 0)
-}
-
 
 
 #### Plots lambdas

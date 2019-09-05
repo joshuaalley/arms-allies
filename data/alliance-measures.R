@@ -3,21 +3,6 @@
 # Summarizing and measuring Key alliance characteristics
 
 
-# Load packages
-library(here)
-library(zoo)
-library(ggplot2)
-library(tidyr)
-library(countrycode)
-library(bfa)
-library(coda)
-library(dplyr)
-
-
-# Set working directory to current folder
-setwd(here::here())
-getwd()
-
 # Load ATOP v4 alliance-level data 
 atop <- read.csv("data/atop-alliance-level.csv")
 atop.mem.full <- read.csv("data/atop-member-level.csv")
