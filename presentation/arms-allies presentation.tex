@@ -29,7 +29,7 @@
 %	TITLE PAGE
 %----------------------------------------------------------------------------------------
 
-\title{Alliance Participation and Military Spending}
+\title{Alliance Participation, Treaty Depth and Military Spending}
 \date{\today}
 \author{Joshua Alley}
 \institute{Texas A\&M University}
@@ -56,7 +56,7 @@ Treaty depth constrains free-riding in alliances by non-major powers.
  
  %------------------------------------------------
 % Here's my point. 
- \begin{frame}{Defining terms} 
+ \begin{frame}{What Does That Mean?} 
 
 \begin{itemize}
 \item \textbf{Depth}: The extent of military cooperation an alliance treaty promises.
@@ -137,7 +137,6 @@ Treaty depth is a key sources of differences between alliances.
  \end{frame}
 
 
-
 %------------------------------------------------
 
 \begin{frame}{Outline}
@@ -179,7 +178,7 @@ I make my claim about alliance participation and military spending in three ways
 
 %------------------------------------------------
 
-\begin{frame}{The problem of Free-riding}
+\begin{frame}{The Problem of Free-riding}
 
 Alliances are a form of international cooperation. Free-riding means alliance members:
 
@@ -194,48 +193,31 @@ Alliances are a form of international cooperation. Free-riding means alliance me
 
 %------------------------------------------------
 
+\begin{frame}[standout]
+
+Deep alliances restrain free-riding.   
+
+\end{frame}
+
+%------------------------------------------------
+
 \begin{frame}{Treaty Depth}
 
-Deep treaties stipulate extensive military support. 
+Deep treaties stipulate extensive defense cooperation. 
 
 \begin{enumerate} 
 \pause
-\item The kind of support promised and conditions on support. 
+\item Whether the alliance promises military support and conditions on that support. 
 \pause
 \item Formal defense cooperation:
 \pause
-\begin{\itemize}
+\begin{itemize}
 \item Bases, policy coordination, military aid, side agreements, formal institutions. 
 \end{itemize}  
 \end{enumerate}  
 
 \end{frame}
 
-%------------------------------------------------
-
-\begin{frame}[standout]
-
-In a deep alliance, free-riding is more difficult.   
-
-\end{frame}
-
-
-%------------------------------------------------
-
-\begin{frame}{Implications of Treaty Depth}
-
-\begin{enumerate}
-\item Alliance members: 
-\begin{enumerate} 
-\pause
-\item Gain more from alliance participation. 
-\pause
-\item Lose more freedom of action. 
-\end{enumerate}  
-
-\end{enumerate}
-
-\end{frame}
 
 %------------------------------------------------
 
@@ -244,6 +226,7 @@ In a deep alliance, free-riding is more difficult.
 There are two ways depth limits alliance members ability to free-ride. 
 
 \begin{enumerate}
+\pause
 \item Greater alliance value.  
 \pause
 \item Greater allied leverage. 
@@ -255,7 +238,7 @@ There are two ways depth limits alliance members ability to free-ride.
 
 \begin{frame}[standout]
 
-Non-major powers are especially likely to free-ride. 
+Depth is relevant for non-major powers because they are more prone to free-ride. 
 
 \end{frame}
 
@@ -279,7 +262,7 @@ Non-major powers are especially likely to free-ride.
 \begin{frame}[standout]
 
 \begin{quote}
-\textsc{Hypothesis 2}: As alliance treaty depth increases, growth in non-major power military spending from alliance participation will increase. 
+\textsc{Hypothesis 1}: As alliance treaty depth increases, growth in non-major power military spending from alliance participation will increase. 
 \end{quote} 
 
 
@@ -293,7 +276,7 @@ Non-major powers are especially likely to free-ride.
 
 \begin{frame}{Research Design}
 
-I need two things to test these predictions: 
+I need two things to test the prediction: 
 
 \pause 
 \begin{enumerate} 
@@ -325,7 +308,7 @@ My measure of depth for each alliance is the posterior mean of a latent factor.
 \item Multiple observed indicators of depth (ATOP): 
 \begin{itemize} 
 \item \textit{Military Support}: offense, defense, neutrality, consultation, non-aggression, unconditional military support.
-\item \textit{Other Cooperation}: bases, integrated command, military aid, IO formation, defense policy coordination, other military agreements. 
+\item \textit{Defense Cooperation}: bases, integrated command, military aid, IO formation, defense policy coordination, other military agreements. 
 \end{itemize} 
 \pause 
 \item Semiparametric mixed factor analysis. (Murray et al 2013)
@@ -351,7 +334,7 @@ My measure of depth for each alliance is the posterior mean of a latent factor.
 
 %------------------------------------------------
 
-\begin{frame}{Latent Measure of Treaty depth: Narrow}
+\begin{frame}{Latent Measure of Treaty depth: Shallow}
 
 % Visual summary of latent measure
 \begin{figure}[htbp]
@@ -377,7 +360,7 @@ My measure of depth for each alliance is the posterior mean of a latent factor.
 
 %------------------------------------------------
 
-\begin{frame}{Latent Measure of Treaty depth: Broad}
+\begin{frame}{Latent Measure of Treaty depth: Deep}
 
 % Visual summary of latent measure
 \begin{figure}[htbp]
@@ -412,7 +395,7 @@ My measure of depth for each alliance is the posterior mean of a latent factor.
 \begin{array}{cccccc}
 \uncover<2->{ & & & & &\mbox{Alliance} \\
 & & & & &    \mbox{Characteristics}  \\
-\uncover<3->{& & & & \lambda = & \alpha_{all} + \beta_1 \mbox{depth} + \textbf{X} \beta \\}
+\uncover<3->{& & & & \lambda = & \alpha_{all} + \beta_1 \mbox{Depth} + \textbf{X} \beta \\}
 & & & & &    \downarrow  \\}
 \mbox{Growth} =     & \mbox{Varying}   & + & \mbox{State}   & + & \mbox{Alliance} \\
 \mbox{Mil. Ex.}      & \mbox{Intercepts}&   &  \mbox{Vars.} &   & \mbox{Participation} \\
@@ -439,7 +422,7 @@ y \sim student_t(\nu, \mu, \sigma)
 \lambda_{a} \sim N(\theta_{a}, \sigma_{all})
 \end{equation}
 \begin{equation}
-\theta_a = \alpha_{all} + \beta_1 \mbox{Treaty depth} + \textbf{X}_{a \times l} \beta
+\theta_a = \alpha_{all} + \beta_1 \mbox{Treaty Depth} + \textbf{X}_{a \times l} \beta
 \end{equation}
 
 
@@ -456,11 +439,11 @@ y \sim student_t(\nu, \mu, \sigma)
 \uncover<2->{\mu_{it} =} \uncover<3>{\alpha} \uncover<4>{+ \alpha^{st} + \alpha^{yr}} \uncover<5>{+ W_{it} \gamma} \uncover<6>{+ Z_{it} \lambda}
 \end{equation*}
 
-Example year: 
+Example year: Argentina 1955
 
 \begin{equation*}
 \begin{split}
-& \uncover<2->{\mbox{Argentina 1955} = } \uncover<3>{\mbox{Overall mean}} \\
+& \uncover<2->{\mbox{1955 Growth Milex.} = } \uncover<3>{\mbox{Overall mean}} \\
 & \uncover<4>{+ \mbox{Argentine Intercept} + \mbox{1955 Intercept}} \\
 & \uncover<5>{+ \mbox{Argentine Characteristics}} \\
 & \uncover<6>{+ \lambda_{OAS} * \mbox{OAS Expenditure} + \lambda_{Rio} * \mbox{Rio Pact Expenditure}}
@@ -469,7 +452,7 @@ Example year:
 
 \uncover<7>{
 \begin{equation*}
-\lambda_{Rio} = \alpha_{all} + \beta_1 0.717 + \mbox{Controls}
+\lambda_{Rio} = \alpha_{all} + \beta_1 0.34 + \mbox{Controls}
 \end{equation*}
 } 
 
@@ -499,11 +482,11 @@ Argentina 1955 & .418  & 0 & \ldots  \\
 \begin{frame}{Sample and Key Variables}
 
 \begin{itemize}
-\item \textbf{Split Sample}: major and non-major power states--- 1816-2007. Alliances with military support. 
+\item \textbf{Sample}: Non-major power states--- 1816-2007. Alliances with military support. 
 \pause
-\item \textbf{DV}: Growth in Military Spending $ = \frac{ \Delta \mbox{Mil. Expend}_t }{ \mbox{Mil. Expend}_{t-1} }$ 
+\item \textbf{DV}: Growth in military spending $ = \frac{ \Delta \mbox{Mil. Expend}_t }{ \mbox{Mil. Expend}_{t-1} }$ 
 \pause
-\item \textbf{Alliance-Level IV}: Mean Treaty depth
+\item \textbf{Alliance-Level IV}: Mean treaty depth
 \end{itemize} 
 
 \end{frame}
@@ -514,9 +497,9 @@ Argentina 1955 & .418  & 0 & \ldots  \\
 \begin{frame}{Controls}
 
 \begin{itemize}
-\item \textbf{State-Level Controls}: Interstate war, Civil War, Annual MIDs, GDP growth, POLITY, Cold War, Rival military expenditures. 
+\item \textbf{State-Level Controls}: Interstate war, civil War, annual MIDs, GDP growth, POLITY, Cold War, rival military expenditures. 
 \pause 
-\item \textbf{Alliance-Level Controls}: Share of Democracies, Number of Members, wartime, asymmetric obligations, US member (Cold War), USSR member.
+\item \textbf{Alliance-Level Controls}: Share of democracies, number of members, wartime, asymmetric obligations, US member (Cold War), USSR member.
 
 \end{itemize} 
 
@@ -529,12 +512,12 @@ Argentina 1955 & .418  & 0 & \ldots  \\
 
 %------------------------------------------------
 
-\begin{frame}{Association Between Treaty depth and Growth in Military Spending} 
+\begin{frame}{Association Between Treaty Depth and Growth in Military Spending} 
 
 \begin{figure}
 	\centering
-		\includegraphics[width=0.95\textwidth]{str-post.png}
-	\label{fig:str-post}
+		\includegraphics[width=0.90\textwidth]{depth-post.png}
+	\label{fig:depth-post}
 \end{figure}
 
 
@@ -545,12 +528,11 @@ Argentina 1955 & .418  & 0 & \ldots  \\
 
 \begin{frame}[standout]{Importance} 
 
-\begin{tabular}{lcc}
-Sample & Post. Mean & Median Growth \\
+\begin{tabular}{cc}
+ Post. Mean & Median Growth \\
 \hline
-Major & -0.05 & 0.04 \\
 \pause
-Non-major & 0.03 & 0.06  \\
+ 0.02 & 0.06  \\
 \end{tabular}
 
 \pause
@@ -563,26 +545,12 @@ US spent \$36.0 billion on NATO in 2018, or 5.5\% of the total defense spending.
 %------------------------------------------------
 
 
-\begin{frame}{Treaty depth and $\lambda$}
+\begin{frame}{Treaty Depth and $\lambda$}
 
 \begin{figure}[htbp]
 	\centering
-		\includegraphics[width=0.95\textwidth]{ls-lambda-blank.png}
-	\label{fig:ls-lambda-blank}
-\end{figure}
-
-
-\end{frame}
-
-%------------------------------------------------
-
-
-\begin{frame}{Treaty depth and $\lambda$: Major Powers}
-
-\begin{figure}[htbp]
-	\centering
-		\includegraphics[width=0.95\textwidth]{ls-lambda-maj.png}
-	\label{fig:ls-lambda-maj}
+		\includegraphics[width=0.95\textwidth]{ld-lambda-blank.png}
+	\label{fig:ld-lambda-blank}
 \end{figure}
 
 
@@ -595,8 +563,8 @@ US spent \$36.0 billion on NATO in 2018, or 5.5\% of the total defense spending.
 
 \begin{figure}
 	\centering
-		\includegraphics[width=0.95\textwidth]{ls-lambda-min.png}
-	\label{fig:ls-lambda-min}
+		\includegraphics[width=0.9\textwidth]{ld-lambda-min.png}
+	\label{fig:ld-lambda-min}
 \end{figure}
 
 
@@ -645,24 +613,39 @@ US spent \$36.0 billion on NATO in 2018, or 5.5\% of the total defense spending.
 
 %------------------------------------------------
 
-\begin{frame}{NATO depth} 
+\begin{frame}{NATO Depth} 
 
 \begin{figure}
 	\centering
-		\includegraphics[width=0.95\textwidth]{ls-hist-nato.png}
+		\includegraphics[width=0.95\textwidth]{ld-hist-nato.png}
+\end{figure}
+
+
+ \end{frame}
+ 
+ 
+%------------------------------------------------
+
+\begin{frame}{US Alliances in Context} 
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.95\textwidth]{lambda-depth-us.png}
 \end{figure}
 
 
  \end{frame}
 
+
 %------------------------------------------------
 
-\begin{frame}{Impact of NATO on Growth in US Military Spending} 
+\begin{frame}{Impact of US Alliance on Non-major Power Military Spending} 
 
 \begin{figure}
 	\centering
-		\includegraphics[width=0.95\textwidth]{nato-imp-us.png}
+		\includegraphics[width=0.85\textwidth]{lambda-us-min.png}
 \end{figure}
+
 
 \end{frame}
 
@@ -683,25 +666,13 @@ US spent \$36.0 billion on NATO in 2018, or 5.5\% of the total defense spending.
 
 %-----------------------------------------------
 
-\begin{frame}{Alliance Participation and US Military Spending}
-
-\begin{figure}[htbp]
-	\centering
-		\includegraphics[width=0.95\textwidth]{us-agg-imp.png}
-\end{figure}
-
-\end{frame}
-
-
-%-----------------------------------------------
-
 \section{Conclusion}
 
 %-----------------------------------------------
 
 \begin{frame}[standout]
 
-How alliance participation affects military spending depends on state capability and treaty depth.  
+How alliance participation affects military spending depends on treaty depth.  
 
 \end{frame}
 
@@ -709,11 +680,7 @@ How alliance participation affects military spending depends on state capability
 % The two subpoints 
  \begin{frame}[standout]
 
-\setbeamercovered{invisible}
-
-\uncover<1-2>{1: Though alliance participation usually increases major power military spending, growth is lower in broad treaties.} 
-
-\uncover<2>{2: Though alliance participation usually decreases non-major power military spending, growth is higher in broad treaties.}
+Though alliance participation usually decreases non-major power military spending, growth is higher in deep treaties.
 
  \end{frame}
 
@@ -744,7 +711,7 @@ The political economy of security, with a focus on formal institutions.
 \begin{column}{0.5\textwidth}
 \textbf{International Security}
 \begin{itemize} 
-\item Alliance Participation and Military Spending 
+\item Alliance Participation, Treaty Depth and Military Spending 
 \item Reassessing the Public Goods Theory of Alliances
 \end{itemize} 
 \end{column}
@@ -808,19 +775,6 @@ jkalley14@tamu.edu
 
 \end{frame}
 
-
-%-----------------------------------------------
-
-\begin{frame}{Trace plots: Major}
-
-\begin{figure}
-	\centering
-		\includegraphics[width=0.95\textwidth]{beta-trace-maj.png}
-\end{figure}
-
-
-\end{frame}
-
 %-----------------------------------------------
 
 \begin{frame}{Trace plots: Non-Major}
@@ -860,33 +814,6 @@ The 90\% credible intervals contain the known value for all regression parameter
 \end{frame}
 
 
-%------------------------------------------------
-
-
-\begin{frame}{Alliance-Level Regression Table: Major Powers}
-
-930 observations, with 130 alliances. 
-
-\resizebox{.95\textwidth}{!}{
-\begin{tabular}{rrrrrrr}
-  \hline
- & mean & S.D. & 5\% & 95\% & n\_eff & $\hat{R}$ \\ 
-  \hline
-Constant & 0.038 & 0.038 & -0.025 & 0.102 & 3380.954 & 1.000 \\ 
-  Latent Str. & -0.054 & 0.031 & -0.107 & -0.005 & 3278.923 & 1.000 \\ 
-  Number Members & 0.000 & 0.002 & -0.003 & 0.003 & 4000.000 & 0.999 \\ 
-  Democratic Membership & -0.009 & 0.033 & -0.065 & 0.042 & 4000.000 & 1.000 \\ 
-  Wartime & -0.057 & 0.035 & -0.115 & -0.001 & 4000.000 & 1.001 \\ 
-  Asymmetric & 0.053 & 0.035 & 0.001 & 0.115 & 2218.509 & 1.000 \\ 
-  US Member & 0.002 & 0.031 & -0.051 & 0.051 & 4000.000 & 1.000 \\ 
-  USSR Member & 0.023 & 0.033 & -0.028 & 0.079 & 4000.000 & 1.000 \\ 
-  $\sigma$ Alliances & 0.066 & 0.029 & 0.019 & 0.117 & 599.081 & 1.007 \\ 
-   \hline
-\end{tabular}
-}
-
-
-\end{frame}
 
 %-----------------------------------------------
 
@@ -899,15 +826,18 @@ Constant & 0.038 & 0.038 & -0.025 & 0.102 & 3380.954 & 1.000 \\
   \hline
  & mean & sd & 5\% & 95\% & n\_eff & $\hat{R}$ \\ 
   \hline
-Constant & -0.018 & 0.018 & -0.047 & 0.012 & 2211.374 & 1.000 \\ 
-  Latent Str. & 0.026 & 0.017 & -0.002 & 0.054 & 2191.382 & 1.000 \\ 
-  Number Members & 0.000 & 0.001 & -0.001 & 0.001 & 4000.000 & 1.000 \\ 
-  Democratic Membership & -0.031 & 0.015 & -0.056 & -0.009 & 3213.621 & 1.000 \\ 
-  Wartime & 0.041 & 0.023 & 0.002 & 0.078 & 4000.000 & 1.000 \\ 
-  Asymmetric & -0.031 & 0.021 & -0.065 & 0.003 & 4000.000 & 0.999 \\ 
-  US Member & 0.013 & 0.018 & -0.016 & 0.042 & 2895.419 & 1.000 \\ 
-  USSR Member & 0.011 & 0.031 & -0.041 & 0.062 & 4000.000 & 1.000 \\ 
-  $\sigma$ Alliances & 0.014 & 0.009 & 0.002 & 0.030 & 1254.268 & 1.001 \\ 
+Constant & -0.03 & 0.03 & -0.08 & 0.02 & 1677.92 & 1.00 \\ 
+  Depth & 0.02 & 0.02 & -0.00 & 0.05 & 2521.36 & 1.00 \\ 
+  Econ. Link & -0.02 & 0.02 & -0.04 & 0.01 & 2997.70 & 1.00 \\ 
+  FP Conc. & 0.01 & 0.01 & -0.00 & 0.03 & 4019.10 & 1.00 \\ 
+  Number Members & 0.00 & 0.00 & -0.00 & 0.00 & 3820.06 & 1.00 \\ 
+  FP Similarity & 0.00 & 0.03 & -0.04 & 0.05 & 2254.34 & 1.00 \\ 
+  Democratic Membership & -0.00 & 0.00 & -0.00 & 0.00 & 4412.89 & 1.00 \\ 
+  Wartime & 0.04 & 0.03 & -0.01 & 0.08 & 3474.44 & 1.00 \\ 
+  Asymmetric & -0.03 & 0.02 & -0.07 & 0.01 & 3474.45 & 1.00 \\ 
+  US. Mem & 0.02 & 0.02 & -0.01 & 0.05 & 2330.47 & 1.00 \\ 
+  USSR Mem. & 0.04 & 0.05 & -0.03 & 0.12 & 3859.50 & 1.00 \\ 
+  $\sigma$ Alliances & 0.02 & 0.01 & 0.00 & 0.03 & 1201.91 & 1.01 \\ 
    \hline
 \end{tabular}
 }
@@ -933,10 +863,10 @@ $ p(\sigma) \sim \mbox{half-}N(0, 1) $ \\
 $ p(\alpha^{yr}) \sim N(0, \sigma^{yr}) $ \\ 
 $ p(\sigma^{yr}) \sim N(0, 1) $ \\
 $ p(\alpha^{st}) \sim N(0, \sigma^{st}) $ \\ 
-$ p(\sigma^{st}) \sim \mbox{half-}N(0, 1) $ \\ 
-$ p(\sigma^{all}) \sim \mbox{half-}N(0, 1) $ \\
-$ p(\beta) \sim N(0, 1) $ \\
-$ p(\gamma) \sim N(0, 1) $ \\ 
+$ p(\sigma^{st}) \sim \mbox{half-}N(0, .5) $ \\ 
+$ p(\sigma^{all}) \sim \mbox{half-}N(0, .5) $ \\
+$ p(\beta) \sim N(0, .5) $ \\
+$ p(\gamma) \sim N(0, .5) $ \\ 
 $ p(\nu) \sim gamma(2, 0.1)$ 
 \end{tabular} 
 \end{center} 
@@ -961,6 +891,50 @@ $ p(\nu) \sim gamma(2, 0.1)$
 
 
 \end{frame}
+
+
+%------------------------------------------------
+
+
+\begin{frame}{Aside: Benson and Clinton 2016}
+
+\begin{itemize}
+\item Use a measurement model to infer alliance scope, depth and capability. 
+\item Identify three separate dimensions, and use three models- explicit constraint. 
+\item I use a different concept, which combines what they call scope and depth. 
+\item Murray et al's model relaxes distributional assumptions in their estimator (Quinn 2004 Factor Analysis). 
+\end{itemize}
+
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}{Latent Measure for all ATOP Alliances}
+
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.95\textwidth]{ld-hist-full.png}
+\end{figure}
+
+
+\end{frame}
+
+
+%------------------------------------------------
+
+\begin{frame}{Factor Loadings}
+
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.95\textwidth]{factor-loadings.png}
+\end{figure}
+
+
+\end{frame}
+
 
 
 %------------------------------------------------
@@ -1063,12 +1037,26 @@ I give $\beta_j$ a multivariate normal prior with prior scale $\tau$:
 
 %------------------------------------------------
 
-\begin{frame}{Varying Slopes Results: depth}
+\begin{frame}{Varying Slopes Results: Depth}
 
 \begin{figure}[htbp]
 	\centering
 		\includegraphics[width=0.95\textwidth]{var-slopes-depth.png}
 \end{figure}
+
+\end{frame}
+
+
+%------------------------------------------------
+
+\begin{frame}{Treaty depth and $\lambda$: Major Powers}
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.95\textwidth]{ld-lambda-maj.png}
+	\label{fig:ls-lambda-min}
+\end{figure}
+
 
 \end{frame}
 
@@ -1083,29 +1071,16 @@ I give $\beta_j$ a multivariate normal prior with prior scale $\tau$:
 
 \end{frame}
 
-
 %------------------------------------------------
 
 
-\begin{frame}{Single-Level Robust Regression}
+\begin{frame}{Single-Level Regression}
+
+Robust regression: Independent variable is average depth of a state's alliances. 
 
 \begin{figure}[htbp]
 	\centering
-		\includegraphics[width=0.95\textwidth]{depth-contrib-margins.png}
-\end{figure}
-
-
-
-\end{frame}
-
-%------------------------------------------------
-
-
-\begin{frame}{Binning Estimator Check of Interaction}
-
-\begin{figure}[htbp]
-	\centering
-		\includegraphics[width=0.95\textwidth]{depth-inter-bin.png}
+		\includegraphics[width=0.85\textwidth]{robust-reg-coef.png}
 \end{figure}
 
 
@@ -1115,15 +1090,20 @@ I give $\beta_j$ a multivariate normal prior with prior scale $\tau$:
 %------------------------------------------------
 
 
-\begin{frame}{Kernel Estimator Check of Interaction}
+\begin{frame}{Bounds Analysis of Single-Level Regression}
 
 \begin{figure}[htbp]
 	\centering
-		\includegraphics[width=0.95\textwidth]{depth-inter-kernel.png}
+		\includegraphics[width=0.95\textwidth]{eba-single-level.png}
 \end{figure}
 
 
 \end{frame}
+
+
+
+
+
 
 
 

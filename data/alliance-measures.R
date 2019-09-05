@@ -139,7 +139,6 @@ atop.depth <- select(atop,
                      uncond.milsup, offense, defense, nonagg, neutral, consul, 
                      intcom, compag.mil,  
                    milaid, milcon, base, organ1) 
-# atop.depth <- as.matrix(atop.depth)
  atop.depth <- as.data.frame(atop.depth)
 for(i in 1:ncol(atop.depth)){
   atop.depth[, i] <- as.ordered(atop.depth[, i])
@@ -148,24 +147,24 @@ for(i in 1:ncol(atop.depth)){
 
 
 # Create a 1-dimensional IRT model (all dummy inputs)
-# latent.depth <- MCMCirtKd(datamatrix = atop.depth, 
-#                             dimensions = 1,
-#                             burnin = 10000, mcmc = 40000,
-#                             thin = 40,
-#                             item.constraints = list("uncond.milsup" = list(2,"+")),
-#                             store.ability = TRUE,
-#                             store.item = TRUE, 
-#                             b0 = 0, # prior mean of zero for item parameters
-#                             B0 = .5, # prior precision of variances 
-#                             verbose = 5000)
-# plot(latent.depth)
-# summary(latent.depth)
+# atop.depth <- as.matrix(atop.depth)
+ latent.depth.irt <- MCMCirtKd(datamatrix = atop.depth, 
+                             dimensions = 1,
+                             burnin = 10000, mcmc = 40000,
+                             thin = 40,
+                             item.constraints = list("uncond.milsup" = list(2,"+")),
+                             store.ability = TRUE,
+                             store.item = TRUE, 
+                             b0 = 0, # prior mean of zero for item parameters
+                             B0 = .5, # prior precision of variances 
+                             verbose = 5000)
+plot(latent.depth.irt)
+
 
 
 # Diagnosis of convergence with coda
-lcap.sam <- get_coda(latent.depth, scores = TRUE)
-effectiveSize(latent.depth)
-diag.geweke  <- geweke.diag(latent.depth)
+effectiveSize(latent.depth.irt)
+diag.geweke  <- geweke.diag(latent.depth.irt)
 
 # Plot to see if Geweke Z-scores appear to be from Normal(0, 1) distribution
 par(mfrow=c(1, 1))
@@ -178,8 +177,9 @@ latent.depth <- bfa_mixed(~ intcom + compag.mil +
                             milaid + milcon + base + organ1 +
                             uncond.milsup + offense + defense + nonagg + neutral + consul, 
                           data = atop.depth, num.factor = 1,
+                          factor.scales = FALSE,
                           keep.scores = TRUE, loading.prior = "gdp", 
-                          px = TRUE, imh.iter = 500, imh.burn = 500,
+                          px = TRUE, imh.iter = 1000, imh.burn = 1000,
                           nburn = 20000, nsim = 30000, thin = 30, print.status = 2000)
 
 # Little bit of diagnosis
@@ -195,7 +195,31 @@ par(mfrow=c(1, 1))
 plot(density(diag.geweke$z))
 lines(density(rnorm(10000, 0, 1)))
 
+# plot density of factors
+# Create a dataset of factors
+latent.factors <- cbind.data.frame(c("Integrated Command", "Companion Mil. Agreement", 
+                          "Military Aid", "Policy Coordination", "Bases",
+                          "Formal IO", "Unconditional Military Support",
+                           "Offense", "Defense", "Non-Aggression", 
+                          "Neutrality", "Consultation"),
+                        latent.depth[["post.loadings.mean"]],
+                        sqrt(latent.depth[["post.loadings.var"]])
+                        )
+colnames(latent.factors) <- c("var", "mean", "sd")
 
+# plot factor loadings 
+latent.factors <- arrange(latent.factors, desc(mean)) 
+latent.factors$var<- reorder(latent.factors$var, latent.factors$mean)
+
+ggplot(latent.factors, aes(x = mean, y = var)) + 
+  geom_point(size = 2) +
+  geom_errorbarh(aes(xmin = mean - 2*sd, 
+                    xmax = mean + 2*sd),
+                 height = .2, size = 1) +
+  geom_vline(xintercept = 0) +
+  labs(x = "Factor Loading", y = "Variable") +
+    theme_classic()
+ggsave("appendix/factor-loadings.png", height = 6, width = 8)
 
 # get posterior scores of latent factor: mean and variance
 post.score <- get_posterior_scores(latent.depth)
@@ -206,7 +230,7 @@ atop$latent.depth.sd <- sqrt(atop$latent.depth.var)
 
 # Plot two measures by ATOPID
 ggplot(atop, aes(x = atopid, y = latent.depth.mean)) + geom_point()
-ggplot(atop, aes(x = atopid, y = depth.index)) +
+ggplot(atop, aes(x = atopid, y =scope.index)) +
   geom_point(position = position_dodge(2))
 
 # depth by year of formation
@@ -393,6 +417,8 @@ all.fpsim.first <- filter(all.fp.sim, year == yr1) %>%
 
 # Add measures of FP similiarity in first year observed
 atop <- left_join(atop, all.fpsim.first)
+
+# filter our alliances with military support 
 atop.milsup <- filter(atop, offense == 1 | defense == 1)
 
 # Look at correlation between FP similarity and depth
@@ -408,10 +434,6 @@ ggplot(atop.milsup, aes(x = mean.kap.sc, y = latent.depth.mean)) +
 t.test(atop.milsup$mean.kap.sc ~ atop.milsup$econagg.dum)
 t.test(atop.milsup$low.kap.sc ~ atop.milsup$econagg.dum)
 
-
-# Subset for economic agreements
-atop.econ <- filter(atop.milsup, econagg.dum == 1)
-atop.econ.maj <- filter(atop.econ, non.maj.only == 0)
 
 
 # Export to public-goods-test paper

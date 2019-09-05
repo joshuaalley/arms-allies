@@ -9,7 +9,9 @@
 
 # Load packages if using as stand-alone file
 library(dplyr)
+library(coefplot)
 library(ggplot2)
+library(bayesplot)
 library(ggcarly)
 
 # Set working directory to current folder 
@@ -67,8 +69,8 @@ ggsave("presentation/ld-hist.png", height = 6, width = 8)
 # Show UAR
 ggplot(atop.milsup, aes(x = latent.depth.mean)) + geom_histogram() +
   theme_carly_presents() + labs(x = "Mean Latent Depth", y = "Treaties") +
-  geom_vline(xintercept = 1.9969987829, linetype = "dashed", size = 1)  + 
-  geom_text(label="UAR-Yemen 1958", x = 2.22, y = 30, hjust = 1, size = 5)  # UAR
+  geom_vline(xintercept = 2.2, linetype = "dashed", size = 1)  + 
+  geom_text(label="UAE-Yemen 1958", x = 2.15, y = 30, hjust = 1, size = 5)  # UAR
 ggsave("presentation/ld-hist-deep.png", height = 6, width = 8)
 
 
@@ -84,7 +86,7 @@ ggsave("presentation/ld-hist-shallow.png", height = 6, width = 8)
 ggplot(atop.milsup, aes(x = latent.depth.mean)) + geom_histogram() +
   theme_carly_presents() + labs(x = "Mean Latent Depth", y = "Treaties") +
   geom_vline(xintercept = 0.90289, linetype = "dashed", size = 1)  + 
-  geom_text(label="Czech-German 1967", x = 0.8911, y = 38, hjust = 1, size = 5) # France-Czech consul 1938
+  geom_text(label="Czech-German 1967", x = 0.85, y = 38, hjust = 1, size = 5) # France-Czech consul 1938
 ggsave("presentation/ld-hist-median.png", height = 6, width = 8)
 
 
@@ -92,22 +94,42 @@ ggsave("presentation/ld-hist-median.png", height = 6, width = 8)
 ggplot(atop.milsup, aes(x = latent.depth.mean)) + geom_histogram() +
   theme_carly_presents() + labs(x = "Mean Latent Depth", y = "Treaties") +
   geom_vline(xintercept = 0.66128237, linetype = "dashed", size = 1)  + 
-  geom_text(label="NATO", x = 0.66128237, y = 38, hjust = 1, size = 5) # NATO
+  geom_text(label="NATO", x = 0.64, y = 38, hjust = 1, size = 5) # NATO
 ggsave("presentation/ld-hist-nato.png", height = 6, width = 8)
 
-  
+
+# plot factor loadings 
+ggplot(latent.factors, aes(x = mean, y = var)) + 
+  geom_point(size = 2) +
+  geom_errorbarh(aes(xmin = mean - 2*sd, 
+                     xmax = mean + 2*sd),
+                 height = .2, size = 1) +
+  geom_vline(xintercept = 0) +
+  labs(x = "Factor Loading", y = "Variable") +
+  theme_carly_presents()
+ggsave("presentation/factor-loadings.png", height = 6, width = 8) 
+
+
+# Plot histogram of mean latent depth in full data
+ggplot(atop, aes(x = latent.depth.mean)) + geom_histogram() +
+  theme_carly_presents() + labs(x = "Mean Latent Depth", y = "Treaties") 
+ggsave("presentation/ld-hist-full.png", height = 6, width = 8)
   
 
 # Plot results
-ggplot(depth.dens, aes(x = value,  fill = X2)) +
-  geom_density(alpha = .75) + geom_vline(xintercept = 0, size = 1.5) + 
-  scale_fill_brewer(name = "Sample", palette = "Dark2") +
-  theme_carly_presents() +
-  annotate("text", x = -.12, y = 12, 
-  label = ".963", size = 8, parse = TRUE) + # Note for major
-  annotate("text", x = 0.08, y = 12, 
-  label = ".935", size = 8, parse = TRUE) # Note for non-major 
-  
+depth.post <- as.data.frame(coef.min$beta[, 2])
+colnames(depth.post) <- c("latent.depth.mean")
+
+depth.dens <- ggplot(data = depth.post, mapping = aes(x = latent.depth.mean)) +
+  geom_density() + geom_vline(xintercept = 0, size = 1.5) + 
+  labs(x = "Impact of Latent Depth") +
+  theme_carly_presents()
+
+d <- ggplot_build(depth.dens)$data[[1]] # build the density plot for filling
+
+depth.dens + geom_area(data = subset(d, x > 0), aes(x=x, y=y), fill="#d95f02") +
+  annotate("text", x = .06, y = 20, label = ".92", size = 12, parse = TRUE)
+
 ggsave("presentation/depth-post.png", height = 6, width = 8)
 
  
@@ -116,9 +138,9 @@ lambda.probs$atopid <- reorder(lambda.probs$atopid, lambda.probs$lambda.mean)
 
 lambda.probs %>% 
   filter(non.zero == 1) %>% 
-  ggplot(mapping = aes(x = atopid, y = lambda.mean, fill = factor(uncond.milsup))) + 
+  ggplot(mapping = aes(x = atopid, y = lambda.mean, fill = latent.depth.mean)) + 
   geom_col() +
-  scale_fill_brewer(palette = "Dark2") +
+  scale_fill_continuous(type = "viridis") +
   geom_col() + coord_flip() +
   labs(x = "Alliance", y = "Posterior Mean of Lambda Parameter")  + 
   theme_carly_presents()
@@ -128,10 +150,10 @@ lambda.probs %>%
 ### Plot treaty depth against lambda
 
 # blank axis for illustrative purposes
-ggplot(lambda.df.maj, aes(x = latent.depth.mean, y = lambda)) +
+ggplot(lambda.df.min, aes(x = latent.depth.mean, y = lambda)) +
   labs(x = "Latent Treaty Depth", y = "Alliance Part. Impact") +
   theme_carly_presents()
-ggsave("presentation/ls-lambda-blank.png", height = 6, width = 8)
+ggsave("presentation/ld-lambda-blank.png", height = 6, width = 8)
 
 # non-major powers
 ggplot(lambda.df.min, aes(x = latent.depth.mean, y = lambda)) +
@@ -139,7 +161,7 @@ ggplot(lambda.df.min, aes(x = latent.depth.mean, y = lambda)) +
   geom_smooth(method = "lm") + 
   labs(x = "Latent Treaty Depth", y = "Alliance Part. Impact") +
   theme_carly_presents()
-ggsave("presentation/ls-lambda-min.png", height = 6, width = 8)
+ggsave("presentation/ld-lambda-min.png", height = 6, width = 8)
 
 # Major powers 
 ggplot(lambda.df.maj, aes(x = latent.depth.mean, y = lambda)) +
@@ -147,7 +169,44 @@ ggplot(lambda.df.maj, aes(x = latent.depth.mean, y = lambda)) +
   geom_smooth(method = "lm") + 
   labs(x = "Latent Treaty Depth", y = "Alliance Part. Impact") +
   theme_carly_presents()
-ggsave("presentation/ls-lambda-maj.png", height = 6, width = 8)
+ggsave("presentation/ld-lambda-maj.png", height = 6, width = 8)
+
+
+# Impact of US alliances
+lambda.min.sum %>%
+  filter(us.mem == 1) %>%
+  ggplot( aes(x = lambda.mean, y = atopid)) +
+  geom_point(size = 2) +
+  geom_errorbarh(aes(xmin = lower, xmax = upper),
+                 size = 1.5) +
+  labs(x = "Alliance Impact", y = "ATOPID") +
+  geom_vline(xintercept = 0) +
+  theme_carly_presents()
+ggsave("presentation/lambda-us-min.png", height = 6, width = 8)
+
+
+# Scatter plot highlighting US treaties 
+ggplot(lambda.min.sum, aes(x = latent.depth.mean, y = lambda.mean, shape = factor(us.mem))) +
+  geom_hline(yintercept = median(lambda.min.sum$lambda.mean)) +
+  geom_vline(xintercept = median(lambda.min.sum$latent.depth.mean)) +
+  geom_point(mapping = aes(color = factor(us.mem)), size = 4) +
+  scale_color_brewer(palette="Dark2") +
+  labs(x = "Latent Depth", y = "Alliance Impact") +
+  guides(color = FALSE, shape = FALSE) +
+  theme_carly_presents() 
+ggsave("presentation/lambda-depth-us.png", height = 6, width = 8)
+
+
+# Only US Alliances
+lambda.min.sum %>%
+  filter(us.mem == 1) %>%
+  ggplot(aes(x = latent.depth.mean, y = lambda.mean)) +
+  geom_hline(yintercept = median(lambda.min.sum$lambda.mean)) +
+  geom_vline(xintercept = median(lambda.min.sum$latent.depth.mean)) +
+  geom_point(size = 4) +
+  labs(x = "Latent Depth", y = "Alliance Impact") +
+  theme_carly_presents()
+ggsave("presentation/lambda-depth-usonly.png", height = 6, width = 8)
 
 
 
@@ -218,7 +277,7 @@ ggsave("presentation/bel-eu-imp.png", height = 6, width = 8)
 
 
 ### Appendix Slides
-illus.plot + theme_carly_presents()
+illus.plot 
 ggsave("presentation/illus-arg.png", height = 6, width = 9)
 
 
@@ -255,12 +314,10 @@ ggplot(depth.dens.joint, aes(x = value,  fill = X2)) +
   geom_density(alpha = .75) + 
   scale_fill_brewer(name = "Sample", palette = "Dark2") +
   theme_carly_presents() +
-  annotate("text", x = -.12, y = 12, 
-           label = ".93", size = 8, parse = TRUE) + # Note for major
+  annotate("text", x = -.09, y = 12, 
+           label = ".90", size = 8, parse = TRUE) + # Note for major
   annotate("text", x = 0.07, y = 12, 
-           label = ".93", size = 8, parse = TRUE) + # Note for non-major
-  annotate("text", x = 0.00, y = 2, 
-           label = ".08", size = 5, parse = TRUE) + # Note for overlap
+           label = ".80", size = 8, parse = TRUE) + # Note for non-major
   theme_carly_presents()
 ggsave("presentation/var-slopes-depth.png", height = 6, width = 8)
 
@@ -310,8 +367,8 @@ multiplot.ggplot(b1.sim.plot.pres, b2.sim.plot.pres)
 
 ### Single-level regression check 
 pres.mplot <- multiplot(rreg.min, rreg.maj, m1r.reg,
-                        names = c("Non-Major Powers", "Major Powers", "Full Sample"),
-                        coefficients = "uncond.milsup.pres",
+                        names = c("Non-Major Powers", "Major Powers", "All States"),
+                        coefficients = "avg.depth",
                         by = "Model",
                         xlab = "Value",
                         color = "#d95f02",

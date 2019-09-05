@@ -84,7 +84,8 @@ model {
   gamma ~ normal(0, .5); 
   nu ~ gamma(2, 0.1); // Prior for degrees of freedom in t-dist
   
-  y ~ student_t(nu, y_hat, sigma);
+  asinh(y) ~ student_t(nu, y_hat, sigma);
+  target += -asinh(y);
 }
 
 

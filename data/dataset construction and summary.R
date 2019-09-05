@@ -2,8 +2,6 @@
 # Texas A&M University
 # Constructing Dataset for paper on arms-alliances tradeoff
 
-# To test the prediction that compellent alliances lead to increased spending, 
-# need to expand sample into pre-WWII period
 
 # Load packages
 library(here)
@@ -17,17 +15,12 @@ library(countrycode)
 
 
 
-# Set working directory to current folder
-setwd(here::here())
-getwd()
-
-
 ### This First section creates data on state membership in alliances
 # Uses ATOP data from alliance-measures script
 ########
 
-# select key variables
-alliance.char <- select(atop, atopid,
+# select key variables from ATOP alliances with some military support
+alliance.char <- select(atop.milsup, atopid,
                     begyr, endyr,
                     uncond.milsup, scope.index, latent.depth.mean,
                     offense, defense, consul, neutral, nonagg, base,
@@ -394,6 +387,11 @@ ggplot(state.vars, aes(x = growth.milex)) + geom_density()
 # Trim the exceedingly large values, including infinite
 state.vars$growth.milex[state.vars$growth.milex > 140] <- 140
 
+
+# What does inverse hyperbolic sine transformation look like? 
+ggplot(state.vars, aes(x = asinh(growth.milex))) + geom_density()
+ggplot(state.vars, aes(x = asinh(growth.milex))) + geom_histogram(bins = 45)
+
 # Concerns, given noise in COW measure: 
 # cases where growth is -1 or close. Implies elimination of military budget
 # cases with infinite change- 0 to some spending: newly indep states and fluctuations in budget
@@ -401,10 +399,8 @@ state.vars$growth.milex[state.vars$growth.milex > 140] <- 140
 # Place both these types of observations in their respective state TS to check them
 # Measurement error model would be essential. SIPRI 1949-2016 from Zielinski et al would be less noisy
 
+# But SIPRI is missing most Warsaw Pact members in the Cold War, which is a problem.
 
-# What does inverse hyperbolic sine transformation look like? 
-ggplot(state.vars, aes(x = asinh(growth.milex))) + geom_density()
-ggplot(state.vars, aes(x = asinh(growth.milex))) + geom_histogram(bins = 45)
 
 # Create a growth in GDP variable
 state.vars <- state.vars %>%

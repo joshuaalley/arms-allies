@@ -171,11 +171,11 @@ mean(ml.model.sum$beta[, 2, 9] < 0) # major
 
 
 # Figure out way to combine below intervals 
-dimnames(ml.model.sum$beta)[[3]] <- c("Constant", "Latent Scope", 
+dimnames(ml.model.sum$beta)[[3]] <- c("Constant", "Depth", "Econ. Link", 
+                                      "FP Conc.",
                                       "Number Members", "FP Similarity",
                                       "Democratic Membership", 
-                                      "Wartime", "Asymmetric",
-                                      "US Member", "USSR Member")
+                                      "Wartime", "Asymmetric", "US. Mem", "USSR Mem.")
 dimnames(ml.model.sum$beta)[[2]] <- c("Non-Major", "Major")
 
 mcmc_intervals(ml.model.sum$beta[, 1, ], 
@@ -202,16 +202,16 @@ xtable(beta.summary, digits = 3)
 
 
 # Create plot of the scope parameters
-scope.dens.joint <- cbind(ml.model.sum$beta[, 2, 2], ml.model.sum$beta[, 1, 2])
-colnames(scope.dens.joint) <- c("Major", "Non-Major")
-scope.dens.joint <- melt(scope.dens.joint)
+depth.dens.joint <- cbind(ml.model.sum$beta[, 2, 2], ml.model.sum$beta[, 1, 2])
+colnames(depth.dens.joint) <- c("Major", "Non-Major")
+depth.dens.joint <- melt(depth.dens.joint)
 
-ggplot(scope.dens.joint, aes(x = value,  fill = X2)) +
+ggplot(depth.dens.joint, aes(x = value,  fill = X2)) +
   geom_density(alpha = 0.25) +
   scale_fill_manual(name = "Sample", values=c("#999999", "#000000")) +
   ggtitle("Posterior Distributions of Treaty Scope: Major and Non-Major Powers") +
   theme_classic()
-ggsave("appendix/scope-dens-joint.png", height = 6, width = 8)
+ggsave("appendix/depth-dens-joint.png", height = 6, width = 8)
 
 # Calculate posterior overlap
 beta.overlap <- overlap(list(ml.model.sum$beta[, 1, 2], ml.model.sum$beta[, 2, 2]), nbins = 1000, plot = TRUE)

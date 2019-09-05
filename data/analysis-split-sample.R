@@ -152,7 +152,7 @@ print(beta.summary.min)
 
 # Create an object with both estimates and plot (Gelman's Secret Weapon)
 lscoef.summary <- rbind(beta.summary.maj[2, ], beta.summary.min[2, ])
-row.names(lscoef.summary) <- c("Major Powers", "Minor Powers")
+row.names(lscoef.summary) <- c("Major Powers", "Non-Major Powers")
 lscoef.summary <- as.data.frame(lscoef.summary)
 
 ggplot(lscoef.summary, aes(x = row.names(lscoef.summary), y = mean)) +
@@ -190,7 +190,7 @@ color_scheme_set("red")
 mean(coef.maj$beta[, 2] < 0) # depth: major
 mean(coef.min$beta[, 2] > 0) # depth: non-major
 mean(coef.maj$beta[, 3] < 0) # econ link: major
-mean(coef.min$beta[, 3] > 0) # econ link: non-major
+mean(coef.min$beta[, 3] < 0) # econ link: non-major
 mean(coef.maj$beta[, 4] < 0) # FP concessions: major
 mean(coef.min$beta[, 4] > 0) # FP concessions: non-major
 
@@ -383,7 +383,7 @@ lambda.probs.min %>%
 
 
 
-# Plot Lambdas for US alliances
+# Plot Lambdas for US alliances: error bars
 lambda.min.sum <- extract(ml.model.min, pars = c("lambda"), permuted = TRUE)
 
 # Get credible intervals
@@ -397,18 +397,35 @@ colnames(lambda.min.sum) <- c("atopid", "us.mem", "lambda.mean",
 
 
 # Make the plot
-lambda.min.sum %>%
-  filter(us.mem == 1) %>%
-  ggplot( aes(x = lambda.mean, y = atopid)) +
-   geom_point(aes(colour = latent.depth.mean), size = 2) +
-   geom_errorbarh(aes(xmin = lower, xmax = upper, colour = latent.depth.mean),
-                  size = 1.5) +
-  scale_color_gradient(low = "gray", high = "black") +
-  ggtitle("Impact of Alliance with US on Non-major Power Military Spending") +
-  labs(x = "Alliance Impact", y = "ATOPID") +
-  geom_vline(xintercept = 0) +
-  theme_classic()
+lambda.us.int <- lambda.min.sum %>%
+                 filter(us.mem == 1) %>%
+                   ggplot( aes(x = lambda.mean, y = atopid)) +
+                    geom_point(size = 2) +
+                    geom_errorbarh(aes(xmin = lower, xmax = upper),
+                      size = 1.5) +
+                    ggtitle("Impact of Alliance with US on Non-major Power Military Spending") +
+                  labs(x = "Alliance Impact", y = "ATOPID") +
+                  geom_vline(xintercept = 0) +
+                  theme_classic()
+lambda.us.int
 ggsave("figures/lambda-us-min.png", height = 6, width = 8)
+
+
+
+# Highlight alliances with US membership 
+lambda.depth.us <- ggplot(lambda.min.sum, aes(x = latent.depth.mean, y = lambda.mean, shape = factor(us.mem))) +
+                    geom_hline(yintercept = median(lambda.min.sum$lambda.mean)) +
+                    geom_vline(xintercept = median(lambda.min.sum$latent.depth.mean)) +
+  geom_point(mapping = aes(color = factor(us.mem)), size = 3) +
+  scale_color_manual(values = c("#999999", "#000000")) +
+  labs(x = "Latent Depth", y = "Alliance Impact",
+       color = "US Membership", shape = "US Membership") +
+  ggtitle("Depth and Impact of US Alliances") +
+  theme_classic()
+lambda.depth.us
+ggsave("figures/lambda-depth-us.png", height = 6, width = 8)
+
+multiplot.ggplot(lambda.us.int, lambda.depth.us)
 
 
 ### Calculate aggregate impact of alliance participation on growth in spending 
