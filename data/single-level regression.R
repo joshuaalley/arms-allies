@@ -5,12 +5,14 @@
 
 # Load packages
 library(here)
+library(coefplot)
 library(MASS)
 library(plm)
 library(dplyr)
 library(ggplot2)
 library(margins)
 library(interflex)
+library(ExtremeBounds)
 
 
 # Set seed
@@ -25,6 +27,7 @@ set.seed(12)
 # single-level regressions
 state.char.full <- state.ally.year %>%
   group_by(ccode, year) %>%
+  mutate(deep.alliance = ifelse(latent.depth.mean > median(latent.depth.mean), 1, 0)) %>%
   summarize(
     treaty.count = n(),
     total.ally.expend = sum(ally.spend[defense == 1 | offense == 1], na.rm = TRUE),
@@ -32,6 +35,8 @@ state.char.full <- state.ally.year %>%
     
     uncond.milsup.pres = max(uncond.milsup, na.rm = TRUE),
     uncond.milsup.expend = sum(ally.spend[uncond.milsup == 1], na.rm = TRUE),
+    
+    deep.alliance = max(deep.alliance, na.rm = TRUE),
     
     avg.depth.full = mean(latent.depth.mean, na.rm = TRUE),
     avg.depth = mean(latent.depth.mean[defense == 1 | offense == 1], na.rm = TRUE),
@@ -82,10 +87,14 @@ rm(duplicates)
 summary(state.char.full$avg.depth)
 hist(state.char.full$avg.depth)
 summary(state.char.full$avg.depth.full)
+table(state.char.full$deep.alliance)
+
+# Transform DV for OLS estimators
+state.char.full$ihs.growth.milex <- asinh(state.char.full$growth.milex) # transformation for lm in EBA
 
 
 # Start with a simple linear regression: presence of scope
-m1.all <- lm(growth.milex ~ high.avg.depth + low.avg.depth +
+m1.all <- lm(ihs.growth.milex ~ avg.depth +
                econagg.pres +
             atwar + civilwar.part + polity + gdp.growth + majpower +
             lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
@@ -96,16 +105,15 @@ qqnorm(m1.all$residuals)
 qqline(m1.all$residuals)
 
 
-
 # Add state and year fixed effects 
-m1.reg.fe <- plm(growth.milex ~ high.avg.depth + low.avg.depth +
+m1.reg.fe <- plm(ihs.growth.milex ~ avg.depth +
                    econagg.pres +
                    atwar + civilwar.part + polity + gdp.growth + majpower +
                    lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
-                index = c("ccode", "year"),
-                effect = "individual", # unrestricted error covariance
-                data = state.char.full,
-                model = "within")
+                 index = c("ccode", "year"),
+                 effect = "individual", # unrestricted error covariance
+                 data = state.char.full,
+                 model = "within")
 
 summary(m1.reg.fe)
 
@@ -115,7 +123,7 @@ summary(m1.reg.fe)
 ###### 
 # Residuals in the above have extremely heavy tails. Robust regression weights observations as 
 # a function of their residual, ensuring least squares is still efficient
-m1r.reg <- rlm(growth.milex ~ high.avg.depth + low.avg.depth +
+m1r.reg <- rlm(ihs.growth.milex ~ avg.depth +
                  econagg.pres + 
                  atwar + civilwar.part + polity + gdp.growth + majpower +
                  lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
@@ -127,7 +135,7 @@ plot(m1r.reg$residuals, m1r.reg$w)
 
 # subset by major and minor powers
 # Major powers
-rreg.maj <- rlm(growth.milex ~ high.avg.depth + low.avg.depth +
+rreg.maj <- rlm(ihs.growth.milex ~ avg.depth +
                     econagg.pres + 
                      atwar + civilwar.part + polity + gdp.growth + ln.ally.expend +
                      lsthreat + cold.war + avg.num.mem + avg.dem.prop,
@@ -137,7 +145,7 @@ summary(rreg.maj)
 plot(rreg.maj$residuals, rreg.maj$w)
 
 # minor powers
-rreg.min <- rlm(growth.milex ~ high.avg.depth + low.avg.depth +
+rreg.min <- rlm(ihs.growth.milex ~ avg.depth +
                   econagg.pres + 
                      atwar + civilwar.part + polity + gdp.growth + ln.ally.expend +
                      lsthreat + cold.war + avg.num.mem + avg.dem.prop,
@@ -147,10 +155,24 @@ summary(rreg.min)
 plot(rreg.min$residuals, rreg.min$w)
 
 
+# Exterme bounds analysis of this result 
+eba.full <- eba(data = state.char.full, y = "ihs.growth.milex", 
+               doubtful = c("avg.depth", "econagg.pres", 
+                            "atwar", "civilwar.part", "polity", "gdp.growth", "ln.ally.expend",
+                            "lsthreat", "cold.war", "avg.num.mem", "avg.dem.prop"), 
+               focus = c("avg.depth", "econagg.pres"),
+               k = 0:9, reg.fun = lm)
+print(eba.full)
+hist(eba.full, variables = c("avg.depth", "econagg.pres"),
+     main = c(avg.depth = "Avg. Depth", econagg.pres = "Presence of Economic Concessions"),
+     normal.show = TRUE
+)
+
+
 
 # Interact major power indicator with depth
-rreg.int <- rlm(growth.milex ~ as.factor(high.avg.depth) + as.factor(majpower) + as.factor(high.avg.depth):as.factor(majpower) + 
-                  low.avg.depth + econagg.pres +
+rreg.int <- rlm(growth.milex ~ avg.depth + as.factor(majpower) + avg.depth:as.factor(majpower) + 
+                  econagg.pres +
                  atwar + civilwar.part + polity + gdp.growth + 
                  lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
                data = state.char.full)
@@ -160,34 +182,10 @@ plot(rreg.int$residuals, rreg.int$w)
 
 # Calculate marginal effects
 margins(rreg.int)
-cplot(rreg.int, x = "majpower", dx = "high.avg.depth", what = "effect",
+cplot(rreg.int, x = "majpower", dx = "avg.depth", what = "effect",
       main = "Average Marginal Effect of Treaty Depth For Major and Non-Major Powers",
       factor.lty = 0L, rug = FALSE, xvals = c(0, 1))
 abline(h = 0)
-
-
-
-
-# subset by year: before and after 1945
-# before 1945
-rreg.pre45 <- rlm(growth.milex ~ high.avg.depth + low.avg.depth +
-                  econagg.pres +
-                  atwar + civilwar.part + polity + gdp.growth + ln.ally.expend +
-                  lsthreat + avg.num.mem + avg.dem.prop,
-                data = state.char.full, subset = (year <= 1945))
-
-summary(rreg.pre45)
-plot(rreg.pre45$residuals, rreg.pre45$w)
-
-# after 1945
-rreg.post45 <- rlm(growth.milex ~ high.avg.depth + low.avg.depth +
-                  econagg.pres + 
-                  atwar + civilwar.part + polity + gdp.growth + ln.ally.expend +
-                  lsthreat + cold.war + avg.num.mem + avg.dem.prop,
-                data = state.char.full, subset = (year > 1945))
-
-summary(rreg.post45)
-plot(rreg.post45$residuals, rreg.post45$w)
 
 
 
@@ -197,7 +195,7 @@ plot(rreg.post45$residuals, rreg.post45$w)
 
 
 # Robust regression: major
-rreg.ex.maj <- rlm(growth.milex ~ as.factor(high.avg.depth) + ln.ally.expend + as.factor(high.avg.depth):ln.ally.expend +
+rreg.ex.maj <- rlm(growth.milex ~ as.factor(deep.alliance) + ln.ally.expend + as.factor(deep.alliance):ln.ally.expend +
                      low.avg.depth + econagg.pres +
                       atwar + civilwar.part + polity + gdp.growth + 
                       lsthreat + cold.war + avg.num.mem + avg.dem.prop,
@@ -207,23 +205,23 @@ summary(rreg.ex.maj)
 
 # Calculate marginal effects
 margins(rreg.ex.maj)
-cplot(rreg.ex.maj, x = "high.avg.depth", dx = "ln.ally.expend", what = "effect",
+cplot(rreg.ex.maj, x = "deep.alliance", dx = "ln.ally.expend", what = "effect",
       main = "Average Marginal Effect of Allied Military Capability")
 abline(h = 0)
 
 
 # Robust regression: minor
-rreg.ex.min <- rlm(growth.milex ~ as.factor(high.avg.depth) + ln.ally.expend + as.factor(high.avg.depth):ln.ally.expend +
+rreg.ex.min <- rlm(ihs.growth.milex ~ as.factor(deep.alliance) + ln.ally.expend + as.factor(deep.alliance):ln.ally.expend +
                      low.avg.depth + econagg.pres +
                      atwar + civilwar.part + polity + gdp.growth + 
                      lsthreat + cold.war + avg.num.mem + avg.dem.prop,
-                   data = state.char.full, subset = (majpower == 0))
+                   data = state.char.full, subset = (majpower == 0 & treaty.pres == 1))
 
 summary(rreg.ex.min)
 
 # Calculate marginal effects
 margins(rreg.ex.min)
-cplot(rreg.ex.min, x = "high.avg.depth", dx = "ln.ally.expend", what = "effect",
+cplot(rreg.ex.min, x = "deep.alliance", dx = "ln.ally.expend", what = "effect",
       main = "Average Marginal Effect of Allied Military Capability")
 abline(h = 0)
 
@@ -235,10 +233,47 @@ abline(h = 0)
 inter.data.rel <- filter(state.char.full, treaty.pres == 1)
 inter.data.rel <- as.data.frame(inter.data.rel)
 
-# Robust regression: average relative contribution
-m1.all.irel <- rlm(growth.milex ~ avg.depth + avg.treaty.contrib + avg.depth:avg.treaty.contrib + 
-                     lag.ln.milex +
-                     atwar + civilwar.part + polity  + majpower + ln.gdp +
+
+
+# Robust regression: non-major power alliance members and average depth
+m1.all <- rlm(ihs.growth.milex ~ avg.depth + 
+                    econagg.pres +
+                     atwar + civilwar.part + polity + gdp.growth +
+                     lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
+                   data = inter.data.rel, subset = (majpower == 0)
+)
+summary(m1.all)
+
+
+eba.all <- eba(data = inter.data.rel, y = "ihs.growth.milex", 
+               doubtful = c("avg.depth", "econagg.pres", 
+               "atwar", "civilwar.part", "polity", "gdp.growth", "ln.ally.expend",
+               "lsthreat", "cold.war", "avg.num.mem", "avg.dem.prop"), 
+               focus = c("avg.depth", "econagg.pres"),
+               k = 0:9, reg.fun = lm)
+print(eba.all)
+hist(eba.all, variables = c("avg.depth", "econagg.pres"),
+     main = c(avg.depth = "Avg. Depth", econagg.pres = "Presence of Economic Concessions"),
+     normal.show = TRUE
+     )
+
+
+
+
+# Robust regression: deep alliance dummy
+m1.all.dum <- rlm(ihs.growth.milex ~ deep.alliance + 
+                econagg.pres +
+                atwar + civilwar.part + polity + gdp.growth +
+                lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
+              data = inter.data.rel, subset = (majpower == 0)
+)
+summary(m1.all.dum)
+
+
+# Robust regression: average relative contribution (includes major and non-major)
+m1.all.irel <- rlm(ihs.growth.milex ~ avg.depth + avg.treaty.contrib + avg.depth:avg.treaty.contrib + 
+                     econagg.pres +
+                     atwar + civilwar.part + polity + gdp.growth + majpower +
                      lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
                    data = inter.data.rel
 )
@@ -256,20 +291,20 @@ abline(h = 0)
 
 
 # Interflex check
-bin.rel <- inter.binning(Y = "change.ln.milex", D = "avg.depth", X = "avg.treaty.contrib", 
-                         Z = c("lag.ln.milex", "atwar", "civilwar.part", "polity",
-                               "majpower", "lsthreat", "cold.war", "avg.num.mem", 
-                               "ln.ally.expend", "avg.dem.prop", "ln.gdp"), 
+bin.rel <- inter.binning(Y = "growth.milex", D = "avg.depth", X = "avg.treaty.contrib", 
+                         Z = c("econagg.pres", "atwar", "civilwar.part", "polity",
+                               "lsthreat", "cold.war", "avg.num.mem", 
+                               "ln.ally.expend", "avg.dem.prop", "gdp.growth"), 
                          data = inter.data.rel,
                          na.rm = TRUE
 )
 bin.rel
 
 # Kernel: 
-kernel.rel <- inter.kernel(Y = "change.ln.milex", D = "avg.depth", X = "avg.treaty.contrib", 
-                           Z = c("lag.ln.milex", "atwar", "civilwar.part", "polity",
-                                 "majpower", "lsthreat", "cold.war", "avg.num.mem", 
-                                 "ln.ally.expend", "avg.dem.prop", "ln.gdp"), 
+kernel.rel <- inter.kernel(Y = "growth.milex", D = "avg.depth", X = "avg.treaty.contrib", 
+                           Z = c("econagg.pres", "atwar", "civilwar.part", "polity",
+                                 "lsthreat", "cold.war", "avg.num.mem", 
+                                 "ln.ally.expend", "avg.dem.prop", "gdp.growth"), 
                            data = inter.data.rel,
                            na.rm = TRUE,
                            nboots = 200, parallel = TRUE, cores = 4
@@ -277,38 +312,28 @@ kernel.rel <- inter.kernel(Y = "change.ln.milex", D = "avg.depth", X = "avg.trea
 kernel.rel
 
 
-# GJRM approach
-# Model process that produces econ agg alliances and process linking scope to growth in spending
 
-# TODO(JOSH): improve model of high scope in alliances: check need for instrument
+# Plot key coefficients 
+multiplot(m1r.reg, rreg.min, m1.all, m1.reg.fe, 
+          names = c("All States", "Non-Major Powers", "Non-Major Powers in Alliances", "FE: Non-Major Powers"),
+          coefficients = "avg.depth",
+          by = "Model",
+          xlab = "Value",
+          color = "black",
+          zeroColor = "black",
+          zeroType = 1,
+          zeroLWD = 1,
+          ylab = "Sample",
+          title = "",
+          lwdInner = 2,
+          lwdOuter =  2,
+          pointSize = 4,
+          horizontal = FALSE
+) + theme_classic()
+ggsave("appendix/single-level-mplot.png", height = 6, width = 8)
 
-alliance.eq <- avg.depth ~ polity + atwar + cold.war + lsthreat + gdp.growth
-
-growth.eq <- growth.milex ~ avg.depth + 
-  atwar + civilwar.part + polity + gdp.growth + ln.ally.expend +
-  lsthreat + cold.war + avg.num.mem + avg.dem.prop
-
-# Major powers: Clayton unrotated has best AIC
-joint.model.maj <- gjrm(list(alliance.eq, growth.eq), data = state.char.full,
-                        subset = (state.char.full$majpower == 1),
-                    margins = c("N", "N"),
-                    Model = "B",
-                    BivD = "G0")
-conv.check(joint.model.maj)
-AIC(joint.model.maj)
-summary(joint.model.maj)
-
-# Non-major powers: C270 copula provides best fit
-joint.model.min <- gjrm(list(alliance.eq, growth.eq), data = state.char.full,
-                        subset = (state.char.full$majpower == 0),
-                        margins = c("N", "N"),
-                        Model = "B",
-                        BivD = "HO")
-conv.check(joint.model.min)
-AIC(joint.model.min)
-summary(joint.model.min)
-
-
+# export data as CSV for checking selection on unobservables in STATA
+write.csv(state.char.full, "data/state-char-full.csv", row.names = FALSE, na = "")
 
 # Remove all these regressions from environment
 rm(list = c("m1r.reg", "rreg.ex", "rreg.maj", "rreg.min", "m1.all", "m1.all.iabs", "m1.all.irel",
