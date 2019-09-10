@@ -29,7 +29,7 @@ library(interflex)
 library(ExtremeBounds)
 library(bfa)
 library(coda)
-
+library(GJRM)
 
 
 # Look at conflicts 
@@ -45,8 +45,20 @@ conflict_prefer("extract", "rstan")
 conflict_prefer("monitor", "rstan")
 conflict_prefer("traceplot", "rstan")
 conflict_prefer("display", "xtable")
-conflict_prefer("expand", "reshape")
-
+conflict_prefer("expand", "tidyr")
+conflict_prefer("melt", "reshape2")
+conflict_prefer("scale_discrete_manual", "ggplot2")
+conflict_prefer("chol2inv", "Matrix")
+conflict_prefer("between", "dplyr")
+conflict_prefer("coefplot", "coefplot")
+conflict_prefer("coefplot.default", "coefplot")
+conflict_prefer("colsplit", "reshape2")
+conflict_prefer("Position", "ggplot2")
+conflict_prefer("rcond", "Matrix")
+conflict_prefer("recast", "reshape2")
+conflict_prefer("refit", "modeltools")
+conflict_prefer("lmList", "nlme")
+conflict_prefer("collapse", "dplyr")
 
 
 # Set up RSTAN guidelines

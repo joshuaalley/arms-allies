@@ -120,6 +120,14 @@ depth.dens + geom_area(data = subset(d, x > 0), aes(x=x, y=y), fill="#d95f02") +
 
 ggsave("presentation/depth-post.png", height = 6, width = 8)
 
+
+### Plot intervals for alliance-level regressors
+color_scheme_set("blue")
+mcmc_intervals(coef.min$beta, 
+               prob = .9) +
+  theme_carly_presents()
+ggsave("presentation/beta-intervals-min.png", height = 6, width = 8)
+
  
 #### Plot the Means of the Lambda Parameters
 lambda.probs$atopid <- reorder(lambda.probs$atopid, lambda.probs$lambda.mean)
@@ -144,7 +152,8 @@ ggplot(lambda.df.min, aes(x = latent.depth.mean, y = lambda)) +
 ggsave("presentation/ld-lambda-blank.png", height = 6, width = 8)
 
 # non-major powers
-ggplot(lambda.df.min, aes(x = latent.depth.mean, y = lambda)) +
+lambda.df.min %>% filter(wartime == 0) %>%
+ggplot(aes(x = latent.depth.mean, y = lambda)) +
   geom_point() +
   geom_smooth(method = "lm") + 
   labs(x = "Latent Treaty Depth", y = "Alliance Part. Impact") +
@@ -161,6 +170,7 @@ ggsave("presentation/ld-lambda-maj.png", height = 6, width = 8)
 
 
 # Impact of US alliances
+
 lambda.min.sum %>%
   filter(us.mem == 1) %>%
   ggplot( aes(x = lambda.mean, y = atopid)) +
@@ -174,10 +184,19 @@ ggsave("presentation/lambda-us-min.png", height = 6, width = 8)
 
 
 # Scatter plot highlighting US treaties 
+# blank axis for illustrative purposes
+ggplot(lambda.min.sum, aes(x = latent.depth.mean, y = lambda.mean)) +
+  xlim(-.02, 2.3) + ylim(-.09, .09) +
+  geom_hline(yintercept = median(lambda.min.sum$lambda.mean)) +
+  geom_vline(xintercept = median(lambda.min.sum$latent.depth.mean)) +
+  labs(x = "Latent Treaty Depth", y = "Alliance Impact") +
+  theme_carly_presents()
+ggsave("presentation/lambda-depth-us-blank.png", height = 6, width = 8)
+
 ggplot(lambda.min.sum, aes(x = latent.depth.mean, y = lambda.mean, shape = factor(us.mem))) +
   geom_hline(yintercept = median(lambda.min.sum$lambda.mean)) +
   geom_vline(xintercept = median(lambda.min.sum$latent.depth.mean)) +
-  geom_point(mapping = aes(color = factor(us.mem)), size = 4) +
+  geom_point(mapping = aes(color = factor(us.mem)), size = 4.5) +
   scale_color_brewer(palette="Dark2") +
   labs(x = "Latent Depth", y = "Alliance Impact") +
   guides(color = FALSE, shape = FALSE) +
@@ -324,11 +343,11 @@ maj.vs <- mcmc_intervals(ml.model.sum$beta[, 2, ],
 multiplot.ggplot(non.maj.vs, maj.vs) # need to save manually 
 
 
-#### Graphical comparison of coefficients with Bayesplot
-# Set the color scheme here
-color_scheme_set("red")
-
-
+# add coefficients from post 45 regression
+mcmc_intervals(coef.post45$beta, 
+               prob = .9) +
+  theme_carly_presents()
+ggsave("presentation/beta-intervals-post45.png", height = 6, width = 8)
 
 
 

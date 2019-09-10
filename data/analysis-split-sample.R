@@ -234,22 +234,34 @@ ggsave("figures/lambda-ld-nonmaj.png", height = 6, width = 8)
 multiplot.ggplot(lambda.depth.maj, lambda.depth.min)
 
 
+# Plot depth against lambda in peacetime alliances
+lambda.df.min %>% filter(wartime == 0 & asymm == 1) %>%
+ggplot(aes(x = latent.depth.mean, y = lambda)) +
+geom_point() +
+  geom_smooth(method = "lm") + theme_classic() +
+  labs(x = "Latent Treaty Depth", y = "Effect of Allied Spending") +
+  ggtitle("Non-Major Powers: Association Between Depth and Alliance Impact")
+
+
+lambda.df.min.peace <- lambda.df.min %>% filter(wartime == 0 & asymm == 1) 
+cor.test(lambda.df.min.peace$lambda, lambda.df.min.peace$latent.depth.mean)
+
 # Compare lambdas for alliances with major and minor power members
 lambda.df.mix <- lambda.df.min %>%
-  select(atopid, lambda, latent.depth.mean) %>%
-  left_join(select(lambda.df.maj, atopid, lambda, latent.depth.mean), 
-            by = c("atopid", "latent.depth.mean")) %>% 
+  select(atopid, lambda) %>%
+  left_join(select(lambda.df.maj, atopid, lambda), 
+            by = c("atopid")) %>% 
      rename(
      lambda.min = lambda.x,
      lambda.maj = lambda.y
-     ) %>%
-  filter(complete.cases(atopid, latent.depth.mean, lambda.min, lambda.maj)) %>%
-  mutate(
-    lambda.diff = abs(lambda.min- lambda.maj) # this isn't working
-  )
+     )
 lambda.df.mix <- as.data.frame(lambda.df.mix)
 lambda.df.mix <- melt(lambda.df.mix, 
-                id = c("atopid", "latent.depth.mean", "lambda.diff"))
+                id = c("atopid"))
+
+ggplot(lambda.df.mix, aes(x = variable, y = value)) +
+  geom_violin() + theme_dark()
+
 
 # plot
 ggplot(lambda.df.mix, aes(x = atopid, y = value, colour = variable)) + 

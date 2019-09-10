@@ -106,8 +106,6 @@ Diehl 1994 &  & X &  \\
 Goldsmith 2003 &  &  & X \\
 Morgan \& Palmer 2006 &  & X & \\ 
 Quiroz-Flores 2011 &  & X &  \\ 
-Digiuseppe \& Poast 2016 & X &  & \\ 
-Horowitz et al 2017 &  & X & \\ 
 \hline
 \end{tabular}
 \end{center} 
@@ -159,22 +157,6 @@ I make my claim about alliance participation and military spending in three ways
 
 \section{Argument}
 
-%------------------------------------------------
-
-\begin{frame}{Assumptions}
-
-\begin{itemize} 
-\item States pursue domestic consumption and security. 
-\pause 
-\item Alliances and military spending both provide security.  
-\pause 
-\item Military spending has opportunity costs, which decrease with state size. 
-\pause 
-\item Alliances reduce freedom of action.  
-\end{itemize}
-
-
-\end{frame}
 
 %------------------------------------------------
 
@@ -207,9 +189,12 @@ Deep treaties stipulate extensive defense cooperation.
 
 \begin{enumerate} 
 \pause
+\item \textbf{Primary Obligations} 
+\begin{itemize}
 \item Whether the alliance promises military support and conditions on that support. 
+\end{itemize}
 \pause
-\item Formal defense cooperation:
+\item \textbf{Formal defense cooperation}:
 \pause
 \begin{itemize}
 \item Bases, policy coordination, military aid, side agreements, formal institutions. 
@@ -227,7 +212,7 @@ There are two ways depth limits alliance members ability to free-ride.
 
 \begin{enumerate}
 \pause
-\item Greater alliance value.  
+\item Greater alliance value.   
 \pause
 \item Greater allied leverage. 
 \end{enumerate}
@@ -248,7 +233,7 @@ Depth is relevant for non-major powers because they are more prone to free-ride.
 \begin{frame}{Non-Major Powers}
 
 \begin{itemize}
-\item Goal: Security.
+\item Emphasize immediate security.
 \pause
 \item Constraint: Opportunity Costs of Military Spending.  
 \pause
@@ -307,7 +292,7 @@ My measure of depth for each alliance is the posterior mean of a latent factor.
 \begin{itemize}
 \item Multiple observed indicators of depth (ATOP): 
 \begin{itemize} 
-\item \textit{Military Support}: offense, defense, neutrality, consultation, non-aggression, unconditional military support.
+\item \textit{Primary Obligations}: offense, defense, neutrality, consultation, non-aggression, unconditional military support.
 \item \textit{Defense Cooperation}: bases, integrated command, military aid, IO formation, defense policy coordination, other military agreements. 
 \end{itemize} 
 \pause 
@@ -321,7 +306,7 @@ My measure of depth for each alliance is the posterior mean of a latent factor.
 
 %------------------------------------------------
 
-\begin{frame}{Latent Measure of Treaty depth}
+\begin{frame}{Latent Measure of Treaty Depth}
 
 % Visual summary of latent measure
 \begin{figure}[htbp]
@@ -334,7 +319,7 @@ My measure of depth for each alliance is the posterior mean of a latent factor.
 
 %------------------------------------------------
 
-\begin{frame}{Latent Measure of Treaty depth: Shallow}
+\begin{frame}{Latent Measure of Treaty Depth: Shallow}
 
 % Visual summary of latent measure
 \begin{figure}[htbp]
@@ -347,7 +332,7 @@ My measure of depth for each alliance is the posterior mean of a latent factor.
 
 %------------------------------------------------
 
-\begin{frame}{Latent Measure of Treaty depth: Typical}
+\begin{frame}{Latent Measure of Treaty Depth: Typical}
 
 % Visual summary of latent measure
 \begin{figure}[htbp]
@@ -360,7 +345,7 @@ My measure of depth for each alliance is the posterior mean of a latent factor.
 
 %------------------------------------------------
 
-\begin{frame}{Latent Measure of Treaty depth: Deep}
+\begin{frame}{Latent Measure of Treaty Depth: Deep}
 
 % Visual summary of latent measure
 \begin{figure}[htbp]
@@ -482,9 +467,13 @@ Argentina 1955 & .418  & 0 & \ldots  \\
 \begin{frame}{Sample and Key Variables}
 
 \begin{itemize}
-\item \textbf{Sample}: Non-major power states--- 1816-2007. Alliances with military support. 
+\item \textbf{Sample}: Non-major power states (COW)--- 1816-2007. 193 Alliances with military support. 
 \pause
-\item \textbf{DV}: Growth in military spending $ = \frac{ \Delta \mbox{Mil. Expend}_t }{ \mbox{Mil. Expend}_{t-1} }$ 
+\item \textbf{DV}: Growth in military spending (COW) $ = \frac{ \Delta \mbox{Mil. Expend}_t }{ \mbox{Mil. Expend}_{t-1} }$ 
+\pause
+\begin{itemize} 
+\item Transformed with Inverse Hyperbolic Sine. 
+\end{itemize} 
 \pause
 \item \textbf{Alliance-Level IV}: Mean treaty depth
 \end{itemize} 
@@ -559,12 +548,26 @@ US spent \$36.0 billion on NATO in 2018, or 5.5\% of the total defense spending.
 
 %------------------------------------------------
 
-\begin{frame}{Treaty depth and $\lambda$: Non-major Powers}
+\begin{frame}{Treaty Depth and $\lambda$: Non-major Powers}
 
 \begin{figure}
 	\centering
 		\includegraphics[width=0.9\textwidth]{ld-lambda-min.png}
 	\label{fig:ld-lambda-min}
+\end{figure}
+
+
+\end{frame}
+
+
+%------------------------------------------------
+
+\begin{frame}{Treaty Depth and Other Alliance Characteristics}
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.9\textwidth]{beta-intervals-min.png}
+	\label{fig:beta-intervals-min}
 \end{figure}
 
 
@@ -576,7 +579,7 @@ US spent \$36.0 billion on NATO in 2018, or 5.5\% of the total defense spending.
 
 %------------------------------------------------
 
-\begin{frame}{Foreign Entanglement and Formal Obligations}
+\begin{frame}{Foreign Entanglement and Shallow Formal Obligations}
 
 \begin{figure}
 	\centering
@@ -613,11 +616,11 @@ US spent \$36.0 billion on NATO in 2018, or 5.5\% of the total defense spending.
 
 %------------------------------------------------
 
-\begin{frame}{NATO Depth} 
+\begin{frame}{US Alliances in Context} 
 
 \begin{figure}
 	\centering
-		\includegraphics[width=0.95\textwidth]{ld-hist-nato.png}
+		\includegraphics[width=0.95\textwidth]{lambda-depth-us-blank.png}
 \end{figure}
 
 
@@ -635,19 +638,6 @@ US spent \$36.0 billion on NATO in 2018, or 5.5\% of the total defense spending.
 
 
  \end{frame}
-
-
-%------------------------------------------------
-
-\begin{frame}{Impact of US Alliance on Non-major Power Military Spending} 
-
-\begin{figure}
-	\centering
-		\includegraphics[width=0.85\textwidth]{lambda-us-min.png}
-\end{figure}
-
-
-\end{frame}
 
 
 
@@ -756,6 +746,7 @@ jkalley14@tamu.edu
 \begin{enumerate}
 \item Domestic political economy of military spending. 
 \item Measurement error and missing data. 
+\item Formal depth only in the measure. 
 \item Strategic alliance design
 \end{enumerate}
 
@@ -774,6 +765,7 @@ jkalley14@tamu.edu
 
 
 \end{frame}
+
 
 %-----------------------------------------------
 
@@ -968,6 +960,31 @@ $ p(\nu) \sim gamma(2, 0.1)$
 
 %------------------------------------------------
 
+\begin{frame}{Impact of US Alliance on Non-major Power Military Spending} 
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.85\textwidth]{lambda-us-min.png}
+\end{figure}
+
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}{NATO} 
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.95\textwidth]{ld-hist-nato.png}
+\end{figure}
+
+
+ \end{frame}
+
+
+%------------------------------------------------
+
 \begin{frame}{Non-Major Powers in NATO: Belgium}
 
 
@@ -1067,6 +1084,32 @@ I give $\beta_j$ a multivariate normal prior with prior scale $\tau$:
 \begin{figure}[htbp]
 	\centering
 		\includegraphics[width=0.95\textwidth]{vs-res-full.png}
+\end{figure}
+
+\end{frame}
+
+
+%------------------------------------------------
+
+\begin{frame}{Alternative Measure of Military Spending}
+
+
+\begin{itemize} 
+\item Nordhaus et al 2012 data: mix of COW and SIPRI- fully rebased
+\item 1949 to 2001
+\item Same model: use changes in spending instead of growth. 
+\end{itemize}
+
+\end{frame}
+
+
+%------------------------------------------------
+
+\begin{frame}{Alternative Measure of Military Spending: Results}
+
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.95\textwidth]{beta-intervals-post45.png}
 \end{figure}
 
 \end{frame}

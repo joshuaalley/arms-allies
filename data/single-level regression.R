@@ -320,6 +320,10 @@ ggsave("appendix/single-level-mplot.png", height = 6, width = 8)
 # export data as CSV for checking selection on unobservables in STATA
 write.csv(state.char.full, "data/state-char-full.csv", row.names = FALSE, na = "")
 
+
+
+
+
 # Remove all these regressions from environment
 rm(list = c("m1r.reg", "rreg.ex", "rreg.maj", "rreg.min", "m1.all", "m1.all.iabs", "m1.all.irel",
             "m1.reg.fe", "m1.fgls", "reg.ex.gls", "reg.ex", "rreg.pre45", "rreg.post45", "rreg.int"))

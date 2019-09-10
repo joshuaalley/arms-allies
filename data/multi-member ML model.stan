@@ -133,11 +133,13 @@ model {
   
   
 // Separate models for each group- information shared through common parameters
-y_min ~ student_t(nu[1], alpha_cap[1] + alpha_state[state_min] + alpha_year[year_min] + W_min * gamma + 
+asinh(y_min) ~ student_t(nu[1], alpha_cap[1] + alpha_state[state_min] + alpha_year[year_min] + W_min * gamma + 
            csr_matrix_times_vector(N_min, A_min, w_min, v_min, u_min, lambda_min), sigma[1]);
-y_maj ~ student_t(nu[2], alpha_cap[2] + alpha_state[state_maj] + alpha_year[year_maj] + W_maj * gamma + 
+target += -asinh(y_min);           
+           
+asinh(y_maj) ~ student_t(nu[2], alpha_cap[2] + alpha_state[state_maj] + alpha_year[year_maj] + W_maj * gamma + 
            csr_matrix_times_vector(N_maj, A_maj, w_maj, v_maj, u_maj, lambda_maj), sigma[2]);
-
+ target += -asinh(y_maj);
  
 }
 
