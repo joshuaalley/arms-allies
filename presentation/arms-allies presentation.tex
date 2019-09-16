@@ -29,7 +29,7 @@
 %	TITLE PAGE
 %----------------------------------------------------------------------------------------
 
-\title{Alliance Participation, Treaty Depth and Military Spending}
+\title{Alliance Participation, Treaty Depth, and Military Spending}
 \date{\today}
 \author{Joshua Alley}
 \institute{Texas A\&M University}
@@ -43,6 +43,43 @@
 %----------------------------------------------------------------------------------------
 %	PRESENTATION SLIDES
 %----------------------------------------------------------------------------------------
+
+%------------------------------------------------
+% Here's my point. 
+ \begin{frame}[standout]
+
+How does alliance participation affect military spending?  
+
+ \end{frame}
+
+%------------------------------------------------
+% Here's my point. 
+ \begin{frame}{A Tale of Two French Alliances} 
+
+\begin{columns}
+
+\uncover<2->{
+\begin{column}{0.5\textwidth}
+\textbf{France and Belgium 1920}
+
+\includegraphics[width = .95\textwidth]{franco-belgian-rhineland.jpg} 
+
+\end{column}
+}
+
+
+\uncover<3->{
+\begin{column}{0.5\textwidth}
+\textbf{France and Poland 1925}
+ 
+\includegraphics[width = .95\textwidth]{locarno-sign.jpeg}  
+ 
+\end{column}
+}
+
+\end{columns}
+
+ \end{frame}
 
 
 %------------------------------------------------
@@ -157,7 +194,6 @@ I make my claim about alliance participation and military spending in three ways
 
 \section{Argument}
 
-
 %------------------------------------------------
 
 \begin{frame}{The Problem of Free-riding}
@@ -247,7 +283,7 @@ Depth is relevant for non-major powers because they are more prone to free-ride.
 \begin{frame}[standout]
 
 \begin{quote}
-\textsc{Hypothesis 1}: As alliance treaty depth increases, growth in non-major power military spending from alliance participation will increase. 
+\textsc{Hypothesis 1}: The impact of alliance participation on percentage changes in non-major power military spending will be higher in deep alliances, relative to shallow alliances.
 \end{quote} 
 
 
@@ -366,7 +402,7 @@ My measure of depth for each alliance is the posterior mean of a latent factor.
 \pause
 \item Two connected regressions: alliance and state-level. 
 \pause 
-\item Alliance characteristics modify the association between alliance membership and spending growth.  
+\item Alliance characteristics modify the association between alliance membership and percentage changes in spending.  
 \end{itemize} 
 
 \end{frame} 
@@ -382,7 +418,7 @@ My measure of depth for each alliance is the posterior mean of a latent factor.
 & & & & &    \mbox{Characteristics}  \\
 \uncover<3->{& & & & \lambda = & \alpha_{all} + \beta_1 \mbox{Depth} + \textbf{X} \beta \\}
 & & & & &    \downarrow  \\}
-\mbox{Growth} =     & \mbox{Varying}   & + & \mbox{State}   & + & \mbox{Alliance} \\
+\mbox{\% Change} =     & \mbox{Varying}   & + & \mbox{State}   & + & \mbox{Alliance} \\
 \mbox{Mil. Ex.}      & \mbox{Intercepts}&   &  \mbox{Vars.} &   & \mbox{Participation} \\
 \uncover<3->{\mbox{y} = & \alpha + \alpha^{st} + \alpha^{yr}   & + & \textbf{W} \gamma  & + & \textbf{Z} \lambda \\}
 \end{array}
@@ -428,7 +464,7 @@ Example year: Argentina 1955
 
 \begin{equation*}
 \begin{split}
-& \uncover<2->{\mbox{1955 Growth Milex.} = } \uncover<3>{\mbox{Overall mean}} \\
+& \uncover<2->{\mbox{1955 \% Change Milex.} = } \uncover<3>{\mbox{Overall mean}} \\
 & \uncover<4>{+ \mbox{Argentine Intercept} + \mbox{1955 Intercept}} \\
 & \uncover<5>{+ \mbox{Argentine Characteristics}} \\
 & \uncover<6>{+ \lambda_{OAS} * \mbox{OAS Expenditure} + \lambda_{Rio} * \mbox{Rio Pact Expenditure}}
@@ -445,22 +481,6 @@ Example year: Argentina 1955
 \end{frame}
 
 
-%------------------------------------------------
-
-
-\begin{frame}[standout]{Z} 
-
-\begin{tabular}{lccc}
-State-Year & Rio Pact & Warsaw Pact & \ldots \\
-\hline
-Argentina 1954 & .347 & 0 & \ldots \\
-Argentina 1955 & .418  & 0 & \ldots  \\
- \vdots & \vdots & \vdots & \ldots  
-\end{tabular}
-
- \end{frame}
-
-
 
 %------------------------------------------------
 
@@ -469,7 +489,7 @@ Argentina 1955 & .418  & 0 & \ldots  \\
 \begin{itemize}
 \item \textbf{Sample}: Non-major power states (COW)--- 1816-2007. 193 Alliances with military support. 
 \pause
-\item \textbf{DV}: Growth in military spending (COW) $ = \frac{ \Delta \mbox{Mil. Expend}_t }{ \mbox{Mil. Expend}_{t-1} }$ 
+\item \textbf{DV}: Percentage change in military spending (COW) $ = \frac{ \Delta \mbox{Mil. Expend}_t }{ \mbox{Mil. Expend}_{t-1} }$ 
 \pause
 \begin{itemize} 
 \item Transformed with Inverse Hyperbolic Sine. 
@@ -501,7 +521,7 @@ Argentina 1955 & .418  & 0 & \ldots  \\
 
 %------------------------------------------------
 
-\begin{frame}{Association Between Treaty Depth and Growth in Military Spending} 
+\begin{frame}{Association Between Treaty Depth and Changes in Military Spending} 
 
 \begin{figure}
 	\centering
@@ -518,7 +538,7 @@ Argentina 1955 & .418  & 0 & \ldots  \\
 \begin{frame}[standout]{Importance} 
 
 \begin{tabular}{cc}
- Post. Mean & Median Growth \\
+ Post. Mean & Median \% Changes \\
 \hline
 \pause
  0.02 & 0.06  \\
@@ -554,6 +574,19 @@ US spent \$36.0 billion on NATO in 2018, or 5.5\% of the total defense spending.
 	\centering
 		\includegraphics[width=0.9\textwidth]{ld-lambda-min.png}
 	\label{fig:ld-lambda-min}
+\end{figure}
+
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}{Treaty Depth and $\lambda$: Asymmetric Obligations}
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.9\textwidth]{ld-lambda-min-asymm.png}
+	\label{fig:ld-lambda-min-asymm}
 \end{figure}
 
 
@@ -670,7 +703,7 @@ How alliance participation affects military spending depends on treaty depth.
 % The two subpoints 
  \begin{frame}[standout]
 
-Though alliance participation usually decreases non-major power military spending, growth is higher in deep treaties.
+Though alliance participation usually decreases non-major power military spending, deep treaties increase the impact of alliance participation.
 
  \end{frame}
 
@@ -755,7 +788,7 @@ jkalley14@tamu.edu
 
 %-----------------------------------------------
 
-\begin{frame}{Spending Growth and the Hypotheses}
+\begin{frame}{Spending Changes and the Hypotheses}
 
 \begin{figure}
 	\centering
@@ -786,7 +819,7 @@ jkalley14@tamu.edu
 
 Another way to check complicated models is simulating fake data with known parameters, then using the model to recover said parameters. 
 
-To check my model, I simulated a fake dataset of 2,000 observations with 50 states, 200 years, 100 alliances and 2 variables at each level.
+To check my model, I simulated a dataset of 2,000 observations with 50 states, 200 years, 100 alliances and 4 variables: 2 at each level.
 
 The 90\% credible intervals contain the known value for all regression parameters. 93 of 100 alliance specific parameter intervals contain the known value. 
 
@@ -927,6 +960,21 @@ $ p(\nu) \sim gamma(2, 0.1)$
 
 \end{frame}
 
+%------------------------------------------------
+
+
+\begin{frame}[standout]{Z} 
+
+\begin{tabular}{lccc}
+State-Year & Rio Pact & Warsaw Pact & \ldots \\
+\hline
+Argentina 1954 & .347 & 0 & \ldots \\
+Argentina 1955 & .418  & 0 & \ldots  \\
+ \vdots & \vdots & \vdots & \ldots  
+\end{tabular}
+
+ \end{frame}
+
 
 
 %------------------------------------------------
@@ -985,7 +1033,7 @@ $ p(\nu) \sim gamma(2, 0.1)$
 
 %------------------------------------------------
 
-\begin{frame}{Non-Major Powers in NATO: Belgium}
+\begin{frame}{Alliance Participation and Military Spending: Belgium}
 
 
 \begin{figure}
@@ -1097,7 +1145,7 @@ I give $\beta_j$ a multivariate normal prior with prior scale $\tau$:
 \begin{itemize} 
 \item Nordhaus et al 2012 data: mix of COW and SIPRI- fully rebased
 \item 1949 to 2001
-\item Same model: use changes in spending instead of growth. 
+\item Same model: use changes in spending instead of percentage changes. 
 \end{itemize}
 
 \end{frame}
