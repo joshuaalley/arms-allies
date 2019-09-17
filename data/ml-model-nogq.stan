@@ -76,7 +76,7 @@ model {
   sigma ~ normal(0, 1);
   alpha_year_std ~ normal(0, 1);
   alpha_state_std ~ normal(0, 1); 
-  lambda_std ~ normal(0, 1);
+  lambda_std ~ normal(0, .5);
   sigma_state ~ normal(0, .5);
   sigma_year ~ normal(0, .5); 
   sigma_all ~ normal(0, .5); 
@@ -88,4 +88,13 @@ model {
   target += -asinh(y);
 }
 
+generated quantities {
+  vector[N] log_lik; // Log likelihood for loo and WAIC model comparisons
+  vector[N] y_pred; //  posterior predictive distribution
 
+ for(i in 1:N)
+ log_lik[i] = student_t_lpdf(y[i] | nu, y_hat[i], sigma);
+
+ y_pred[i] = student_t_rng(nu, y_hat[i], sigma);
+
+}
