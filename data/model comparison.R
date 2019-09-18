@@ -6,19 +6,15 @@
 # 1. dataset contruction and summary.R 
 # 2. analysis-joint.R 
 
-# load packages
-library(loo)
 
-# set working directory
-setwd(here::here())
-getwd()
-
-# Initial model is ml.model from the analysis script
-# Must use this file in conjunction with the analysis script
+# Analyze different models from iterations of ml-model-min 
+# Must use this file in conjunction with the analysis-split-sample script
 # Note: Do not overwrite loo objects- this will crash the R session. 
 
+# load key models
+
 # extract the log-likelihood from the full model
-log.lik.full <- extract_log_lik(ml.model)
+log.lik.full <- extract_log_lik(ml.model.min)
 loo.full <- loo(log.lik.full)
 print(loo.full)
 plot(loo.full, label_points = TRUE)

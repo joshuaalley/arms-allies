@@ -204,7 +204,7 @@ ggplot(latent.factors, aes(x = mean, y = var)) +
   geom_vline(xintercept = 0) +
   labs(x = "Factor Loading", y = "Variable") +
     theme_classic()
-ggsave("appendix/factor-loadings.png", height = 6, width = 8)
+ggsave("figures/factor-loadings.png", height = 6, width = 8)
 
 # get posterior scores of latent factor: mean and variance
 post.score <- get_posterior_scores(latent.depth)

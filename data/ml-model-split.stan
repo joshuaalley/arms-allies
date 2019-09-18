@@ -95,6 +95,7 @@ generated quantities {
  for(i in 1:N)
  log_lik[i] = student_t_lpdf(y[i] | nu, y_hat[i], sigma);
 
+ for(i in 1:N)
  y_pred[i] = student_t_rng(nu, y_hat[i], sigma);
 
 }

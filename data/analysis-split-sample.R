@@ -5,8 +5,10 @@
 
 # Environment is determined by use of projects and/or running this file in conjunction with
 # the scripts alliance-measures.R and dataset construction and summary.R 
-# run this after analysis.R 
 
+
+# Compile the model code: no generated quantities block to keep size down
+model.2 <- stan_model(file = "data/ml-model-split.stan")
 
 
 # Pulled the relevant major and minor power dataframes from the analysis script 
@@ -32,9 +34,6 @@ stan.data.maj <- list(N = nrow(reg.state.comp.maj), y = reg.state.comp.maj[, 3],
 )
 
 
-# Compile the model code: no generated quantities block to keep size down
-model.2 <- stan_model(file = "data/ml-model-nogq.stan")
-
 # Regular STAN
 system.time(
   ml.model.maj <- sampling(model.2, data = stan.data.maj, 
@@ -44,7 +43,7 @@ system.time(
 )
 
 # diagnose model
-launch_shinystan(ml.model.maj)
+# launch_shinystan(ml.model.maj)
 check_hmc_diagnostics(ml.model.maj)
 
 # trace plot for appendix
@@ -72,7 +71,6 @@ stan.data.min <- list(N = nrow(reg.state.comp.min), y = reg.state.comp.min[, 3],
                       W = reg.state.mat.min, M = ncol(reg.state.mat.min)
 )
 
-
 # Regular STAN
 system.time(
   ml.model.min <- sampling(model.2, data = stan.data.min, 
@@ -82,7 +80,7 @@ system.time(
 )
 
 # diagnose model
-launch_shinystan(ml.model.min)
+# launch_shinystan(ml.model.min)
 check_hmc_diagnostics(ml.model.min)
 
 # trace plot for appendix
@@ -235,15 +233,17 @@ multiplot.ggplot(lambda.depth.maj, lambda.depth.min)
 
 
 # Plot depth against lambda in peacetime alliances
-lambda.df.min %>% filter(wartime == 0 & asymm == 1) %>%
+lambda.df.min %>% 
+  filter(wartime == 0) %>%
 ggplot(aes(x = latent.depth.mean, y = lambda)) +
+  geom_hline(yintercept = 0) +
 geom_point() +
   geom_smooth(method = "lm") + theme_classic() +
   labs(x = "Latent Treaty Depth", y = "Effect of Allied Spending") +
   ggtitle("Non-Major Powers: Association Between Depth and Alliance Impact")
 
 
-lambda.df.min.peace <- lambda.df.min %>% filter(wartime == 0 & asymm == 1) 
+lambda.df.min.peace <- lambda.df.min %>% filter(wartime == 0 & asymm == 1)
 cor.test(lambda.df.min.peace$lambda, lambda.df.min.peace$latent.depth.mean)
 
 # Compare lambdas for alliances with major and minor power members
@@ -261,12 +261,6 @@ lambda.df.mix <- melt(lambda.df.mix,
 
 ggplot(lambda.df.mix, aes(x = variable, y = value)) +
   geom_violin() + theme_dark()
-
-
-# plot
-ggplot(lambda.df.mix, aes(x = atopid, y = value, colour = variable)) + 
-  geom_point(aes(size = latent.depth.mean)) + 
-  labs(x = 'ATOPID', y = "Effect of Allied Spending") 
 
 
 
@@ -336,10 +330,9 @@ lambda.probs.min %>%
 
 
 # Plot Lambdas for US alliances: error bars
-lambda.min.sum <- extract(ml.model.min, pars = c("lambda"), permuted = TRUE)
 
 # Get credible intervals
-lambda.min.sum <- apply(lambda.min.sum$lambda, 2, function(x) quantile(x, c(.05, .95)))
+lambda.min.sum <- apply(sum.min.post$lambda, 2, function(x) quantile(x, c(.05, .95)))
 
 lambda.min.sum <- cbind.data.frame(lambda.probs.min$atopid, reg.all.data.min$us.mem,
                                    lambda.probs.min$lambda.mean, reg.all.data.min$latent.depth.mean,
@@ -407,3 +400,8 @@ agg.all.min <- cbind(reg.state.comp.min$ccode,
 agg.all.imp <- rbind(agg.all.maj, agg.all.min)
 colnames(agg.all.imp) <- c("ccode", "year", "agg.all.imp")
 agg.all.imp <- data.frame(agg.all.imp)
+
+
+# Save model and take it out of the workspace (1.7 GB w/ likelihood and PPC)
+saveRDS(ml.model.min, "data/ml-model-min-zrescale.rds")
+rm(ml.model.min)

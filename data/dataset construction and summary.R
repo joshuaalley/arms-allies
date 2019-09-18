@@ -452,6 +452,7 @@ write.csv(state.vars,
 #####
 # Needed for a state-year measure of allied capability and to create the matrix of state membership in alliances
 
+
 # Merge the state characteristics and alliance data
 atop.cow.year <- right_join(alliance.comp, state.vars)
 
@@ -543,16 +544,18 @@ atop.cow.year$ln.milex[is.na(atop.cow.year$ln.milex)] <- 0
 # Create the dataset
 state.mem.cap <- atop.cow.year %>% 
   filter(defense == 1 | offense == 1) %>%
-  select(atopid, ccode, year, ln.milex, ln.gdp) %>% 
+  select(atopid, ccode, year, cinc, ln.milex, ln.gdp) %>% 
   left_join(alliance.year) %>%
   mutate(alliance.contrib = ln.milex / total.expend,
          ally.spend = total.expend - ln.milex,
+         ally.cap = total.cap - cinc,
          contrib.gdp = ln.gdp / total.gdp) %>%
   distinct(atopid, ccode, year, .keep_all = TRUE) %>%
-  select(ccode, atopid, year, ally.spend, avg.democ, alliance.contrib, contrib.gdp) 
+  select(ccode, atopid, year, ally.spend, ally.cap, avg.democ, alliance.contrib, contrib.gdp) 
 
 # Replace missing values with zero if atopid = 0 (no alliance)
 state.mem.cap$ally.spend[is.na(state.mem.cap$ally.spend) & state.mem.cap$atopid == 0] <- 0
+state.mem.cap$ally.cap[is.na(state.mem.cap$ally.cap) & state.mem.cap$atopid == 0] <- 0
 state.mem.cap$alliance.contrib[is.na(state.mem.cap$alliance.contrib) & state.mem.cap$atopid == 0] <- 0
 state.mem.cap$avg.democ[is.na(state.mem.cap$avg.democ) & state.mem.cap$atopid == 0] <- 0
 state.mem.cap$contrib.gdp[is.na(state.mem.cap$contrib.gdp) & state.mem.cap$atopid == 0] <- 0
@@ -581,26 +584,54 @@ summary(state.mem.cap$ally.spend)
 state.mem.cap <- state.mem.cap[complete.cases(state.mem.cap$ally.spend), ]
 ggplot(state.mem.cap, aes(x = ally.spend)) + geom_histogram()
 
+
+# Summarize by capability
+summary(state.mem.cap$ally.cap)
+state.mem.cap <- state.mem.cap[complete.cases(state.mem.cap$ally.cap), ]
+ggplot(state.mem.cap, aes(x = ally.cap)) + geom_histogram()
+
 # filter to ensure alliances match: 
 state.mem.cap <- filter(state.mem.cap, atopid %in% alliance.char$atopid)
 
 
 # rescale the ally expenditures variable by a log transformation 
 # keeps them on a similar scale to regressors in ML model
-state.mem.cap$ally.spend <- rescale(state.mem.cap$ally.spend)
-summary(state.mem.cap$ally.spend)
-ggplot(state.mem.cap, aes(x = ally.spend)) + geom_histogram()
+state.mem.cap$ally.spend.rescale <- rescaler(state.mem.cap$ally.spend, type = "range")
+state.mem.cap$ally.spend.rescale[state.mem.cap$ally.spend.rescale == 0] <- 0.01
+
+summary(state.mem.cap$ally.spend.rescale)
+ggplot(state.mem.cap, aes(x = ally.spend.rescale)) + geom_histogram()
+
+# Normalized spending by year
+state.mem.cap <- state.mem.cap %>% 
+                  group_by(year) %>%
+                   mutate(
+                     ally.spend.norm = ally.spend / max(ally.spend)
+                   ) %>%
+                  group_by()
+                  
+summary(state.mem.cap$ally.spend.norm)
+ggplot(state.mem.cap, aes(x = ally.spend.norm)) + geom_histogram()
 
 
+# Create several alternative membership matrices
 # Create another membership matrix with contribution to the alliance
 state.mem.contrib <- select(state.mem.cap, atopid, ccode, year, alliance.contrib) %>%
                   spread(key = atopid, 
                             value = alliance.contrib, fill = 0)
 
-# This dataframe  contains the spending for the alliances states are a member of in a given year
-state.mem.spread <- select(state.mem.cap, atopid, ccode, year, ally.spend) %>%
-  spread(key = atopid, value = ally.spend, fill = 0)
+# This dataframe contains the total cinc scores for the alliances states are a member of in a given year
+state.mem.spread.cinc <- select(state.mem.cap, atopid, ccode, year, ally.cap) %>%
+  spread(key = atopid, value = ally.cap, fill = 0)
 
+
+# This dataframe contains the normalized capability (by year) for the alliances states are a member of in a given year
+state.mem.spread.norm <- select(state.mem.cap, atopid, ccode, year, ally.spend.norm) %>%
+  spread(key = atopid, value = ally.spend.norm, fill = 0)
+
+# This dataframe contains rescaled allied spending for the alliances states are a member of in a given year
+state.mem.spread.rescale <- select(state.mem.cap, atopid, ccode, year, ally.spend.rescale) %>%
+  spread(key = atopid, value = ally.spend.rescale, fill = 0)
 
 
 
@@ -615,7 +646,7 @@ reg.state.data <- state.vars %>%
          cold.war, disputes, majpower) 
 
 # Add state membership in alliances to this data
-reg.state.data <-  left_join(reg.state.data, state.mem.spread) 
+reg.state.data <-  left_join(reg.state.data, state.mem.spread.rescale) 
 
 
 # Replace missing alliance values with zero 

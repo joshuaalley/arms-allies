@@ -30,6 +30,7 @@ library(ExtremeBounds)
 library(bfa)
 library(coda)
 library(GJRM)
+library(loo)
 
 
 # Look at conflicts 
@@ -59,6 +60,7 @@ conflict_prefer("recast", "reshape2")
 conflict_prefer("refit", "modeltools")
 conflict_prefer("lmList", "nlme")
 conflict_prefer("collapse", "dplyr")
+conflict_prefer("loo", "loo")
 
 
 # Set up RSTAN guidelines

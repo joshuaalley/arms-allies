@@ -78,7 +78,7 @@ ggplot(lambda.df.min, aes(x = avg.democ, y = lambda)) +
 
 
 
-### look for trends in numbver of members
+### look for trends in number of members
 # major powers
 ggplot(lambda.df.maj, aes(x = num.mem, y = lambda)) +
   geom_point() +
@@ -228,7 +228,7 @@ lambda.min.split <- extract(ml.model.min, pars = c("lambda"), permuted = TRUE)
 lambda.min.joint <- extract(ml.model, pars = c("lambda_min"), permuted = TRUE)
 
 # Multiply by state membeship matrix
-agg.all.min.full  <- state.mem.min%*%t(lambda.min.joint$lambda)
+agg.all.min.full  <- state.mem.min%*%t(lambda.min.split$lambda)
 
 # summarize the 90% credible interval 
 agg.all.min.sum <- t(apply(agg.all.min.full, 1, function(x) quantile(x, c(.05, .95))))
@@ -365,7 +365,7 @@ ggplot(egy.agg.melt, aes(x = value, y = year, group = year)) +
   geom_vline(xintercept = 0) +
   geom_density_ridges(rel_min_height = 0.03, scale = 3) + 
   theme_ridges(grid = FALSE, center_axis_labels = TRUE) +
-  xlim(-0.12, 0.04) +
+  xlim(-0.05, 0.05) +
   ggtitle("Aggregate Impact of Alliance Participation on Egyptian Defense Spending") 
 
 
@@ -526,10 +526,12 @@ eu.imp.min.sum <- cbind.data.frame(reg.state.comp.min$ccode, reg.state.comp.min$
                                    apply(eu.imp.min, 1, mean), eu.imp.min.sum)
 colnames(eu.imp.min.sum) <- c("ccode", "year", "agg.all.impact", "l.05", "h.90")
 
+# Cut down to active years 
+eu.imp.min.sum <- filter(eu.imp.min.sum, year >= 1992)
 
 # Belgium
 eu.imp.min.sum %>%
-  filter(ccode == 211 & year >= 1992) %>%
+  filter(ccode == 211) %>%
   ggplot(aes(y = agg.all.impact, x = year)) + 
   geom_point() + 
   geom_errorbar(aes(ymax = h.90, ymin = l.05)) +
@@ -539,7 +541,7 @@ eu.imp.min.sum %>%
 
 # Italy
 eu.imp.min.sum %>%
-  filter(ccode == 325 & year >= 1992) %>%
+  filter(ccode == 325) %>%
   ggplot(aes(y = agg.all.impact, x = year)) + 
   geom_point() + 
   geom_errorbar(aes(ymax = h.90, ymin = l.05)) +
@@ -548,4 +550,54 @@ eu.imp.min.sum %>%
   theme_bw()
 
 
-             
+# Calculate and compare Impact of example treaties- France-Belgium and France-Poland
+# Calculate the impact of Franco-Belgian Pact (ATOPID 2055)
+fb20.imp.min <- state.mem.min[, 17]%*%t(lambda.min.split$lambda[, 17])
+
+# summarize the 90% credible interval 
+fb20.imp.min.sum <- t(apply(fb20.imp.min, 1, function(x) quantile(x, c(.05, .95))))
+
+fb20.imp.min.sum  <- cbind.data.frame(reg.state.comp.min$ccode, reg.state.comp.min$year, 
+                                   apply(fb20.imp.min, 1, mean), fb20.imp.min.sum)
+colnames(fb20.imp.min.sum) <- c("ccode", "year", "agg.all.impact", "l.05", "h.90")
+
+# filter down to active years 
+fb20.imp.min.sum <- filter(fb20.imp.min.sum, year >= 1920 & year <= 1936 & ccode == 211)
+rm(fb20.imp.min)
+
+ggplot(fb20.imp.min.sum, aes(y = agg.all.impact, x = year)) + 
+  geom_point() + 
+  geom_errorbar(aes(ymax = h.90, ymin = l.05)) +
+  geom_hline(yintercept = 0) +
+  ggtitle("Aggregate Impact French Alliance on Belgian Defense Spending: 1920-1936") +
+  theme_bw()
+
+
+
+# Calculate the impact of Franco-Polish Pact (ATOPID 2135)
+fp25.imp.min <- state.mem.min[, 24]%*%t(lambda.min.split$lambda[, 24])
+# summarize the 90% credible interval 
+fp25.imp.min.sum <- t(apply(fp25.imp.min, 1, function(x) quantile(x, c(.05, .95))))
+# Full data
+fp25.imp.min.sum  <- cbind.data.frame(reg.state.comp.min$ccode, reg.state.comp.min$year, 
+                                      apply(fp25.imp.min, 1, mean), fp25.imp.min.sum)
+colnames(fp25.imp.min.sum) <- c("ccode", "year", "agg.all.impact", "l.05", "h.90")
+
+
+# filter down to active years 
+fp25.imp.min.sum <- filter(fp25.imp.min.sum, year >= 1925 & year <= 1939)
+rm(fp25.imp.min)
+
+
+ggplot(fp25.imp.min.sum, aes(y = agg.all.impact, x = year)) + 
+  geom_point() + 
+  geom_errorbar(aes(ymax = h.90, ymin = l.05)) +
+  geom_hline(yintercept = 0) +
+  ggtitle("Aggregate Impact French Alliance on Polish Defense Spending: 1925-1939") +
+  theme_bw()
+
+
+# Remove all these filtered and melted datasets from the environment
+rm(list = c("jp.agg.melt", "nk.agg.melt", "phl.agg.melt", "bel.agg.melt", "can.agg.melt", 
+            "egy.agg.melt", "esp.agg.melt", "fr.agg.melt", "uk.agg.melt", "us.agg.melt", "ussr.agg.melt"))         
+

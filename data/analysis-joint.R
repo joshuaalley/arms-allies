@@ -414,8 +414,8 @@ ggplot(agg.all.min, aes(x = agg.all.impact)) + geom_histogram()
 
 
 # Given length of run for varying slopes model- save separately
-saveRDS(ml.model, "ml.model.rds")
-ml.model <- readRDS("ml.model.rds")
+saveRDS(ml.model, "data/ml.model.rds")
+ml.model <- readRDS("data/ml.model.rds")
 
 
 # summarize session info
