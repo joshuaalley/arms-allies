@@ -80,7 +80,7 @@ state.char.full$ihs.growth.milex <- asinh(state.char.full$growth.milex) # transf
 
 # Start with a simple linear regression: presence of scope
 m1.all <- lm(ihs.growth.milex ~ avg.depth +
-               econagg.pres +
+               econagg.pres + uncond.milsup.pres +
             atwar + civilwar.part + polity + gdp.growth + majpower +
             lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
           data = state.char.full
@@ -92,7 +92,7 @@ qqline(m1.all$residuals)
 
 # Add state and year fixed effects 
 m1.reg.fe <- plm(ihs.growth.milex ~ avg.depth +
-                   econagg.pres +
+                   econagg.pres + uncond.milsup.pres +
                    atwar + civilwar.part + polity + gdp.growth + majpower +
                    lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
                  index = c("ccode", "year"),
@@ -109,7 +109,7 @@ summary(m1.reg.fe)
 # Residuals in the above have extremely heavy tails. Robust regression weights observations as 
 # a function of their residual, ensuring least squares is still efficient
 m1r.reg <- rlm(ihs.growth.milex ~ avg.depth +
-                 econagg.pres + 
+                 econagg.pres + uncond.milsup.pres +
                  atwar + civilwar.part + polity + gdp.growth + majpower +
                  lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
                data = state.char.full)
@@ -121,7 +121,7 @@ plot(m1r.reg$residuals, m1r.reg$w)
 # subset by major and minor powers
 # Major powers
 rreg.maj <- rlm(ihs.growth.milex ~ avg.depth +
-                    econagg.pres + 
+                    econagg.pres + uncond.milsup.pres + 
                      atwar + civilwar.part + polity + gdp.growth + ln.ally.expend +
                      lsthreat + cold.war + avg.num.mem + avg.dem.prop,
                    data = state.char.full, subset = (majpower == 1))
@@ -131,7 +131,7 @@ plot(rreg.maj$residuals, rreg.maj$w)
 
 # minor powers
 rreg.min <- rlm(ihs.growth.milex ~ avg.depth +
-                  econagg.pres + 
+                  econagg.pres + uncond.milsup.pres +
                      atwar + civilwar.part + polity + gdp.growth + ln.ally.expend +
                      lsthreat + cold.war + avg.num.mem + avg.dem.prop,
                    data = state.char.full, subset = (majpower == 0))
@@ -156,8 +156,8 @@ hist(eba.full, variables = c("avg.depth", "econagg.pres"),
 
 
 # Interact major power indicator with depth
-rreg.int <- rlm(growth.milex ~ avg.depth + as.factor(majpower) + avg.depth:as.factor(majpower) + 
-                  econagg.pres +
+rreg.int <- rlm(ihs.growth.milex ~ avg.depth + as.factor(majpower) + avg.depth:as.factor(majpower) + 
+                  econagg.pres + uncond.milsup.pres +
                  atwar + civilwar.part + polity + gdp.growth + 
                  lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
                data = state.char.full)
@@ -181,7 +181,7 @@ abline(h = 0)
 
 # Robust regression: major
 rreg.ex.maj <- rlm(growth.milex ~ as.factor(deep.alliance) + ln.ally.expend + as.factor(deep.alliance):ln.ally.expend +
-                     low.avg.depth + econagg.pres +
+                      econagg.pres + uncond.milsup.pres +
                       atwar + civilwar.part + polity + gdp.growth + 
                       lsthreat + cold.war + avg.num.mem + avg.dem.prop,
                     data = state.char.full, subset = (majpower == 1))
@@ -197,7 +197,7 @@ abline(h = 0)
 
 # Robust regression: minor
 rreg.ex.min <- rlm(ihs.growth.milex ~ as.factor(deep.alliance) + ln.ally.expend + as.factor(deep.alliance):ln.ally.expend +
-                     low.avg.depth + econagg.pres +
+                     econagg.pres + uncond.milsup.pres +
                      atwar + civilwar.part + polity + gdp.growth + 
                      lsthreat + cold.war + avg.num.mem + avg.dem.prop,
                    data = state.char.full, subset = (majpower == 0 & treaty.pres == 1))
@@ -222,7 +222,7 @@ inter.data.rel <- as.data.frame(inter.data.rel)
 
 # Robust regression: non-major power alliance members and average depth
 m1.all <- rlm(ihs.growth.milex ~ avg.depth + 
-                    econagg.pres +
+                    econagg.pres + uncond.milsup.pres +
                      atwar + civilwar.part + polity + gdp.growth +
                      lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
                    data = inter.data.rel, subset = (majpower == 0)
@@ -247,7 +247,7 @@ hist(eba.all, variables = c("avg.depth", "econagg.pres"),
 
 # Robust regression: deep alliance dummy
 m1.all.dum <- rlm(ihs.growth.milex ~ deep.alliance + 
-                econagg.pres +
+                econagg.pres + uncond.milsup.pres +
                 atwar + civilwar.part + polity + gdp.growth +
                 lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
               data = inter.data.rel, subset = (majpower == 0)
@@ -257,10 +257,10 @@ summary(m1.all.dum)
 
 # Robust regression: average relative contribution (includes major and non-major)
 m1.all.irel <- rlm(ihs.growth.milex ~ avg.depth + avg.treaty.contrib + avg.depth:avg.treaty.contrib + 
-                     econagg.pres +
-                     atwar + civilwar.part + polity + gdp.growth + majpower +
+                     econagg.pres + uncond.milsup.pres +
+                     atwar + civilwar.part + polity + gdp.growth + 
                      lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
-                   data = inter.data.rel
+                   data = inter.data.rel, subset = (majpower == 0)
 )
 summary(m1.all.irel)
 

@@ -594,13 +594,21 @@ ggplot(state.mem.cap, aes(x = ally.cap)) + geom_histogram()
 state.mem.cap <- filter(state.mem.cap, atopid %in% alliance.char$atopid)
 
 
-# rescale the ally expenditures variable by a log transformation 
+# rescale the ally expenditures variable 
 # keeps them on a similar scale to regressors in ML model
 state.mem.cap$ally.spend.rescale <- rescaler(state.mem.cap$ally.spend, type = "range")
 state.mem.cap$ally.spend.rescale[state.mem.cap$ally.spend.rescale == 0] <- 0.01
 
 summary(state.mem.cap$ally.spend.rescale)
 ggplot(state.mem.cap, aes(x = ally.spend.rescale)) + geom_histogram()
+
+
+# rescale the ally expenditures variable by 2sd  
+# keeps them on a similar scale to regressors in ML model
+state.mem.cap$ally.spend.rescale2sd <- rescale(state.mem.cap$ally.spend)
+
+summary(state.mem.cap$ally.spend.rescale2sd)
+ggplot(state.mem.cap, aes(x = ally.spend.rescale2sd)) + geom_histogram()
 
 # Normalized spending by year
 state.mem.cap <- state.mem.cap %>% 
@@ -634,6 +642,12 @@ state.mem.spread.rescale <- select(state.mem.cap, atopid, ccode, year, ally.spen
   spread(key = atopid, value = ally.spend.rescale, fill = 0)
 
 
+# This dataframe contains rescaled allied spending (s2d) for the alliances states are a member of in a given year
+state.mem.spread.rescale2sd <- select(state.mem.cap, atopid, ccode, year, ally.spend.rescale2sd) %>%
+  spread(key = atopid, value = ally.spend.rescale2sd, fill = 0)
+
+
+
 
 # Combine State and alliance data 
 ########
@@ -646,7 +660,7 @@ reg.state.data <- state.vars %>%
          cold.war, disputes, majpower) 
 
 # Add state membership in alliances to this data
-reg.state.data <-  left_join(reg.state.data, state.mem.spread.rescale) 
+reg.state.data <-  left_join(reg.state.data, state.mem.spread.norm) 
 
 
 # Replace missing alliance values with zero 
@@ -710,7 +724,7 @@ cor(reg.state.mat, method = "pearson")
 # non-major powers
 # Make the alliance characteristics data match the membership matrix
 reg.all.data.min <- filter(alliance.char, atopid %in% colnames(state.mem.min)) %>%
-  select(atopid, latent.depth.mean, econagg.dum, fp.conc.index, num.mem, low.kap.sc, 
+  select(atopid, latent.depth.mean, uncond.milsup, econagg.dum, fp.conc.index, num.mem, low.kap.sc, 
          avg.democ, wartime, asymm, us.mem, ussr.mem) %>%
   na.omit
 
@@ -726,7 +740,7 @@ alliance.reg.mat.min <- as.matrix(alliance.reg.mat.min)
 
 # Make the alliance characteristics data match the membership matrix
 reg.all.data.maj <- filter(alliance.char, atopid %in% colnames(state.mem.maj)) %>%
-  select(atopid, latent.depth.mean, econagg.dum, fp.conc.index, num.mem, low.kap.sc, 
+  select(atopid, latent.depth.mean, uncond.milsup, econagg.dum, fp.conc.index, num.mem, low.kap.sc, 
          avg.democ, wartime, asymm, us.mem, ussr.mem) %>%
   na.omit
 

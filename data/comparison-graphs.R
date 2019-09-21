@@ -6,6 +6,60 @@
 # Examine Trends in lambda parameters across different characteristics. 
 
 
+
+
+### Violin plot of unconditional support
+# major powers
+ggplot(lambda.df.maj, aes(x = as.factor(uncond.milsup), y = lambda)) +
+  geom_violin() +  # add violin
+  geom_point(position = position_jitter(width = 0.1),  # jitter points to prevent overlap
+             alpha = 0.5,  # somewhat trasparent
+             aes(size = num.mem)) + theme_classic()
+
+
+# non-major powers
+ggplot(lambda.df.min, aes(x = as.factor(uncond.milsup), y = lambda)) +
+  geom_violin() +  # add violin
+  geom_point(position = position_jitter(width = 0.1),  # jitter points to prevent overlap
+             alpha = 0.5,  # somewhat trasparent
+             aes(size = num.mem)) + theme_classic()
+
+
+### Violin plot of economic agreement
+# major powers
+ggplot(lambda.df.maj, aes(x = as.factor(econagg.dum), y = lambda)) +
+  geom_violin() +  # add violin
+  geom_point(position = position_jitter(width = 0.1),  # jitter points to prevent overlap
+             alpha = 0.5,  # somewhat trasparent
+             aes(size = num.mem)) + theme_classic()
+
+
+# non-major powers
+ggplot(lambda.df.min, aes(x = as.factor(econagg.dum), y = lambda)) +
+  geom_violin() +  # add violin
+  geom_point(position = position_jitter(width = 0.1),  # jitter points to prevent overlap
+             alpha = 0.5,  # somewhat trasparent
+             aes(size = num.mem)) + theme_classic()
+
+
+
+### Violin plot of FP concessions
+# major powers
+ggplot(lambda.df.maj, aes(x = as.factor(fp.conc.index), y = lambda)) +
+  geom_violin() +  # add violin
+  geom_point(position = position_jitter(width = 0.1),  # jitter points to prevent overlap
+             alpha = 0.5,  # somewhat trasparent
+             aes(size = num.mem)) + theme_classic()
+
+
+# non-major powers
+ggplot(lambda.df.min, aes(x = as.factor(fp.conc.index), y = lambda)) +
+  geom_violin() +  # add violin
+  geom_point(position = position_jitter(width = 0.1),  # jitter points to prevent overlap
+             alpha = 0.5,  # somewhat trasparent
+             aes(size = num.mem)) + theme_classic()
+
+
 ### Violin plot of wartime alliances 
 # major powers
 ggplot(lambda.df.maj, aes(x = as.factor(wartime), y = lambda)) +
@@ -101,8 +155,8 @@ ggplot(lambda.df.min, aes(x = num.mem, y = lambda)) +
 
 
 # matrix multiplication of membership matrix by mean lambda 
-lambda.maj.split <- extract(ml.model.maj, pars = c("lambda"), permuted = TRUE)
-lambda.maj.joint <- extract(ml.model, pars = c("lambda_maj"), permuted = TRUE)
+lambda.maj.split <- sum.maj.post$lambda
+# lambda.maj.joint <- extract(ml.model, pars = c("lambda_maj"), permuted = TRUE)
 
 # agg.all.maj.full  <- state.mem.maj%*%t(ml.model.sum$lambda_maj)
 agg.all.maj.full  <- state.mem.maj%*%t(lambda.maj.split$lambda)
@@ -224,11 +278,10 @@ ggplot(fr.agg.melt, aes(x = value, y = year, group = year)) +
 
 
 # matrix multiplication of membership matrix by mean lambda 
-lambda.min.split <- extract(ml.model.min, pars = c("lambda"), permuted = TRUE)
-lambda.min.joint <- extract(ml.model, pars = c("lambda_min"), permuted = TRUE)
+# lambda.min.joint <- extract(ml.model, pars = c("lambda_min"), permuted = TRUE)
 
 # Multiply by state membeship matrix
-agg.all.min.full  <- state.mem.min%*%t(lambda.min.split$lambda)
+agg.all.min.full  <- state.mem.min%*%t(sum.min.post$lambda)
 
 # summarize the 90% credible interval 
 agg.all.min.sum <- t(apply(agg.all.min.full, 1, function(x) quantile(x, c(.05, .95))))
@@ -319,7 +372,7 @@ ggplot(esp.agg.melt, aes(x = value, y = year, group = year)) +
   ggtitle("Aggregate Impact of Alliance Participation on Spanish Defense Spending") 
 
 
-# Japan: check this out
+# Japan
 jp.agg.melt <- agg.all.min.full %>% 
   filter(ccode == 740 & year >= 1950) %>%
   melt(id.vars = c("ccode", "year")) %>%
@@ -375,6 +428,7 @@ nk.agg.melt <- agg.all.min.full %>%
   filter(ccode == 731) %>%
   melt(id.vars = c("ccode", "year")) %>%
   filter(value != 0)
+
 
 
 agg.all.min.sum %>%
@@ -446,7 +500,7 @@ nato.imp.maj.sum %>%
 
 
 # non-major powers
-nato.imp.min <- state.mem.min[, 68]%*%t(lambda.min.joint$lambda[, 68])
+nato.imp.min <- state.mem.min[, 66]%*%t(lambda.min.joint$lambda[, 66])
 
 
 # summarize the 90% credible interval 
@@ -517,7 +571,7 @@ eu.imp.maj.sum %>%
 
 
 # Calculate the impact of the EU (ATOPID 4175)
-eu.imp.min <- state.mem.min[, 166]%*%t(lambda.min.split$lambda[, 166])
+eu.imp.min <- state.mem.min[, 164]%*%t(sum.min.post$lambda[, 164])
 
 # summarize the 90% credible interval 
 eu.imp.min.sum <- t(apply(eu.imp.min, 1, function(x) quantile(x, c(.05, .95))))
@@ -552,7 +606,7 @@ eu.imp.min.sum %>%
 
 # Calculate and compare Impact of example treaties- France-Belgium and France-Poland
 # Calculate the impact of Franco-Belgian Pact (ATOPID 2055)
-fb20.imp.min <- state.mem.min[, 17]%*%t(lambda.min.split$lambda[, 17])
+fb20.imp.min <- state.mem.min[, 15]%*%t(sum.min.post$lambda[, 15])
 
 # summarize the 90% credible interval 
 fb20.imp.min.sum <- t(apply(fb20.imp.min, 1, function(x) quantile(x, c(.05, .95))))
@@ -575,7 +629,7 @@ ggplot(fb20.imp.min.sum, aes(y = agg.all.impact, x = year)) +
 
 
 # Calculate the impact of Franco-Polish Pact (ATOPID 2135)
-fp25.imp.min <- state.mem.min[, 24]%*%t(lambda.min.split$lambda[, 24])
+fp25.imp.min <- state.mem.min[, 22]%*%t(sum.min.post$lambda[, 22])
 # summarize the 90% credible interval 
 fp25.imp.min.sum <- t(apply(fp25.imp.min, 1, function(x) quantile(x, c(.05, .95))))
 # Full data

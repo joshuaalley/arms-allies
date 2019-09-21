@@ -9,6 +9,17 @@ atop.mem.full <- read.csv("data/atop-member-level.csv")
 
 
 
+# identify non-aggression only pacts
+# Also, recode arms requirements and military aid variables from ATOP into dummy 
+# variables that capture conditions where increases in arms spending are likely
+atop <- mutate(atop, nonagg.only = ifelse((nonagg == 1 & offense != 1
+                                           & defense != 1 & 
+                                             consul != 1 & neutral != 1), 1 , 0),
+               armred.rc = ifelse(armred == 2, 1, 0),
+               milaid.rc = ifelse(milaid >= 2, 1, 0)
+)
+
+
 # Conditional alliance commtiments
 table(atop$conditio) # condititional
 table(atop$offcon)
@@ -75,7 +86,7 @@ atop <- atop %>%
  ) %>% 
   rowwise() %>%
   mutate(scope.index = sum(uncond.milsup, milaid.dum, ecaid.dum, io.form, agpro.mult, na.rm = TRUE),
-         milcor.index = sum(milcon.dum, milaid.dum, base.dum, intcom, na.rm = TRUE),
+         milcor.index = sum(milcon.dum, milaid.dum, base.dum, intcom, organ1.dum, compag.mil, na.rm = TRUE),
          econagg.index = sum(trade.dum, nomicoop, compag.econ, agpro.econ, na.rm = TRUE),
          econagg.dum = ifelse(econagg.index > 0, 1, 0),
          fp.conc.index = sum(noothall, notaiden.dum, thirdcom, divgains, interv.dum, na.rm = TRUE))
@@ -101,177 +112,9 @@ table(atop$fp.conc.index, atop$milcor.index)
 table(atop$fp.conc.index, atop$econagg.index)
 
 
-
-# Look at scope of commitment
-table(atop$uncond) # unconditional
-table(atop$milaid) # military aid
-table(atop$base) # basing rights
-table(atop$ecaid) # economic aid
-table(atop$organ1) # international organization
-table(atop$organ2) # second IO
-table(atop$intcom) # integrated command
-table(atop$milcon)
-table(atop$agpro.mult) # promise multiple agreements
-
 # aggregate index of scope
 table(atop$scope.index)
 ggplot(atop, aes(x = scope.index)) + geom_bar()
-
-
-# Turn dummy indicators into factors in a separate dataset
-# atop.milsup <- filter(atop, offense == 1 | defense == 1) 
-atop.depth <- select(atop,
-                     uncond.milsup, offense, defense, nonagg, neutral, consul, 
-                     intcom, compag.mil,  
-                   milaid, milcon, base, organ1) 
- atop.depth <- as.data.frame(atop.depth)
-for(i in 1:ncol(atop.depth)){
-  atop.depth[, i] <- as.ordered(atop.depth[, i])
-}
-
-
-
-# Create a 1-dimensional IRT model (all dummy inputs)
-# atop.depth <- as.matrix(atop.depth)
- latent.depth.irt <- MCMCirtKd(datamatrix = atop.depth, 
-                             dimensions = 1,
-                             burnin = 10000, mcmc = 40000,
-                             thin = 40,
-                             item.constraints = list("uncond.milsup" = list(2,"+")),
-                             store.ability = TRUE,
-                             store.item = TRUE, 
-                             b0 = 0, # prior mean of zero for item parameters
-                             B0 = .5, # prior precision of variances 
-                             verbose = 5000)
-plot(latent.depth.irt)
-
-
-
-# Diagnosis of convergence with coda
-effectiveSize(latent.depth.irt)
-diag.geweke  <- geweke.diag(latent.depth.irt)
-
-# Plot to see if Geweke Z-scores appear to be from Normal(0, 1) distribution
-par(mfrow=c(1, 1))
-plot(density(diag.geweke$z))
-lines(density(rnorm(10000, 0, 1)))
-
-
-# Use Murray BFA approach
-latent.depth <- bfa_mixed(~ intcom + compag.mil + 
-                            milaid + milcon + base + organ1 +
-                            uncond.milsup + offense + defense + nonagg + neutral + consul, 
-                          data = atop.depth, num.factor = 1,
-                          factor.scales = FALSE,
-                          keep.scores = TRUE, loading.prior = "gdp", 
-                          px = TRUE, imh.iter = 1000, imh.burn = 1000,
-                          nburn = 20000, nsim = 30000, thin = 30, print.status = 2000)
-
-# Little bit of diagnosis
-plot(get_coda(latent.depth))
-
-# Diagnosis of convergence with coda
-lcap.sam <- get_coda(latent.depth, scores = TRUE)
-effectiveSize(lcap.sam)
-diag.geweke  <- geweke.diag(lcap.sam)
-
-# Plot to see if Geweke Z-scores appear to be from Normal(0, 1) distribution
-par(mfrow=c(1, 1))
-plot(density(diag.geweke$z))
-lines(density(rnorm(10000, 0, 1)))
-
-# plot density of factors
-# Create a dataset of factors
-latent.factors <- cbind.data.frame(c("Integrated Command", "Companion Mil. Agreement", 
-                          "Military Aid", "Policy Coordination", "Bases",
-                          "Formal IO", "Unconditional Military Support",
-                           "Offense", "Defense", "Non-Aggression", 
-                          "Neutrality", "Consultation"),
-                        latent.depth[["post.loadings.mean"]],
-                        sqrt(latent.depth[["post.loadings.var"]])
-                        )
-colnames(latent.factors) <- c("var", "mean", "sd")
-
-# plot factor loadings 
-latent.factors <- arrange(latent.factors, desc(mean)) 
-latent.factors$var<- reorder(latent.factors$var, latent.factors$mean)
-
-ggplot(latent.factors, aes(x = mean, y = var)) + 
-  geom_point(size = 2) +
-  geom_errorbarh(aes(xmin = mean - 2*sd, 
-                    xmax = mean + 2*sd),
-                 height = .2, size = 1) +
-  geom_vline(xintercept = 0) +
-  labs(x = "Factor Loading", y = "Variable") +
-    theme_classic()
-ggsave("figures/factor-loadings.png", height = 6, width = 8)
-
-# get posterior scores of latent factor: mean and variance
-post.score <- get_posterior_scores(latent.depth)
-atop$latent.depth.mean <- as.numeric(t(latent.depth$post.scores.mean))
-atop$latent.depth.var <- as.numeric(t(latent.depth$post.scores.var))
-atop$latent.depth.sd <- sqrt(atop$latent.depth.var)
-
-
-# Plot two measures by ATOPID
-ggplot(atop, aes(x = atopid, y = latent.depth.mean)) + geom_point()
-ggplot(atop, aes(x = atopid, y =scope.index)) +
-  geom_point(position = position_dodge(2))
-
-# depth by year of formation
-ggplot(atop, aes(x = begyr, y = latent.depth.mean)) + geom_point() +
-  geom_errorbar(aes(ymin = latent.depth.mean - latent.depth.sd, 
-                    ymax = latent.depth.mean + latent.depth.sd,
-                    width=.01), position = position_dodge(0.1)) +
-  geom_point(position = position_dodge(0.1))
-
-
-
-# Summarize latent strength: treaties with military support only
-# weakest is 1870 France-UK offense/neutrality pact- meant to ensure Belgian neutrality
-# median is ATOP 1180- UK, Fr and Austria during Crimean war
-
-# 289 treaties with some promise of military support 
-atop.milsup <- filter(atop, offense == 1 | defense == 1)
-nrow(atop.milsup)
-
-# histogram
-ls.hist <- ggplot(atop.milsup, aes(x = latent.depth.mean)) + geom_histogram() +
-  theme_classic() + labs(x = "Mean Latent Depth", y = "Treaties")
-ls.hist
-
-
-# depth against year of formation for treaties with military support
-# Add error bars to plot
-ls.styear <- ggplot(atop.milsup, aes(x = begyr, y = latent.depth.mean)) +
-  geom_errorbar(aes(ymin = latent.depth.mean - latent.depth.sd, 
-    ymax = latent.depth.mean + latent.depth.sd,
-    width=.01), position = position_dodge(0.1)) +
-  geom_point(position = position_dodge(0.1)) +
-  labs(x = "Start Year", y = "Latent Depth of Treaty") +
-  theme_classic()
-ls.styear
-# Combine plots 
-multiplot.ggplot(ls.hist, ls.styear)
-
-
-
-# highlight NATO
-atop.milsup %>% 
-  mutate(NATO = ifelse(atopid == 3180, T, F)) %>% 
-  ggplot(aes(x = begyr, y = latent.depth.mean, color = NATO)) +
-  geom_point() +
-  scale_color_manual(values = c('#595959', 'red'))
-
-
-
-# compare three different measures of depth
-commitment.depth <- select(atop.milsup, atopid, 
-                        latent.depth.mean, scope.index,
-                         econagg.dum)
-heatmap(as.matrix(commitment.depth[, 2:4]), scale="column")
-
-
 
 
 # Prevalence of restrictions on member autonomy 
@@ -350,10 +193,6 @@ rm(atop.mem.list)
 # count number of members: non-missing membership variables
 atop$num.mem <-  apply(atop[, 72:130], 1, function(x) sum(!is.na(x)))
 
-# Plot alliance depth against size
-ggplot(atop, aes(x = num.mem, y = latent.depth.mean)) +
-  geom_point()
-
 
 
 # Generate a measure of asymmetric capability
@@ -370,18 +209,6 @@ atop <- atop %>%
         1, 0
       )
   )
-
-
-
-# identify non-aggression only pacts
-# Also, recode arms requirements and military aid variables from ATOP into dummy 
-# variables that capture conditions where increases in arms spending are likely
-atop <- mutate(atop, nonagg.only = ifelse((nonagg == 1 & offense != 1
-                                  & defense != 1 & 
-                                   consul != 1 & neutral != 1), 1 , 0),
-               armred.rc = ifelse(armred == 2, 1, 0),
-               milaid.rc = ifelse(milaid >= 2, 1, 0)
-               )
 
 
 # Generate a measure of FP similarity in initial year of alliance 
@@ -403,8 +230,145 @@ all.fpsim.first <- filter(all.fp.sim, year == yr1) %>%
 # Add measures of FP similiarity in first year observed
 atop <- left_join(atop, all.fpsim.first)
 
-# filter our alliances with military support 
-atop.milsup <- filter(atop, offense == 1 | defense == 1)
+
+
+### Generate a latent measure of depth for alliances with military support
+
+# Turn dummy indicators into factors in a separate dataset
+atop.milsup <- filter(atop, offense == 1 | defense == 1) 
+atop.depth <- select(atop.milsup,
+                     intcom, compag.mil,  
+                     milaid, milcon, base, organ1) 
+atop.depth <- as.data.frame(atop.depth)
+for(i in 1:ncol(atop.depth)){
+  atop.depth[, i] <- as.ordered(atop.depth[, i])
+}
+
+
+
+# Create a 1-dimensional IRT model (all dummy inputs)
+atop.depth.mat <- as.matrix(atop.depth)
+latent.depth.irt <- MCMCirtKd(datamatrix = atop.depth.mat, 
+                              dimensions = 1,
+                              burnin = 10000, mcmc = 40000,
+                              thin = 40,
+                              item.constraints = list("uncond.milsup" = list(2,"+")),
+                              store.ability = TRUE,
+                              store.item = TRUE, 
+                              b0 = 0, # prior mean of zero for item parameters
+                              B0 = .5, # prior precision of variances 
+                              verbose = 5000)
+plot(latent.depth.irt)
+
+
+
+# Diagnosis of convergence with coda
+effectiveSize(latent.depth.irt)
+diag.geweke  <- geweke.diag(latent.depth.irt)
+
+# Plot to see if Geweke Z-scores appear to be from Normal(0, 1) distribution
+par(mfrow=c(1, 1))
+plot(density(diag.geweke$z))
+lines(density(rnorm(10000, 0, 1)))
+
+
+# Use Murray BFA approach
+latent.depth <- bfa_mixed(~ intcom + compag.mil + 
+                            milaid + milcon + base + organ1, 
+                          data = atop.depth, num.factor = 1,
+                          factor.scales = FALSE,
+                          keep.scores = TRUE, loading.prior = "gdp", 
+                          px = TRUE, imh.iter = 1000, imh.burn = 1000,
+                          nburn = 20000, nsim = 30000, thin = 30, print.status = 2000)
+
+# Little bit of diagnosis
+plot(get_coda(latent.depth))
+
+# Diagnosis of convergence with coda
+lcap.sam <- get_coda(latent.depth, scores = TRUE)
+effectiveSize(lcap.sam)
+diag.geweke  <- geweke.diag(lcap.sam)
+
+# Plot to see if Geweke Z-scores appear to be from Normal(0, 1) distribution
+par(mfrow=c(1, 1))
+plot(density(diag.geweke$z))
+lines(density(rnorm(10000, 0, 1)))
+
+# plot density of factors
+# Create a dataset of factors
+latent.factors <- cbind.data.frame(c("Integrated Command", "Companion Mil. Agreement", 
+                                     "Military Aid", "Policy Coordination", "Bases",
+                                     "Formal IO"),
+                                   latent.depth[["post.loadings.mean"]],
+                                   sqrt(latent.depth[["post.loadings.var"]])
+)
+colnames(latent.factors) <- c("var", "mean", "sd")
+
+# plot factor loadings 
+latent.factors <- arrange(latent.factors, desc(mean)) 
+latent.factors$var<- reorder(latent.factors$var, latent.factors$mean)
+
+ggplot(latent.factors, aes(x = mean, y = var)) + 
+  geom_point(size = 2) +
+  geom_errorbarh(aes(xmin = mean - 2*sd, 
+                     xmax = mean + 2*sd),
+                 height = .2, size = 1) +
+  geom_vline(xintercept = 0) +
+  labs(x = "Factor Loading", y = "Variable") +
+  theme_classic()
+ggsave("figures/factor-loadings.png", height = 6, width = 8)
+
+# get posterior scores of latent factor: mean and variance
+post.score <- get_posterior_scores(latent.depth)
+atop.milsup$latent.depth.mean <- as.numeric(t(latent.depth$post.scores.mean))
+atop.milsup$latent.depth.var <- as.numeric(t(latent.depth$post.scores.var))
+atop.milsup$latent.depth.sd <- sqrt(atop.milsup$latent.depth.var)
+
+
+# Summarize latent depth: treaties with military support only
+# weakest is 1870 France-UK offense/neutrality pact- meant to ensure Belgian neutrality
+# median is ATOP 1180- UK, Fr and Austria during Crimean war
+
+# 289 treaties with some promise of military support 
+nrow(atop.milsup)
+
+# histogram
+ls.hist <- ggplot(atop.milsup, aes(x = latent.depth.mean)) + geom_histogram() +
+  theme_classic() + labs(x = "Mean Latent Depth", y = "Treaties")
+ls.hist
+
+
+# depth against year of formation for treaties with military support
+# Add error bars to plot
+ls.styear <- ggplot(atop.milsup, aes(x = begyr, y = latent.depth.mean)) +
+  geom_errorbar(aes(ymin = latent.depth.mean - latent.depth.sd, 
+                    ymax = latent.depth.mean + latent.depth.sd,
+                    width=.01), position = position_dodge(0.1)) +
+  geom_point(position = position_dodge(0.1)) +
+  labs(x = "Start Year", y = "Latent Depth of Treaty") +
+  theme_classic()
+ls.styear
+# Combine plots 
+multiplot.ggplot(ls.hist, ls.styear)
+
+
+
+# highlight NATO
+atop.milsup %>% 
+  mutate(NATO = ifelse(atopid == 3180, T, F)) %>% 
+  ggplot(aes(x = begyr, y = latent.depth.mean, color = NATO)) +
+  geom_point() +
+  scale_color_manual(values = c('#595959', 'red'))
+
+
+
+# compare three different measures of depth
+commitment.depth <- select(atop.milsup, atopid, 
+                           latent.depth.mean, scope.index,
+                           econagg.dum)
+heatmap(as.matrix(commitment.depth[, 2:4]), scale="column")
+
+
 
 # Look at correlation between FP similarity and depth
 
@@ -419,6 +383,10 @@ ggplot(atop.milsup, aes(x = mean.kap.sc, y = latent.depth.mean)) +
 t.test(atop.milsup$mean.kap.sc ~ atop.milsup$econagg.dum)
 t.test(atop.milsup$low.kap.sc ~ atop.milsup$econagg.dum)
 
+
+# Plot alliance depth against size
+ggplot(atop.milsup, aes(x = num.mem, y = latent.depth.mean)) +
+  geom_point()
 
 
 # Export to public-goods-test paper

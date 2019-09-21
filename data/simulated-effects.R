@@ -9,7 +9,8 @@ names(all.data.ldepth) <- c(colnames(alliance.reg.mat.min))
 
 # Set values of variables for simulation 
 all.data.ldepth["cons"] <- 1 
-all.data.ldepth["latent.depth.mean"] <- -0.6035 # key IV: minimum
+all.data.ldepth["latent.depth.mean"] <- -0.80 # key IV: minimum
+all.data.ldepth["uncond.milsup"] <- 0 
 all.data.ldepth["econagg.dum"] <- 1
 all.data.ldepth["fp.conc.index"] <- 1
 all.data.ldepth["num.mem"] <- median(reg.all.data.min$num.mem)
@@ -22,7 +23,7 @@ all.data.ldepth["ussr.mem"] <- 1
 
 # vector with cpa present
 all.data.hdepth <- all.data.ldepth
-all.data.hdepth["latent.depth.mean"] <- 1.16 # key IV: maximum
+all.data.hdepth["latent.depth.mean"] <- .68 # key IV: 3rd quartile
 
 
 # Simulate the effect 

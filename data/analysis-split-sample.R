@@ -7,7 +7,7 @@
 # the scripts alliance-measures.R and dataset construction and summary.R 
 
 
-# Compile the model code: no generated quantities block to keep size down
+# Compile the model code: 
 model.2 <- stan_model(file = "data/ml-model-split.stan")
 
 
@@ -46,6 +46,12 @@ system.time(
 # launch_shinystan(ml.model.maj)
 check_hmc_diagnostics(ml.model.maj)
 
+# posterior predictive check
+yrep.maj <- extract(ml.model.maj, pars = "y_pred")
+yrep.maj <- yrep.maj$y_pred[1:100, ]
+ppc_dens_overlay(asinh(stan.data.maj$y), yrep.maj)
+
+
 # trace plot for appendix
 traceplot(ml.model.maj, pars = "beta")
 ggsave("appendix/trace-all-maj.png", height = 6, width = 8)
@@ -71,6 +77,9 @@ stan.data.min <- list(N = nrow(reg.state.comp.min), y = reg.state.comp.min[, 3],
                       W = reg.state.mat.min, M = ncol(reg.state.mat.min)
 )
 
+# Compile the model code: 
+model.2 <- stan_model(file = "data/ml-model-split.stan")
+
 # Regular STAN
 system.time(
   ml.model.min <- sampling(model.2, data = stan.data.min, 
@@ -82,6 +91,13 @@ system.time(
 # diagnose model
 # launch_shinystan(ml.model.min)
 check_hmc_diagnostics(ml.model.min)
+
+
+# posterior predictive check
+yrep.min <- extract(ml.model.min, pars = "y_pred")
+yrep.min <- yrep.min$y_pred[1:100, ]
+ppc_dens_overlay(asinh(stan.data.min$y), yrep.min)
+
 
 # trace plot for appendix
 traceplot(ml.model.min, pars = "beta")
@@ -99,7 +115,7 @@ summary(reg.all.data.min$latent.depth.mean) # minor powers
 # Summarize intervals for major powers
 beta.summary.maj <- summary(ml.model.maj, pars = c("beta", "sigma_all"), probs = c(0.05, 0.95))$summary
 beta.summary.maj <- beta.summary.maj[, -2]
-rownames(beta.summary.maj) <- c("Constant", "Depth", "Econ. Link", 
+rownames(beta.summary.maj) <- c("Constant", "Depth", "Uncond Milsup", "Econ. Link", 
                                 "FP Conc.",
                                 "Number Members", "FP Similarity",
                                 "Democratic Membership", 
@@ -114,7 +130,7 @@ xtable(beta.summary.maj, digits = 3)
 # summarize intervals for minor powers
 beta.summary.min <- summary(ml.model.min, pars = c("beta", "sigma_all"), probs = c(0.05, 0.95))$summary
 beta.summary.min <- beta.summary.min[, -2]
-rownames(beta.summary.min) <- c("Constant", "Depth", "Econ. Link", 
+rownames(beta.summary.min) <- c("Constant", "Depth", "Uncond Milsup", "Econ. Link", 
                                  "FP Conc.",
                                  "Number Members", "FP Similarity",
                                  "Democratic Membership", 
@@ -145,7 +161,7 @@ coef.maj <- extract(ml.model.maj, pars = c("beta", "gamma"))
 colnames(coef.maj$beta) <- colnames(alliance.reg.mat.maj)
 colnames(coef.maj$gamma) <- colnames(reg.state.mat.maj)
 coef.min <- extract(ml.model.min, pars = c("beta", "gamma"))
-colnames(coef.min$beta) <- c("Constant", "Depth", "Econ. Link", 
+colnames(coef.min$beta) <- c("Constant", "Depth", "Uncond Milsup", "Econ. Link", 
                              "FP Conc.",
                              "Number Members", "FP Similarity",
                              "Democratic Membership", 
@@ -165,10 +181,12 @@ color_scheme_set("red")
 # Baseline posterior probabilities
 mean(coef.maj$beta[, 2] < 0) # depth: major
 mean(coef.min$beta[, 2] > 0) # depth: non-major
-mean(coef.maj$beta[, 3] < 0) # econ link: major
-mean(coef.min$beta[, 3] < 0) # econ link: non-major
-mean(coef.maj$beta[, 4] < 0) # FP concessions: major
-mean(coef.min$beta[, 4] > 0) # FP concessions: non-major
+mean(coef.maj$beta[, 3] < 0) # uncond milsup: major
+mean(coef.min$beta[, 3] < 0) # uncond milsup: non-major
+mean(coef.maj$beta[, 4] < 0) # econ link: major
+mean(coef.min$beta[, 4] < 0) # econ link: non-major
+mean(coef.maj$beta[, 5] < 0) # FP concessions: major
+mean(coef.min$beta[, 5] > 0) # FP concessions: non-major
 
 # Create a nice comparison plot: secret weapon
 depth.dens <- cbind(coef.maj$beta[, 2], coef.min$beta[, 2])
@@ -379,7 +397,7 @@ multiplot.ggplot(lambda.us.int, lambda.depth.us)
 dim(state.mem.maj)
 
 # matrix multiplication of membership matrix by mean lambda 
-agg.all.maj  <- state.mem.maj%*%lambda.means.maj[, 5]
+agg.all.maj  <- state.mem.maj%*%diag(lambda.means.maj[, 5])
 
 summary(agg.all.maj)
 agg.all.maj <- cbind(reg.state.comp.maj$ccode,
@@ -389,19 +407,71 @@ agg.all.maj <- cbind(reg.state.comp.maj$ccode,
 dim(state.mem.min)
 
 # matrix multiplication of membership matrix by mean lambda 
-agg.all.min  <- state.mem.min%*%lambda.means.min[, 5]
+agg.all.min  <- state.mem.min%*%diag(lambda.means.min[, 5])
 
 summary(agg.all.min)
 agg.all.min <- cbind(reg.state.comp.min$ccode,
                      reg.state.comp.min$year, agg.all.min)
 
-# Create dataframe with state-year indicators and 
-# aggregate impact of alliance participation
-agg.all.imp <- rbind(agg.all.maj, agg.all.min)
-colnames(agg.all.imp) <- c("ccode", "year", "agg.all.imp")
-agg.all.imp <- data.frame(agg.all.imp)
+
+# Predicted military spending change for all individual alliances
+a.min <- ncol(state.mem.min)
+growth.pred.min <- rep(NA, a.min)
+growth.pred.min <- list()
+
+# Loop over matrix columns
+for(i in 1:a.min){
+  growth.pred.min[[i]] <- state.mem.min[, i][state.mem.min[, i] != 0] # filter out zeros 
+  growth.pred.min[[i]] <- growth.pred.min[[i]]%*%t(sum.min.post$lambda[, i]) # multiply by lambda
+  growth.pred.min[[i]] <- as.data.frame(growth.pred.min[[i]])
+}
+
+names(growth.pred.min) <- c(colnames(state.mem.min)) # label each matrix with ATOPID
+
+
+# Capture means and add a label variable 
+growth.pred.mean <- lapply(growth.pred.min, function(x) apply(x, 1, mean))
+for(i in 1:a.min){
+  growth.pred.mean[[i]] <- as.data.frame(growth.pred.mean[[i]])
+  growth.pred.mean[[i]]$atopid <-  colnames(state.mem.min)[[i]]
+}
+
+growth.pred.sd <- lapply(growth.pred.min, function(x) as.data.frame(apply(x, 1, sd)))
+for(i in 1:a.min){
+  growth.pred.sd[[i]] <- as.data.frame(growth.pred.sd[[i]])
+}
+
+# combine means and sds in a dataframe 
+growth.pred.res <- cbind(do.call(rbind, growth.pred.mean), unlist(growth.pred.sd))
+colnames(growth.pred.res) <- c("mean.pred", "atopid", "sd.pred")
+growth.pred.res$atopid <- as.numeric(growth.pred.res$atopid)
+
+# Add alliance characteristics
+growth.pred.res <- left_join(growth.pred.res, alliance.char)
+
+# Create a dataframe with maximum predicted change, positive or negative 
+growth.pred.res.max <- growth.pred.res %>%
+                        group_by(atopid) %>% 
+                         filter(mean.pred == max(abs(mean.pred)))    
+
+
+
+# plot 
+ggplot(growth.pred.res, aes(x = latent.depth.mean, y = mean.pred)) +
+  geom_hline(yintercept = 0) +
+  geom_point() + 
+  geom_errorbar(aes(ymin = mean.pred - 2*sd.pred, ymax = mean.pred + 2*sd.pred)) +
+  geom_smooth(method = "lm") + theme_classic() 
+cor.test(growth.pred.res$latent.depth.mean, growth.pred.res$mean.pred)
+
+ggplot(growth.pred.res.max, aes(x = latent.depth.mean, y = mean.pred)) +
+  geom_hline(yintercept = 0) +
+  geom_point() + 
+  geom_errorbar(aes(ymin = mean.pred - 2*sd.pred, ymax = mean.pred + 2*sd.pred)) +
+  geom_smooth(method = "lm") + theme_classic() 
+
 
 
 # Save model and take it out of the workspace (1.7 GB w/ likelihood and PPC)
-saveRDS(ml.model.min, "data/ml-model-min-zrescale.rds")
+saveRDS(ml.model.min, "data/ml-model-min-znorm.rds")
 rm(ml.model.min)

@@ -59,12 +59,6 @@ model.1 <- stan_model(file = "data/multi-member ML model.stan")
 # Variational Bayes- use to check model will run 
 ml.model.vb <- vb(model.1, data = stan.data, seed = 12)
 
-# posterior predictive check from variational Bayes- did not converge
-# so treat these predictions with caution
-y = reg.state.comp[, 3]
-vb.model.sum <- extract(ml.model.vb)
-ppc_dens_overlay(y, vb.model.sum$y_pred[1:100, ])
-
 # Remove vb model and associated summary
 rm(list = c("ml.model.vb", "vb.model.sum"))
 
