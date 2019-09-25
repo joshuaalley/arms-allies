@@ -175,18 +175,29 @@ mcmc_intervals(coef.min$beta,
            prob = .9) +
   ggtitle("90% Credible Intervals of Alliance-Level Regression Coefficients")
 ggsave("figures/alliance-reg-nonmaj.png", height = 6, width = 8)
-color_scheme_set("red")
+color_scheme_set("blue")
 
 
 # Baseline posterior probabilities
 mean(coef.maj$beta[, 2] < 0) # depth: major
-mean(coef.min$beta[, 2] > 0) # depth: non-major
+mean(coef.min$beta[, 2] < 0) # depth: non-major
 mean(coef.maj$beta[, 3] < 0) # uncond milsup: major
 mean(coef.min$beta[, 3] < 0) # uncond milsup: non-major
 mean(coef.maj$beta[, 4] < 0) # econ link: major
 mean(coef.min$beta[, 4] < 0) # econ link: non-major
 mean(coef.maj$beta[, 5] < 0) # FP concessions: major
 mean(coef.min$beta[, 5] > 0) # FP concessions: non-major
+mean(coef.maj$beta[, 6] > 0) # number members: major
+mean(coef.min$beta[, 6] < 0) # number members: non-major
+mean(coef.maj$beta[, 7] < 0) # FP similarity: major
+mean(coef.min$beta[, 7] > 0) # FP similarity: non-major
+mean(coef.maj$beta[, 8] < 0) # Dem. Membership: major
+mean(coef.min$beta[, 8] < 0) # Dem. Membership: non-major
+mean(coef.maj$beta[, 9] < 0) # wartime: major
+mean(coef.min$beta[, 9] > 0) # wartime: non-major
+mean(coef.maj$beta[, 10] < 0) # asymmetric: major
+mean(coef.min$beta[, 10] > 0) # asymmetric: non-major
+
 
 # Create a nice comparison plot: secret weapon
 depth.dens <- cbind(coef.maj$beta[, 2], coef.min$beta[, 2])
@@ -222,10 +233,11 @@ cor.test(lambda.df.maj$lambda, lambda.df.maj$latent.depth.mean,
 
 # plot major powers
 lambda.depth.maj <- ggplot(lambda.df.maj, aes(x = latent.depth.mean, y = lambda)) +
-                  geom_point() +
-                  geom_smooth(method = "lm") + theme_classic() +
-  labs(x = "Latent Treaty Depth", y = "Effect of Allied Spending") +
-  ggtitle("Major Powers")
+                    geom_hline(yintercept = 0) +
+                   geom_point() +
+                   geom_smooth(method = "lm") + theme_classic() +
+            labs(x = "Latent Treaty Depth", y = "Effect of Allied Spending") +
+            ggtitle("Major Powers")
 lambda.depth.maj
 
 
@@ -235,11 +247,12 @@ lambda.means.min <- get_posterior_mean(ml.model.min, pars = "lambda")
 lambda.df.min <- tibble(lambda = lambda.means.min[, 5]) %>%  # add lambdas to df
     bind_cols(filter(alliance.char, atopid %in% colnames(state.mem.min)))
 cor.test(lambda.df.min$lambda, lambda.df.min$latent.depth.mean, 
-         alternative = "greater", method = "spearman")
+         alternative = "less", method = "spearman")
 
 # plot non-major powers
 lambda.depth.min <- ggplot(lambda.df.min, aes(x = latent.depth.mean, y = lambda)) +
-            geom_point() +
+            geom_hline(yintercept = 0) +
+             geom_point() +
                   geom_smooth(method = "lm") + theme_classic() +
             labs(x = "Latent Treaty Depth", y = "Effect of Allied Spending") +
             ggtitle("Non-Major Powers: Association Between Depth and Alliance Impact")
@@ -250,19 +263,6 @@ ggsave("figures/lambda-ld-nonmaj.png", height = 6, width = 8)
 multiplot.ggplot(lambda.depth.maj, lambda.depth.min)
 
 
-# Plot depth against lambda in peacetime alliances
-lambda.df.min %>% 
-  filter(wartime == 0) %>%
-ggplot(aes(x = latent.depth.mean, y = lambda)) +
-  geom_hline(yintercept = 0) +
-geom_point() +
-  geom_smooth(method = "lm") + theme_classic() +
-  labs(x = "Latent Treaty Depth", y = "Effect of Allied Spending") +
-  ggtitle("Non-Major Powers: Association Between Depth and Alliance Impact")
-
-
-lambda.df.min.peace <- lambda.df.min %>% filter(wartime == 0 & asymm == 1)
-cor.test(lambda.df.min.peace$lambda, lambda.df.min.peace$latent.depth.mean)
 
 # Compare lambdas for alliances with major and minor power members
 lambda.df.mix <- lambda.df.min %>%
@@ -397,7 +397,7 @@ multiplot.ggplot(lambda.us.int, lambda.depth.us)
 dim(state.mem.maj)
 
 # matrix multiplication of membership matrix by mean lambda 
-agg.all.maj  <- state.mem.maj%*%diag(lambda.means.maj[, 5])
+agg.all.maj  <- state.mem.maj%*%lambda.means.maj[, 5]
 
 summary(agg.all.maj)
 agg.all.maj <- cbind(reg.state.comp.maj$ccode,
@@ -407,7 +407,7 @@ agg.all.maj <- cbind(reg.state.comp.maj$ccode,
 dim(state.mem.min)
 
 # matrix multiplication of membership matrix by mean lambda 
-agg.all.min  <- state.mem.min%*%diag(lambda.means.min[, 5])
+agg.all.min  <- state.mem.min%*%lambda.means.min[, 5]
 
 summary(agg.all.min)
 agg.all.min <- cbind(reg.state.comp.min$ccode,
@@ -459,16 +459,20 @@ growth.pred.res.max <- growth.pred.res %>%
 # plot 
 ggplot(growth.pred.res, aes(x = latent.depth.mean, y = mean.pred)) +
   geom_hline(yintercept = 0) +
-  geom_point() + 
-  geom_errorbar(aes(ymin = mean.pred - 2*sd.pred, ymax = mean.pred + 2*sd.pred)) +
-  geom_smooth(method = "lm") + theme_classic() 
+  geom_point(position = position_jitter(width = 0.1)) + 
+#  geom_errorbar(aes(ymin = mean.pred - 2*sd.pred, ymax = mean.pred + 2*sd.pred)) +
+  geom_smooth(method = "lm") + 
+  labs(x = "Latent Depth", y = "Mean Predicted Growth from Alliance") +
+  theme_classic() 
 cor.test(growth.pred.res$latent.depth.mean, growth.pred.res$mean.pred)
 
-ggplot(growth.pred.res.max, aes(x = latent.depth.mean, y = mean.pred)) +
+
+ggplot(growth.pred.res, aes(x = begyr, y = mean.pred)) +
   geom_hline(yintercept = 0) +
-  geom_point() + 
+  geom_point(position = position_jitter(width = 0.5)) + 
   geom_errorbar(aes(ymin = mean.pred - 2*sd.pred, ymax = mean.pred + 2*sd.pred)) +
-  geom_smooth(method = "lm") + theme_classic() 
+  geom_smooth(method = "lm") + 
+  theme_classic() 
 
 
 

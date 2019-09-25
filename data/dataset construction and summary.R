@@ -526,6 +526,14 @@ summary(alliance.char$avg.democ)
 alliance.char$avg.democ[is.nan(alliance.char$avg.democ)] <- 0 # alliances where some members are not in system
 ggplot(alliance.char, aes(x = avg.democ)) + geom_histogram()
 
+# Look at correlation between democractic membership and depth
+cor.test(alliance.char$avg.democ, alliance.char$latent.depth.mean)
+ggplot(alliance.char, aes(x = avg.democ, y = latent.depth.mean)) + 
+  geom_point() + theme_classic()
+
+# and t-test foruncond milsup 
+t.test(alliance.char$avg.democ ~ alliance.char$uncond.milsup)
+
 
 # Create a membership matrix with the spending of all 
 # other alliance members in place of 1s 

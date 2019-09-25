@@ -23,7 +23,7 @@ all.data.ldepth["ussr.mem"] <- 1
 
 # vector with cpa present
 all.data.hdepth <- all.data.ldepth
-all.data.hdepth["latent.depth.mean"] <- .68 # key IV: 3rd quartile
+all.data.hdepth["latent.depth.mean"] <- 1 # key IV: 3rd quartile
 
 
 # Simulate the effect 
@@ -34,8 +34,7 @@ hist(lambda.hdepth)
 
 # Look at differnce
 lambda.diff.depth <- lambda.hdepth - lambda.ldepth
-mean(lambda.diff.depth > 0)
-hist(lambda.diff.depth)
+mean(lambda.diff.depth < 0)
 
 
 # Create a dataframe with all three objects
@@ -44,6 +43,8 @@ rm(list = c("lambda.diff.depth", "lambda.ldepth", "lambda.hdepth"))
 
 # plot and summarize the difference
 summary(lambda.change.depth$lambda.diff.depth)
+quantile(lambda.change.depth$lambda.diff.depth, c(.05, .95))
+
 
 ggplot(lambda.change.depth, aes(x = lambda.diff.depth)) +
  geom_vline(xintercept = 0) +
@@ -51,9 +52,13 @@ ggplot(lambda.change.depth, aes(x = lambda.diff.depth)) +
 
 
 # Calculate impact on spending at median alliance capability 
-lambda.change.depth$impact.milex <- lambda.change.depth$lambda.diff.depth*median(state.mem.cap$ally.spend.rescale)
+lambda.change.depth$impact.milex <- lambda.change.depth$lambda.diff.depth*median(state.mem.cap$ally.spend.norm)
 
 # Plot
 ggplot(lambda.change.depth, aes(x = impact.milex)) +
   geom_vline(xintercept = 0) +
   geom_density() + theme_classic()
+summary(lambda.change.depth$impact.milex)
+
+summary(lambda.change.depth$impact.milex)
+quantile(lambda.change.depth$impact.milex, c(.05, .95))

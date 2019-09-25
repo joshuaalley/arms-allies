@@ -11,52 +11,56 @@
 ml.model.min <- readRDS("data/ml-model-min-znorm.rds")
 log.lik.min <- extract_log_lik(ml.model.min)
 rm("ml.model.min") # remove from workspace to conserve memory 
-loo.znorm <- loo(log.lik.min, r_eff = relative_eff(exp(log.lik.min)), cores = 2)
+r.eff <- relative_eff(exp(log.lik.min), chain_id = rep(1:4, each = 1000))
+loo.znorm <- loo(log.lik.min, r_eff = r.eff, cores = 2)
 print(loo.znorm)
 plot(loo.znorm, label_points = TRUE)
 waic.znorm <- waic(log.lik.min)
 
 # remove log likelihood from workspace
-rm("log.lik.min")
+rm(list = c("log.lik.min", "r.eff"))
 
 
 ### Total allied CINC 
 ml.model.min <- readRDS("data/ml-model-min-zcinc.rds")
 log.lik.min <- extract_log_lik(ml.model.min)
-rm("ml.model.min") # remove from workspace to conserve memory 
-loo.zcinc <- loo(log.lik.min, r_eff = relative_eff(exp(log.lik.min)), cores = 2)
+rm("ml.model.min") # remove from workspace to conserve memory
+r.eff <- relative_eff(exp(log.lik.min), chain_id = rep(1:4, each = 1000))
+loo.zcinc <- loo(log.lik.min, r_eff = r.eff, cores = 2)
 print(loo.zcinc)
 plot(loo.zcinc, label_points = TRUE)
 waic.zcinc <- waic(log.lik.min)
 
 # remove log likelihood from workspace
-rm("log.lik.min")
+rm(list = c("log.lik.min", "r.eff"))
 
 
 ### Total allied spending- rescale 2sd 
 ml.model.min <- readRDS("data/ml-model-min-zrescale2sd.rds")
 log.lik.min <- extract_log_lik(ml.model.min)
 rm("ml.model.min") # remove from workspace to conserve memory 
-loo.zrescale2sd <- loo(log.lik.min, r_eff = relative_eff(exp(log.lik.min)), cores = 2)
+r.eff <- relative_eff(exp(log.lik.min), chain_id = rep(1:4, each = 1000))
+loo.zrescale2sd <- loo(log.lik.min, r_eff = r.eff, cores = 2)
 print(loo.zrescale2sd)
 plot(loo.zrescale2sd, label_points = TRUE)
 waic.zrescale2sd <- waic(log.lik.min)
 
 # remove log likelihood from workspace
-rm("log.lik.min")
+rm(list = c("log.lik.min", "r.eff"))
 
 
 ### Total allied spending- rescale 2sd 
 ml.model.min <- readRDS("data/ml-model-min-zrescale.rds")
 log.lik.min <- extract_log_lik(ml.model.min)
 rm("ml.model.min") # remove from workspace to conserve memory 
-loo.zrescale <- loo(log.lik.min, r_eff = relative_eff(exp(log.lik.min)), cores = 2)
+r.eff <- relative_eff(exp(log.lik.min), chain_id = rep(1:4, each = 1000))
+loo.zrescale <- loo(log.lik.min, r_eff = r.eff, cores = 2)
 print(loo.zrescale)
 plot(loo.zrescale, label_points = TRUE)
 waic.zrescale <- waic(log.lik.min)
 
 # remove log likelihood from workspace
-rm("log.lik.min")
+rm(list = c("log.lik.min", "r.eff"))
 
 
 #### 

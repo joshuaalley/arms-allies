@@ -132,22 +132,6 @@ ggplot(lambda.df.min, aes(x = avg.democ, y = lambda)) +
 
 
 
-### look for trends in number of members
-# major powers
-ggplot(lambda.df.maj, aes(x = num.mem, y = lambda)) +
-  geom_point() +
-  geom_smooth(method = "lm") + theme_classic() +
-  labs(x = "Alliance Size", y = "Effect of Alliance Part") +
-  ggtitle("Major Powers")
-
-
-# non-major powers
-ggplot(lambda.df.min, aes(x = num.mem, y = lambda)) +
-  geom_point() +
-  geom_smooth(method = "lm") + theme_classic() +
-  labs(x = "Alliance Size", y = "Effect of Alliance Part") +
-  ggtitle("Non-Major Powers")
-
 
 
 
@@ -159,7 +143,7 @@ lambda.maj.split <- sum.maj.post$lambda
 # lambda.maj.joint <- extract(ml.model, pars = c("lambda_maj"), permuted = TRUE)
 
 # agg.all.maj.full  <- state.mem.maj%*%t(ml.model.sum$lambda_maj)
-agg.all.maj.full  <- state.mem.maj%*%t(lambda.maj.split$lambda)
+agg.all.maj.full  <- state.mem.maj%*%t(lambda.maj.split)
 
 # summarize the 90% credible interval 
 agg.all.maj.sum <- t(apply(agg.all.maj.full, 1, function(x) quantile(x, c(.05, .95))))
@@ -272,7 +256,7 @@ ggplot(fr.agg.melt, aes(x = value, y = year, group = year)) +
   geom_density_ridges(rel_min_height = 0.03, scale = 3) + 
   theme_ridges(grid = FALSE, center_axis_labels = TRUE) +
   xlim(-0.13, 0.22) +
-  ggtitle("Aggregate Impact of Alliance Participation on UK Defense Spending") 
+  ggtitle("Aggregate Impact of Alliance Participation on French Defense Spending") 
 
 
 
@@ -430,7 +414,6 @@ nk.agg.melt <- agg.all.min.full %>%
   filter(value != 0)
 
 
-
 agg.all.min.sum %>%
   filter(ccode == 731) %>%
   ggplot(aes(y = agg.all.impact, x = year)) + 
@@ -445,7 +428,7 @@ ggplot(nk.agg.melt, aes(x = value, y = year, group = year)) +
   geom_vline(xintercept = 0) +
   geom_density_ridges(rel_min_height = 0.03, scale = 3) + 
   theme_ridges(grid = FALSE, center_axis_labels = TRUE) +
-  xlim(-0.07, 0.04) +
+  xlim(-0.03, 0.03) +
   ggtitle("Aggregate Impact of Alliance Participation on North Korean Defense Spending") 
 
 
@@ -471,13 +454,13 @@ ggplot(phl.agg.melt, aes(x = value, y = year, group = year)) +
   geom_vline(xintercept = 0) +
   geom_density_ridges(rel_min_height = 0.03, scale = 3) + 
   theme_ridges(grid = FALSE, center_axis_labels = TRUE) +
-  xlim(-0.04, 0.03) +
+  xlim(-0.075, 0.03) +
   ggtitle("Aggregate Impact of Alliance Participation on Philippine Defense Spending")
 
 
 
 # Calculate the impact of NATO 
-nato.imp.maj <- state.mem.maj[, 93]%*%t(lambda.maj.split$lambda[, 93])
+nato.imp.maj <- state.mem.maj[, 91]%*%t(lambda.maj.split[, 91])
 
 # summarize the 90% credible interval 
 nato.imp.maj.sum <- t(apply(nato.imp.maj, 1, function(x) quantile(x, c(.05, .95))))
@@ -537,7 +520,7 @@ nato.imp.min.sum %>%
 
 
 # Calculate the impact of the EU (ATOPID 4175)
-eu.imp.maj <- state.mem.maj[, 136]%*%t(lambda.maj.split$lambda[, 136])
+eu.imp.maj <- state.mem.maj[, 133]%*%t(lambda.maj.split[, 133])
 
 # summarize the 90% credible interval 
 eu.imp.maj.sum <- t(apply(eu.imp.maj, 1, function(x) quantile(x, c(.05, .95))))
@@ -623,7 +606,7 @@ ggplot(fb20.imp.min.sum, aes(y = agg.all.impact, x = year)) +
   geom_point() + 
   geom_errorbar(aes(ymax = h.90, ymin = l.05)) +
   geom_hline(yintercept = 0) +
-  ggtitle("Aggregate Impact French Alliance on Belgian Defense Spending: 1920-1936") +
+  ggtitle("French Alliance and Belgian Defense Spending: 1920-1936") +
   theme_bw()
 
 
@@ -647,7 +630,7 @@ ggplot(fp25.imp.min.sum, aes(y = agg.all.impact, x = year)) +
   geom_point() + 
   geom_errorbar(aes(ymax = h.90, ymin = l.05)) +
   geom_hline(yintercept = 0) +
-  ggtitle("Aggregate Impact French Alliance on Polish Defense Spending: 1925-1939") +
+  ggtitle("French Alliance and Polish Defense Spending: 1925-1939") +
   theme_bw()
 
 
