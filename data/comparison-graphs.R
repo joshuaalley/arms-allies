@@ -635,6 +635,6 @@ ggplot(fp25.imp.min.sum, aes(y = agg.all.impact, x = year)) +
 
 
 # Remove all these filtered and melted datasets from the environment
-rm(list = c("jp.agg.melt", "nk.agg.melt", "phl.agg.melt", "bel.agg.melt", "can.agg.melt", 
+rm(list = c("jp.agg.melt", "nk.agg.melt", "phl.agg.melt", "can.agg.melt", 
             "egy.agg.melt", "esp.agg.melt", "fr.agg.melt", "uk.agg.melt", "us.agg.melt", "ussr.agg.melt"))         
 

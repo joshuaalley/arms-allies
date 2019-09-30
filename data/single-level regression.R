@@ -74,11 +74,11 @@ hist(state.char.full$avg.depth)
 summary(state.char.full$avg.depth.full)
 table(state.char.full$deep.alliance)
 
-# Transform DV for OLS estimators
-state.char.full$ihs.growth.milex <- asinh(state.char.full$growth.milex) # transformation for lm in EBA
+# Transform DV
+state.char.full$ihs.growth.milex <- asinh(state.char.full$growth.milex)
 
 
-# Start with a simple linear regression: presence of scope
+# Start with a simple linear regression
 m1.all <- lm(ihs.growth.milex ~ avg.depth +
                econagg.pres + uncond.milsup.pres +
             atwar + civilwar.part + polity + gdp.growth + majpower +
@@ -101,6 +101,19 @@ m1.reg.fe <- plm(ihs.growth.milex ~ avg.depth +
                  model = "within")
 
 summary(m1.reg.fe)
+
+
+# Add state and year fixed effects: dummy IV 
+m1.reg.fe.dum <- plm(ihs.growth.milex ~ deep.alliance +
+                   econagg.pres + uncond.milsup.pres +
+                   atwar + civilwar.part + polity + gdp.growth + majpower +
+                   lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
+                 index = c("ccode", "year"),
+                 effect = "individual", # unrestricted error covariance
+                 data = state.char.full,
+                 model = "within")
+
+summary(m1.reg.fe.dum)
 
 
 
@@ -140,16 +153,28 @@ summary(rreg.min)
 plot(rreg.min$residuals, rreg.min$w)
 
 
+# minor powers
+rreg.min.dum <- rlm(ihs.growth.milex ~ deep.alliance +
+                  econagg.pres + uncond.milsup.pres +
+                  atwar + civilwar.part + polity + gdp.growth + ln.ally.expend +
+                  lsthreat + cold.war + avg.num.mem + avg.dem.prop,
+                data = state.char.full, subset = (majpower == 0))
+
+summary(rreg.min.dum)
+plot(rreg.min$residuals, rreg.min$w)
+
+
+
 # Exterme bounds analysis of this result 
 eba.full <- eba(data = state.char.full, y = "ihs.growth.milex", 
-               doubtful = c("avg.depth", "econagg.pres", 
+               doubtful = c("deep.alliance", "econagg.pres", 
                             "atwar", "civilwar.part", "polity", "gdp.growth", "ln.ally.expend",
                             "lsthreat", "cold.war", "avg.num.mem", "avg.dem.prop"), 
-               focus = c("avg.depth", "econagg.pres"),
+               focus = c("deep.alliance", "econagg.pres"),
                k = 0:9, reg.fun = lm)
 print(eba.full)
-hist(eba.full, variables = c("avg.depth", "econagg.pres"),
-     main = c(avg.depth = "Avg. Depth", econagg.pres = "Presence of Economic Concessions"),
+hist(eba.full, variables = c("deep.alliance", "econagg.pres"),
+     main = c(deep.alliance = "Deep Alliance Dummy", econagg.pres = "Presence of Economic Concessions"),
      normal.show = TRUE
 )
 
@@ -180,7 +205,7 @@ abline(h = 0)
 
 
 # Robust regression: major
-rreg.ex.maj <- rlm(growth.milex ~ as.factor(deep.alliance) + ln.ally.expend + as.factor(deep.alliance):ln.ally.expend +
+rreg.ex.maj <- rlm(growth.milex ~ avg.depth + ln.ally.expend + avg.depth:ln.ally.expend +
                       econagg.pres + uncond.milsup.pres +
                       atwar + civilwar.part + polity + gdp.growth + 
                       lsthreat + cold.war + avg.num.mem + avg.dem.prop,
@@ -196,17 +221,17 @@ abline(h = 0)
 
 
 # Robust regression: minor
-rreg.ex.min <- rlm(ihs.growth.milex ~ as.factor(deep.alliance) + ln.ally.expend + as.factor(deep.alliance):ln.ally.expend +
+rreg.ex.min <- rlm(ihs.growth.milex ~ avg.depth + ln.ally.expend + avg.depth:ln.ally.expend +
                      econagg.pres + uncond.milsup.pres +
                      atwar + civilwar.part + polity + gdp.growth + 
                      lsthreat + cold.war + avg.num.mem + avg.dem.prop,
-                   data = state.char.full, subset = (majpower == 0 & treaty.pres == 1))
+                   data = state.char.full, subset = (majpower == 0))
 
 summary(rreg.ex.min)
 
 # Calculate marginal effects
 margins(rreg.ex.min)
-cplot(rreg.ex.min, x = "deep.alliance", dx = "ln.ally.expend", what = "effect",
+cplot(rreg.ex.min, x = "avg.depth", dx = "ln.ally.expend", what = "effect",
       main = "Average Marginal Effect of Allied Military Capability")
 abline(h = 0)
 
@@ -230,19 +255,6 @@ m1.all <- rlm(ihs.growth.milex ~ avg.depth +
 summary(m1.all)
 
 
-eba.all <- eba(data = inter.data.rel, y = "ihs.growth.milex", 
-               doubtful = c("avg.depth", "econagg.pres", 
-               "atwar", "civilwar.part", "polity", "gdp.growth", "ln.ally.expend",
-               "lsthreat", "cold.war", "avg.num.mem", "avg.dem.prop"), 
-               focus = c("avg.depth", "econagg.pres"),
-               k = 0:9, reg.fun = lm)
-print(eba.all)
-hist(eba.all, variables = c("avg.depth", "econagg.pres"),
-     main = c(avg.depth = "Avg. Depth", econagg.pres = "Presence of Economic Concessions"),
-     normal.show = TRUE
-     )
-
-
 
 
 # Robust regression: deep alliance dummy
@@ -253,6 +265,20 @@ m1.all.dum <- rlm(ihs.growth.milex ~ deep.alliance +
               data = inter.data.rel, subset = (majpower == 0)
 )
 summary(m1.all.dum)
+
+
+eba.all <- eba(data = inter.data.rel, y = "ihs.growth.milex", 
+               doubtful = c("deep.alliance", "econagg.pres", 
+                            "atwar", "civilwar.part", "polity", "gdp.growth", "ln.ally.expend",
+                            "lsthreat", "cold.war", "avg.num.mem", "avg.dem.prop"), 
+               focus = c("deep.alliance", "econagg.pres"),
+               k = 0:9, reg.fun = lm)
+print(eba.all)
+hist(eba.all, variables = c("deep.alliance", "econagg.pres"),
+     main = c(deep.alliance = "Deep Alliance Dummy", econagg.pres = "Presence of Economic Concessions"),
+     normal.show = TRUE
+)
+
 
 
 # Robust regression: average relative contribution (includes major and non-major)
@@ -276,7 +302,7 @@ abline(h = 0)
 
 
 # Interflex check
-bin.rel <- inter.binning(Y = "growth.milex", D = "avg.depth", X = "avg.treaty.contrib", 
+bin.rel <- inter.binning(Y = "growth.milex", D = "avg.treaty.contrib", X = "avg.depth", 
                          Z = c("econagg.pres", "atwar", "civilwar.part", "polity",
                                "lsthreat", "cold.war", "avg.num.mem", 
                                "ln.ally.expend", "avg.dem.prop", "gdp.growth"), 
@@ -286,7 +312,7 @@ bin.rel <- inter.binning(Y = "growth.milex", D = "avg.depth", X = "avg.treaty.co
 bin.rel
 
 # Kernel: 
-kernel.rel <- inter.kernel(Y = "growth.milex", D = "avg.depth", X = "avg.treaty.contrib", 
+kernel.rel <- inter.kernel(Y = "growth.milex", D = "avg.treaty.contrib", X = "avg.depth", 
                            Z = c("econagg.pres", "atwar", "civilwar.part", "polity",
                                  "lsthreat", "cold.war", "avg.num.mem", 
                                  "ln.ally.expend", "avg.dem.prop", "gdp.growth"), 
@@ -299,23 +325,49 @@ kernel.rel
 
 
 # Plot key coefficients 
-multiplot(m1r.reg, rreg.min, m1.all, m1.reg.fe, 
-          names = c("All States", "Non-Major Powers", "Non-Major Powers in Alliances", "FE: Non-Major Powers"),
-          coefficients = "avg.depth",
-          by = "Model",
-          xlab = "Value",
-          color = "black",
-          zeroColor = "black",
-          zeroType = 1,
-          zeroLWD = 1,
-          ylab = "Sample",
-          title = "",
+coef.avg <- multiplot(rreg.min, m1.all, m1.reg.fe, 
+            names = c("Non-Major Powers",
+                    "Non-Major Powers in Alliances", 
+                    "FE: Non-Major Powers"),
+            coefficients = c("avg.depth"),
+            by = "Model",
+            xlab = "Value",
+            color = "black",
+            zeroColor = "black",
+            zeroType = 1,
+            zeroLWD = 1,
+            ylab = "Sample",
+            title = "Average Alliance Depth",
           lwdInner = 2,
           lwdOuter =  2,
           pointSize = 4,
           horizontal = FALSE
-) + theme_classic()
-ggsave("appendix/single-level-mplot.png", height = 6, width = 8)
+      ) + theme_bw()
+coef.avg
+
+# Same plot with dummy 
+coef.dum <- multiplot(rreg.min.dum, m1.all.dum, m1.reg.fe.dum, 
+            names = c("Non-Major Powers",
+                    "Non-Major Powers in Alliances", 
+                    "FE: Non-Major Powers"),
+            coefficients = c("deep.alliance"),
+            by = "Model",
+            xlab = "Value",
+            color = "black",
+            zeroColor = "black",
+            zeroType = 1,
+            zeroLWD = 1,
+            ylab = "Sample",
+            title = "Deep Alliance Dummy",
+            lwdInner = 2,
+            lwdOuter =  2,
+            pointSize = 4,
+            horizontal = FALSE
+        ) + theme_bw()
+coef.dum
+# plot both results together 
+multiplot.ggplot(coef.avg, coef.dum)
+# save in  appendix as "single-level-mplot.png"
 
 # export data as CSV for checking selection on unobservables in STATA
 write.csv(state.char.full, "data/state-char-full.csv", row.names = FALSE, na = "")

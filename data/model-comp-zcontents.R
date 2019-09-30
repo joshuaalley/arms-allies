@@ -49,7 +49,7 @@ waic.zrescale2sd <- waic(log.lik.min)
 rm(list = c("log.lik.min", "r.eff"))
 
 
-### Total allied spending- rescale 2sd 
+### Total allied spending- rescale 
 ml.model.min <- readRDS("data/ml-model-min-zrescale.rds")
 log.lik.min <- extract_log_lik(ml.model.min)
 rm("ml.model.min") # remove from workspace to conserve memory 
@@ -67,6 +67,7 @@ rm(list = c("log.lik.min", "r.eff"))
 # Compare the three models 
 diff <- compare(loo.znorm, loo.zcinc, loo.zrescale2sd, loo.zrescale)
 print(diff)
+xtable(diff, digits = 3) # for appendix
 
 # Series of pairwise comparisons 
 compare(loo.znorm, loo.zcinc)

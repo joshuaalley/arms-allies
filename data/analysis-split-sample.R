@@ -138,7 +138,7 @@ rownames(beta.summary.min) <- c("Constant", "Depth", "Uncond Milsup", "Econ. Lin
                                  "sigma Alliances")
 
 print(beta.summary.min)
-
+xtable(beta.summary.maj, digits = 3) # for appendix
 
 
 
