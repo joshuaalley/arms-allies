@@ -728,6 +728,11 @@ reg.state.mat <- as.matrix(reg.state.comp[, 4:10])
 cor(reg.state.mat, method = "pearson")
 
 
+# General set of alliance-level regressors
+reg.all.data <- select(alliance.char, atopid, latent.depth.mean, uncond.milsup, econagg.dum, fp.conc.index, num.mem, low.kap.sc, 
+         avg.democ, wartime, asymm, us.mem, ussr.mem)
+
+
 # Create the matrix of alliance-level variables for major and non-major power groups
 # non-major powers
 # Make the alliance characteristics data match the membership matrix

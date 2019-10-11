@@ -7,29 +7,6 @@
 # the scripts alliance-measures.R and dataset construction and summary.R 
 
 
-# Define illustrative hypothethetical curves of impact of alliance participation against scope
-# Major powers 
-eq.maj <- function(x){(2^(-x*2))}
-
-# non-major powers
-eq.min <- function(x){-(2^(-x*2))}
-
-# plot curves
-illus.plot <- ggplot(data.frame(x = c(0, 2)), aes(x = x))
-# illus.plot <- illus.plot + stat_function(fun = eq.maj, geom = "line", size = 2)
-illus.plot <- illus.plot + stat_function(fun = eq.min, geom = "line", size = 2) +
-  xlab("Treaty Depth") + ylab("Impact of Alliance Participation on Mil. Ex.") +
-  geom_hline(yintercept = 0, size = 2) + 
-  theme_classic(base_size = 18, base_line_size = 1.5) + 
-  theme(axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.ticks = element_blank()) +
-#  geom_text(label = "Major Power", x = 1, y = 0.5, size = 5) +
-  geom_text(label = "Non-Major Power", x = 1, y = -0.5, size = 5) +
-  geom_text(label = "0", y = -.05, x = 0, size = 5)
-illus.plot
-ggsave("figures/illus-arg.png")
-
 
 # look at distribution of outcome across the two groups: transformed for ease of viewing
 ggplot(reg.state.comp, aes(x = asinh(growth.milex), color = as.factor(majpower))) +
@@ -116,33 +93,36 @@ ppc_dens_overlay(y, yrep.full)
 # Plot all the beta coefficients and calculate posterior probabilities
 
 # depth index
-mean(ml.model.sum$beta[, 1, 2] > 0) # non-major
+mean(ml.model.sum$beta[, 1, 2] < 0) # non-major
 mean(ml.model.sum$beta[, 2, 2] < 0) # major
-# econonmic agreement
-mean(ml.model.sum$beta[, 1, 3] > 0) # non-major
+# unconditional military support
+mean(ml.model.sum$beta[, 1, 3] < 0) # non-major
 mean(ml.model.sum$beta[, 2, 3] < 0) # major
-# FP concessions
-mean(ml.model.sum$beta[, 1, 4] < 0) # non-major
+# econonmic agreement
+mean(ml.model.sum$beta[, 1, 4] > 0) # non-major
 mean(ml.model.sum$beta[, 2, 4] < 0) # major
-# number of members
-mean(ml.model.sum$beta[, 1, 5] < 0) # non-major
+# FP concessions
+mean(ml.model.sum$beta[, 1, 5] > 0) # non-major
 mean(ml.model.sum$beta[, 2, 5] < 0) # major
-# FP similarity
-mean(ml.model.sum$beta[, 1, 6] > 0) # non-major
+# number of members
+mean(ml.model.sum$beta[, 1, 6] < 0) # non-major
 mean(ml.model.sum$beta[, 2, 6] < 0) # major
+# FP similarity
+mean(ml.model.sum$beta[, 1, 7] > 0) # non-major
+mean(ml.model.sum$beta[, 2, 7] < 0) # major
 # avg democracy
-mean(ml.model.sum$beta[, 1, 7] < 0) # non-major
-mean(ml.model.sum$beta[, 2, 7] > 0) # major
-# wartime
 mean(ml.model.sum$beta[, 1, 8] < 0) # non-major
-mean(ml.model.sum$beta[, 2, 8] < 0) # major
-# asymmetric 
-mean(ml.model.sum$beta[, 1, 9] < 0) # non-major
+mean(ml.model.sum$beta[, 2, 8] > 0) # major
+# wartime
+mean(ml.model.sum$beta[, 1, 9] > 0) # non-major
 mean(ml.model.sum$beta[, 2, 9] < 0) # major
+# asymmetric 
+mean(ml.model.sum$beta[, 1, 10] < 0) # non-major
+mean(ml.model.sum$beta[, 2, 10] < 0) # major
 
 
 # Figure out way to combine below intervals 
-dimnames(ml.model.sum$beta)[[3]] <- c("Constant", "Depth", "Econ. Link", 
+dimnames(ml.model.sum$beta)[[3]] <- c("Constant", "Depth", "Uncond. Milsup.", "Econ. Link", 
                                       "FP Conc.",
                                       "Number Members", "FP Similarity",
                                       "Democratic Membership", 
@@ -177,16 +157,14 @@ depth.dens.joint <- cbind(ml.model.sum$beta[, 2, 2], ml.model.sum$beta[, 1, 2])
 colnames(depth.dens.joint) <- c("Major", "Non-Major")
 depth.dens.joint <- melt(depth.dens.joint)
 
-ggplot(depth.dens.joint, aes(x = value,  fill = X2)) +
+ggplot(depth.dens.joint, aes(x = value,  fill = Var2)) +
   geom_density(alpha = 0.25) +
   scale_fill_manual(name = "Sample", values=c("#999999", "#000000")) +
   ggtitle("Posterior Distributions of Treaty Scope: Major and Non-Major Powers") +
   theme_classic()
 ggsave("appendix/depth-dens-joint.png", height = 6, width = 8)
 
-# Calculate posterior overlap
-beta.overlap <- overlap(list(ml.model.sum$beta[, 1, 2], ml.model.sum$beta[, 2, 2]), nbins = 1000, plot = TRUE)
-beta.overlap$OV
+
 
 
 
@@ -206,7 +184,7 @@ mean(ml.model.sum$gamma[, 7] > 0) # number of disputes
 gamma.melt <- melt(ml.model.sum$gamma)
 
 # Plot density of the coefficients
-ggplot(gamma.melt, aes(x=value,  fill = Var.2)) +
+ggplot(gamma.melt, aes(x=value,  fill = Var2)) +
   geom_density(alpha=0.25) +
   ggtitle("Posterior Distribution of State-Level Covariates")
 
@@ -227,19 +205,19 @@ xtable(gamma.summary)
 
 ## Start with major powers
 lambda.means.maj <- get_posterior_mean(ml.model, pars = "lambda_maj")
-lambda.df.maj <- data_frame(lambda = lambda.means.maj[, 5]) %>%  # add lambdas to df
+lambda.df.maj <- tibble(lambda = lambda.means.maj[, 5]) %>%  # add lambdas to df
   bind_cols(filter(reg.all.data, atopid %in% colnames(state.mem.maj)))
-cor.test(lambda.df.maj$lambda, lambda.df.maj$latent.scope.mean,
+cor.test(lambda.df.maj$lambda, lambda.df.maj$latent.depth.mean,
          alternative = "less", method = "spearman")
 
 
 # plot major powers
-lambda.scope.maj <- ggplot(lambda.df.maj, aes(x = latent.scope.mean, y = lambda)) +
+lambda.depth.maj.joint <- ggplot(lambda.df.maj, aes(x = latent.depth.mean, y = lambda)) +
   geom_point() +
   geom_smooth(method = "lm") + theme_classic() +
-  labs(x = "Latent Treaty Scope", y = "Effect of Allied Spending") +
+  labs(x = "Latent Treaty Depth", y = "Effect of Allied Spending") +
   ggtitle("Major Powers")
-lambda.scope.maj
+lambda.depth.maj.joint
 
 
 # Use random forest to assess variable importance: major powers
@@ -261,16 +239,16 @@ ggsave("figures/varimp-maj.png", height = 6, width = 8)
 lambda.means.min <- get_posterior_mean(ml.model, pars = "lambda_min")
 lambda.df.min <- data_frame(lambda = lambda.means.min[, 5]) %>%  # add lambdas to df
   bind_cols(filter(reg.all.data, atopid %in% colnames(state.mem.min)))
-cor.test(lambda.df.min$lambda, lambda.df.min$latent.scope.mean, 
-         alternative = "greater", method = "spearman")
+cor.test(lambda.df.min$lambda, lambda.df.min$latent.depth.mean, 
+         alternative = "less", method = "spearman")
 
 # plot non-major powers
-lambda.scope.min <- ggplot(lambda.df.min, aes(x = latent.scope.mean, y = lambda)) +
+lambda.depth.min.joint <- ggplot(lambda.df.min, aes(x = latent.depth.mean, y = lambda)) +
   geom_point() +
   geom_smooth(method = "lm") + theme_classic() +
   labs(x = "Latent Treaty Scope", y = "Effect of Allied Spending") +
   ggtitle("Non-Major Powers")
-lambda.scope.min
+lambda.depth.min.joint
                                               
 
 
@@ -289,13 +267,13 @@ ggsave("figures/varimp-min.png", height = 6, width = 8)
 
 
 # Plot major and non-major trends together
-multiplot.ggplot(lambda.scope.maj, lambda.scope.min)
+multiplot.ggplot(lambda.depth.maj.joint, lambda.depth.min.joint)
 
 
 # Check how many lambda parameters can be reliably distinguished from zero:
 lambda.probs.maj <- apply(ml.model.sum$lambda_maj, 2, positive.check)
-lambda.probs.maj <- cbind.data.frame(colnames(state.mem.maj), round(lambda.df.maj$lambda, digits = 4), lambda.df.maj$latent.scope.mean, lambda.probs.maj)
-colnames(lambda.probs.maj) <- c("atopid", "lambda.mean", "latent.scope.mean", "pos.post.prob")
+lambda.probs.maj <- cbind.data.frame(colnames(state.mem.maj), round(lambda.df.maj$lambda, digits = 4), lambda.df.maj$latent.depth.mean, lambda.probs.maj)
+colnames(lambda.probs.maj) <- c("atopid", "lambda.mean", "latent.depth.mean", "pos.post.prob")
 # binary indicator if posterior probability is greater than 90% for positive or negative
 lambda.probs.maj$non.zero <- ifelse(lambda.probs.maj$pos.post.prob >= .90 | lambda.probs.maj$pos.post.prob <= .10, 1, 0)
 sum(lambda.probs.maj$non.zero) # total number of non-zero alliances
@@ -304,14 +282,14 @@ sum(lambda.probs.maj$non.zero) # total number of non-zero alliances
 lambda.probs.maj$atopid <- reorder(lambda.probs.maj$atopid, lambda.probs.maj$pos.post.prob)
 
 # For all alliances
-ggplot(lambda.probs.maj, aes(x = atopid, y = pos.post.prob, fill = latent.scope.mean)) + 
+ggplot(lambda.probs.maj, aes(x = atopid, y = pos.post.prob, fill = latent.depth.mean)) + 
   geom_col() +
   coord_flip()
 
 # For non-zero alliances 
 lambda.probs.maj %>% 
   filter(non.zero == 1) %>% 
-  ggplot(mapping = aes(x = atopid, y = pos.post.prob, fill = latent.scope.mean)) + 
+  ggplot(mapping = aes(x = atopid, y = pos.post.prob, fill = latent.depth.mean)) + 
   geom_col() +
   scale_fill_continuous(type = "viridis") +
   geom_text(aes(label = pos.post.prob), nudge_y = .04) +
@@ -323,8 +301,8 @@ ggsave("figures/non-zero-alliances-maj.png", height = 6, width = 8)
 
 # Check how many lambda parameters can be reliably distinguished from zero:
 lambda.probs.min <- apply(ml.model.sum$lambda_min, 2, positive.check)
-lambda.probs.min <- cbind.data.frame(colnames(state.mem.min), round(lambda.df.min$lambda, digits = 4), lambda.df.min$latent.scope.mean, lambda.probs.min)
-colnames(lambda.probs.min) <- c("atopid", "lambda.mean", "latent.scope.mean", "pos.post.prob")
+lambda.probs.min <- cbind.data.frame(colnames(state.mem.min), round(lambda.df.min$lambda, digits = 4), lambda.df.min$latent.depth.mean, lambda.probs.min)
+colnames(lambda.probs.min) <- c("atopid", "lambda.mean", "latent.depth.mean", "pos.post.prob")
 # binary indicator if posterior probability is greater than 90% for positive or negative
 lambda.probs.min$non.zero <- ifelse(lambda.probs.min$pos.post.prob >= .90 | lambda.probs.min$pos.post.prob <= .10, 1, 0)
 sum(lambda.probs.min$non.zero) # total number of non-zero alliances
@@ -333,14 +311,14 @@ sum(lambda.probs.min$non.zero) # total number of non-zero alliances
 lambda.probs.min$atopid <- reorder(lambda.probs.min$atopid, lambda.probs.min$pos.post.prob)
 
 # For all alliances
-ggplot(lambda.probs.min, aes(x = atopid, y = pos.post.prob, fill = latent.scope.mean)) + 
+ggplot(lambda.probs.min, aes(x = atopid, y = pos.post.prob, fill = latent.depth.mean)) + 
   geom_col() +
   coord_flip()
 
 # For non-zero alliances 
 lambda.probs.min %>% 
   filter(non.zero == 1) %>% 
-  ggplot(mapping = aes(x = atopid, y = pos.post.prob, fill = latent.scope.mean)) + 
+  ggplot(mapping = aes(x = atopid, y = pos.post.prob, fill = latent.depth.mean)) + 
   geom_col() +
   scale_fill_continuous(type = "viridis") +
   geom_text(aes(label = pos.post.prob), nudge_y = .04) +

@@ -50,39 +50,47 @@ ggsave("presentation/lambda-est-full.png", height = 6, width = 8)
 
 
 # Plot histogram of mean latent depth
-ggplot(atop.milsup, aes(x = latent.depth.mean)) + geom_histogram() +
+ggplot(atop.milsup, aes(x = latent.depth.mean)) + 
+  geom_histogram(color = "black", fill = "grey") +
   theme_carly_presents() + labs(x = "Mean Latent Depth", y = "Treaties") 
 ggsave("presentation/ld-hist.png", height = 6, width = 8)
 
-# Show UAR
-ggplot(atop.milsup, aes(x = latent.depth.mean)) + geom_histogram() +
+# Show deep treaty: UAE-Yemen 1958 (ATOPID 3345)
+# Military Union (organization), central high command, official contact 
+ggplot(atop.milsup, aes(x = latent.depth.mean)) + 
+  geom_histogram(color = "black", fill = "grey") +
   theme_carly_presents() + labs(x = "Mean Latent Depth", y = "Treaties") +
-  geom_vline(xintercept = 2.2, linetype = "dashed", size = 1)  + 
-  geom_text(label="UAE-Yemen 1958", x = 2.15, y = 30, hjust = 1, size = 5)  # UAR
+  geom_vline(xintercept = 2.05, linetype = "dashed", size = 1)  + 
+  geom_text(label="UAE-Yemen 1958", x = 2, y = 60, hjust = 1, size = 5)  # UAR
 ggsave("presentation/ld-hist-deep.png", height = 6, width = 8)
 
 
-# Show shallow treaty
-ggplot(atop.milsup, aes(x = latent.depth.mean)) + geom_histogram() +
+# Show shallow treaty: ATOPID 2135 France Poland 1925 with new measure (-0.8263845)
+# Nothing
+ggplot(atop.milsup, aes(x = latent.depth.mean)) + 
+  geom_histogram(color = "black", fill = "grey") +
   theme_carly_presents() + labs(x = "Mean Latent Depth", y = "Treaties") +
-  geom_vline(xintercept = -0.017, linetype = "dashed", size = 1)  + 
-  geom_text(label="UK-France 1870", x = -0.011, y = 35, hjust = -0.01, size = 5) # Ukraine-India neutrality and non-aggression
+  geom_vline(xintercept = -0.8, linetype = "dashed", size = 1)  + 
+  geom_text(label="France-Poland 1925", x = -0.7, y = 60, hjust = -0.01, size = 5) 
 ggsave("presentation/ld-hist-shallow.png", height = 6, width = 8)
 
 
-# Show typical treaty
-ggplot(atop.milsup, aes(x = latent.depth.mean)) + geom_histogram() +
+# Show typical treaty: -0.149679 which is ATOPID 4370: Czech-Slovak 1993
+# Defense pact with regular intergovernmental meetings 
+ggplot(atop.milsup, aes(x = latent.depth.mean)) + 
+  geom_histogram(color = "black", fill = "grey") +
   theme_carly_presents() + labs(x = "Mean Latent Depth", y = "Treaties") +
-  geom_vline(xintercept = 0.90289, linetype = "dashed", size = 1)  + 
-  geom_text(label="Czech-German 1967", x = 0.85, y = 38, hjust = 1, size = 5) # France-Czech consul 1938
+  geom_vline(xintercept = -0.11, linetype = "dashed", size = 1)  + 
+  geom_text(label="OAS", x = -0.05, y = 60, hjust = -.1, size = 5) 
 ggsave("presentation/ld-hist-median.png", height = 6, width = 8)
 
 
 # Show NATO
-ggplot(atop.milsup, aes(x = latent.depth.mean)) + geom_histogram() +
+ggplot(atop.milsup, aes(x = latent.depth.mean)) + 
+  geom_histogram(color = "black", fill = "grey") +
   theme_carly_presents() + labs(x = "Mean Latent Depth", y = "Treaties") +
-  geom_vline(xintercept = 0.66128237, linetype = "dashed", size = 1)  + 
-  geom_text(label="NATO", x = 0.64, y = 38, hjust = 1, size = 5) # NATO
+  geom_vline(xintercept = 0.37, linetype = "dashed", size = 1)  + 
+  geom_text(label="NATO", x = 0.4, y = 60, hjust = 1.2, size = 5) # NATO
 ggsave("presentation/ld-hist-nato.png", height = 6, width = 8)
 
 
@@ -98,11 +106,6 @@ ggplot(latent.factors, aes(x = mean, y = var)) +
 ggsave("presentation/factor-loadings.png", height = 6, width = 8) 
 
 
-# Plot histogram of mean latent depth in full data
-ggplot(atop, aes(x = latent.depth.mean)) + geom_histogram() +
-  theme_carly_presents() + labs(x = "Mean Latent Depth", y = "Treaties") 
-ggsave("presentation/ld-hist-full.png", height = 6, width = 8)
-  
 
 # Plot results
 depth.post <- as.data.frame(coef.min$beta[, 2])
@@ -115,8 +118,8 @@ depth.dens <- ggplot(data = depth.post, mapping = aes(x = latent.depth.mean)) +
 
 d <- ggplot_build(depth.dens)$data[[1]] # build the density plot for filling
 
-depth.dens + geom_area(data = subset(d, x > 0), aes(x=x, y=y), fill="#d95f02") +
-  annotate("text", x = .06, y = 20, label = ".92", size = 12, parse = TRUE)
+depth.dens + geom_area(data = subset(d, x < 0), aes(x=x, y=y), fill="#d95f02") +
+  annotate("text", x = -.07, y = 15, label = ".96", size = 12, parse = TRUE)
 
 ggsave("presentation/depth-post.png", height = 6, width = 8)
 
@@ -128,20 +131,15 @@ mcmc_intervals(coef.min$beta,
   theme_carly_presents()
 ggsave("presentation/beta-intervals-min.png", height = 6, width = 8)
 
- 
-#### Plot the Means of the Lambda Parameters
-lambda.probs$atopid <- reorder(lambda.probs$atopid, lambda.probs$lambda.mean)
 
-lambda.probs %>% 
-  filter(non.zero == 1) %>% 
-  ggplot(mapping = aes(x = atopid, y = lambda.mean, fill = latent.depth.mean)) + 
-  geom_col() +
-  scale_fill_continuous(type = "viridis") +
-  geom_col() + coord_flip() +
-  labs(x = "Alliance", y = "Posterior Mean of Lambda Parameter")  + 
-  theme_carly_presents()
-
-
+# substantive effect calculation
+color_scheme_set("darkgray")
+mcmc_areas(lambda.change.depth, pars = "impact.milex", prob = .9) +
+  geom_vline(xintercept = 0) +
+  ggtitle("Predicted Impact on Military Spending") +
+  theme_carly_presents() +
+  theme(axis.text.y = element_blank())
+ggsave("presentation/pred-impact-depth.png", height = 6, width = 8)
 
 ### Plot treaty depth against lambda
 
@@ -152,16 +150,18 @@ ggplot(lambda.df.min, aes(x = latent.depth.mean, y = lambda)) +
 ggsave("presentation/ld-lambda-blank.png", height = 6, width = 8)
 
 # non-major powers
-lambda.df.min %>% filter(wartime == 0) %>%
-ggplot(aes(x = latent.depth.mean, y = lambda)) +
+ggplot(lambda.df.min, aes(x = latent.depth.mean, y = lambda)) +
+  geom_hline(yintercept = 0) +
   geom_point() +
   geom_smooth(method = "lm") + 
   labs(x = "Latent Treaty Depth", y = "Alliance Part. Impact") +
   theme_carly_presents()
 ggsave("presentation/ld-lambda-min.png", height = 6, width = 8)
 
+
 # Major powers 
 ggplot(lambda.df.maj, aes(x = latent.depth.mean, y = lambda)) +
+  geom_hline(yintercept = 0) +
   geom_point() +
   geom_smooth(method = "lm") + 
   labs(x = "Latent Treaty Depth", y = "Alliance Part. Impact") +
@@ -186,10 +186,10 @@ ggsave("presentation/lambda-us-min.png", height = 6, width = 8)
 # Scatter plot highlighting US treaties 
 # blank axis for illustrative purposes
 ggplot(lambda.min.sum, aes(x = latent.depth.mean, y = lambda.mean)) +
-  xlim(-.02, 2.3) + ylim(-.09, .09) +
+  xlim(-.85, 2.3) + ylim(-.12, .21) +
   geom_hline(yintercept = median(lambda.min.sum$lambda.mean)) +
   geom_vline(xintercept = median(lambda.min.sum$latent.depth.mean)) +
-  labs(x = "Latent Treaty Depth", y = "Alliance Impact") +
+  labs(x = "Latent Depth", y = "Alliance Impact") +
   theme_carly_presents()
 ggsave("presentation/lambda-depth-us-blank.png", height = 6, width = 8)
 
@@ -288,6 +288,11 @@ illus.plot
 ggsave("presentation/illus-arg.png", height = 6, width = 9)
 
 
+# Plot depth and uncertainty against start year
+ls.styear + theme_carly_presents()
+ggsave("presentation/ld-start-year.png", height = 6, width = 8)
+
+
 
 # Non-zero major power alliances
 lambda.probs.maj %>% 
@@ -317,15 +322,10 @@ ggsave("presentation/non-zero-min.png", height = 6, width = 8)
 
 
 # Plot of varying slopes results for depth
-ggplot(depth.dens.joint, aes(x = value,  fill = X2)) +
+ggplot(depth.dens.joint, aes(x = value,  fill = Var2)) +
   geom_density(alpha = .75) + 
   scale_fill_brewer(name = "Sample", palette = "Dark2") +
-  theme_carly_presents() +
-  annotate("text", x = -.09, y = 12, 
-           label = ".90", size = 8, parse = TRUE) + # Note for major
-  annotate("text", x = 0.07, y = 12, 
-           label = ".80", size = 8, parse = TRUE) + # Note for non-major
-  theme_carly_presents()
+  theme_carly_presents() 
 ggsave("presentation/var-slopes-depth.png", height = 6, width = 8)
 
 
@@ -373,30 +373,14 @@ multiplot.ggplot(b1.sim.plot.pres, b2.sim.plot.pres)
 
 
 ### Single-level regression check 
-pres.mplot <- multiplot(rreg.min, rreg.maj, m1r.reg,
-                        names = c("Non-Major Powers", "Major Powers", "All States"),
-                        coefficients = "avg.depth",
-                        by = "Model",
-                        xlab = "Value",
-                        color = "#d95f02",
-                        zeroColor = "black",
-                        zeroType = 1,
-                        zeroLWD = 2,
-                        ylab = "Sample",
-                        title = "",
-                        lwdInner = 4,
-                        lwdOuter =  2,
-                        pointSize = 8,
-                        horizontal = FALSE
-) 
-pres.mplot + theme_carly_presents() 
-ggsave("presentation/robust-reg-coef.png", height = 6, width = 8) 
+# Average depth
+coef.avg + theme_carly_presents() 
+ggsave("presentation/single-level-average.png", height = 6, width = 8) 
 
-rm(list = c("m1r.reg", "rreg.maj", "rreg.min"))
+# Dummy for deep alliance presence
+coef.dum + theme_carly_presents() 
+ggsave("presentation/single-level-dummy.png", height = 6, width = 8) 
 
-# plot for single-level model
-cplot(m1.all.irel, x = "avg.treaty.contrib", dx = "avg.depth", what = "effect",
-      main = "Conditional Relationship between Depth and Treaty Contribution",
-      xlab = "Average Share of Allied Capability", ylab = "Marginal Effect of Average Alliance Depth")
-abline(h = 0)
+
+
 

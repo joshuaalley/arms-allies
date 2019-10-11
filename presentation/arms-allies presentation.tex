@@ -232,7 +232,7 @@ Alliances are a form of international cooperation. There are two connected forms
 \pause
 \item Abandonment.   
 \pause
-\item Free-riding
+\item Free-riding.
 \end{enumerate}  
 
 \end{frame}
@@ -342,7 +342,7 @@ I need two things to test the prediction:
 \begin{enumerate} 
 \item Measure of treaty depth--- measurement model. 
 \pause
-\item Connect alliance-level variation with state-level outcomes--- multilevel analysis.  
+\item Connect alliance-level variation with state-level outcomes--- multilevel Bayesian analysis.  
 \end{enumerate} 
 
 
@@ -464,9 +464,11 @@ My measure of depth for each alliance is the posterior mean of a latent factor.
 \begin{enumerate} 
 \item Matches the theoretical argument by comparing alliances. 
 \pause
-\item Explicitly model heterogeneous effects of alliances. 
+\item Explicitly model heterogeneous effects of alliances.
 \pause
-\item States are members of multiple alliances. 
+\item States are members of multiple alliances.  
+\pause 
+\item Includes multiple salient alliance characteristics. 
 \end{enumerate} 
 
 \end{frame} 
@@ -483,6 +485,25 @@ My measure of depth for each alliance is the posterior mean of a latent factor.
 & & & & &    \downarrow \uncover<3->{\mbox{Depth -}}  \\}
 \mbox{\% Change} =     & \mbox{Varying}   & + & \mbox{State}   & + & \mbox{Alliance} \\
 \mbox{Mil. Ex.}      & \mbox{Intercepts}&   &  \mbox{Vars.} &   & \mbox{Participation} \\
+\end{array}
+\]
+
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}{ML Model}
+
+\[
+\begin{array}{cccccc}
+ & & & & &      \mbox{Alliance} \\
+& & & & &    \mbox{Characteristics}  \\
+\uncover<2->{& & & & \lambda = & \alpha_{all} + \beta_1 \mbox{Depth} + \textbf{X} \beta \\}
+& & & & &    \downarrow  \\
+\mbox{Growth} =     & \mbox{Varying}   & + & \mbox{State}   & + & \mbox{Alliance} \\
+\mbox{Mil. Ex.}      & \mbox{Intercepts}&   &  \mbox{Vars.} &   & \mbox{Participation} \\
+\uncover<2->{\mbox{y} = & \alpha + \alpha^{st} + \alpha^{yr}   & + & \textbf{W} \gamma  & + & \textbf{Z} \lambda \\}
 \end{array}
 \]
 
@@ -518,7 +539,7 @@ My measure of depth for each alliance is the posterior mean of a latent factor.
 \begin{itemize}
 \item \textbf{State-Level Controls}: Interstate war, civil War, annual MIDs, GDP growth, POLITY, Cold War, rival military expenditures. 
 \pause 
-\item \textbf{Alliance-Level Controls}: Share of democracies, number of members, wartime, asymmetric obligations, US member (Cold War), USSR member.
+\item \textbf{Alliance-Level Controls}: Unconditional military support, economic issue linkages, foreign policy concessions, share of democracies, number of members, wartime, asymmetric obligations, US member (Cold War), USSR member.
 
 \end{itemize} 
 
@@ -559,7 +580,7 @@ My measure of depth for each alliance is the posterior mean of a latent factor.
 %------------------------------------------------
 
 
-\begin{frame}{Treaty Depth and $\lambda$}
+\begin{frame}{How Treaty Depth Modifies Alliance Impact}
 
 \begin{figure}[htbp]
 	\centering
@@ -573,7 +594,7 @@ My measure of depth for each alliance is the posterior mean of a latent factor.
 
 %------------------------------------------------
 
-\begin{frame}{Treaty Depth and $\lambda$: Non-major Powers}
+\begin{frame}{Treaty Depth and Alliance Impact}
 
 \begin{figure}
 	\centering
@@ -591,7 +612,7 @@ My measure of depth for each alliance is the posterior mean of a latent factor.
 
 %------------------------------------------------
 
-\begin{frame}{Reassurance and Formal Obligations}
+\begin{frame}{Reassurance}
 
 \begin{figure}
 	\centering
@@ -661,6 +682,15 @@ How alliance participation affects military spending depends on treaty depth.
  \begin{frame}[standout]
 
 Deep alliances often reduce non-major power military spending but shallow alliances often increase military spending. 
+
+ \end{frame}
+ 
+ 
+%------------------------------------------------
+% The two subpoints 
+ \begin{frame}[standout]
+
+There is a tradeoff between reassurance and free-riding in alliance treaty design. 
 
  \end{frame}
 
@@ -741,6 +771,52 @@ jkalley14@tamu.edu
 \end{enumerate}
 
 \end{frame}
+
+
+%------------------------------------------------
+
+\begin{frame}{Details of Measurement Model}
+
+\begin{itemize}
+\item Bayesian Gaussian Copula Factor Model: for mixed data. 
+\item Uses copulas to break dependence between latent factors and marginal distributions. 
+\item Treats marginals as unknown and keeps them free of dependence. 
+\item IMH proposal, 10,000 iteration warmup, 20,000 samples, thinned every 20 draws. 
+\item Generalized double Pareto prior for the factor loading--- flexible generalized Laplace distribution with a spike at zero and heavy tails. 
+\end{itemize} 
+
+
+\end{frame}
+
+
+%------------------------------------------------
+
+
+\begin{frame}{Aside: Benson and Clinton 2016}
+
+\begin{itemize}
+\item Use a measurement model to infer alliance scope, depth and capability. 
+\item Identify three separate dimensions, and use three models- explicit constraint. 
+\item I use a different concept, which combines what they call scope and depth. 
+\item Murray et al's model relaxes distributional assumptions in their estimator (Quinn 2004 Factor Analysis). 
+\end{itemize}
+
+
+\end{frame}
+
+%-----------------------------------------------
+
+\begin{frame}{Depth and First Year of the Alliance}
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.95\textwidth]{ld-start-year.png}
+\end{figure}
+
+
+\end{frame}
+
+
 
 
 
@@ -857,37 +933,6 @@ $ p(\nu) \sim gamma(2, 0.1)$
 
 \end{frame}
 
-
-%------------------------------------------------
-
-\begin{frame}{Details of Measurement Model}
-
-\begin{itemize}
-\item Bayesian Gaussian Copula Factor Model: for mixed data. 
-\item Uses copulas to break dependence between latent factors and marginal distributions. 
-\item Treats marginals as unknown and keeps them free of dependence. 
-\item IMH proposal, 10,000 iteration warmup, 20,000 samples, thinned every 20 draws. 
-\item Generalized double Pareto prior for the factor loading--- flexible generalized Laplace distribution with a spike at zero and heavy tails. 
-\end{itemize} 
-
-
-\end{frame}
-
-
-%------------------------------------------------
-
-
-\begin{frame}{Aside: Benson and Clinton 2016}
-
-\begin{itemize}
-\item Use a measurement model to infer alliance scope, depth and capability. 
-\item Identify three separate dimensions, and use three models- explicit constraint. 
-\item I use a different concept, which combines what they call scope and depth. 
-\item Murray et al's model relaxes distributional assumptions in their estimator (Quinn 2004 Factor Analysis). 
-\end{itemize}
-
-
-\end{frame}
 
 %------------------------------------------------
 

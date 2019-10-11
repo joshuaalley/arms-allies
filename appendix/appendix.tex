@@ -26,6 +26,29 @@
 \doublespace 
 
 
+\section{Control Variables}
+
+% Describe covariates at each level. 
+In the state-level regression, I adjust for several correlates of alliance participation and military spending. 
+State-level covariates include GDP growth \citep{Boltetal2018} regime type, international war \citep{Reiteretal2016}, civil war participation \citep{SarkeesWayman2010}, annual MIDs \citep{Gibleretal2016}, rival military spending \citep{ThompsonDreyer2012} and a dummy for Cold War years.
+Conflict participation, alliances, and military spending are all correlated \citep{SeneseVasquez2008}.
+I include growth in GDP instead of levels of GDP because GDP levels are non-stationary, and economic growth shapes the opportunity costs of military spending \citep{Kimball2010, Zielinskietal2017}.  
+
+
+The alliance-level regression contains the mean of the latent treaty depth--- the key independent variable. 
+Other alliance level variables are correlates of treaty design and military spending, including the number of members and share of democracies in a treaty at time of formation \citep{Chibaetal2015}. 
+I control for issue linkages by creating a dummy indicator of whether the alliance promises any kind of economic cooperation \citep{Poast2013, LongLeeds2006}. 
+As an indicator of hierarchical security relationships, I include a count of foreign policy concessions in the alliance including stipulations on competing alliances, not aiding enemies, third party ties, how to divide gains, and domestic intervention. 
+I also mark the presence of unconditional military support using a dummy variable I constructed using existing indicators of conditional support in the ATOP data. 
+I adjust for superpower membership--- whether the United States or Soviet Union participated in a treaty during the Cold War. 
+Two dummy indicators of wartime alliances and asymmetric obligations \citep{Leedsetal2002} complete the alliance-level regression specification. 
+
+
+Adjusting for all of these covariates helps address systemic differences between states and alliances from strategic selection into alliances. 
+Regime type and external threat are especially important in that endeavor. 
+
+ 
+
 
 \section{Priors}
 
@@ -69,16 +92,66 @@ Taken together, all of this implies that the chains adequately explored the post
 
 
 
+\section{Normalizing Allied Capability}
+
+% Justify use of annual normalization
+As noted in the paper, I place allied capability in the membership matrix \textbf{Z} on the same scale as the other parameters by normalizing it by year. 
+Within each year, I divide the total military spending of allied states by the maximum value, so capability values within each year range from just above zero to one. 
+This ensures that allied capability is comparable within years, and that I do not treat more modern alliances as the most capable as raw defense budget sizes increase. 
+
+
+The choice of this specific normalization is less theoretically informed than using capability itself. 
+Therefore, I assessed the use of different normalizations and rescalings for allied capability by comparing model fit. 
+I fit three models in addition to the one presented in the paper. 
+The first rescaled allied capability by dividing each capability value by the maximum of capability without grouping alliances by year. 
+The second rescaled alliance capability by dividing by two standard deviations, which is problematic because it introduces negative capability values. 
+The last used total allied CINC scores instead of military spending as an indicator of allied capability, which also facilitates comparisons of allied capability within years. 
+CINC scores measure the share of total world capability each state has in a particular year, so it is useful for comparing allied capability within years \citep{SingerCINC1988}. 
+
+
+After estimating these three models, I used leave-one-out (LOO) cross validation to assess model fit \citep{Vehtarietal2017}. 
+LOO estimates pointwise out-of-sample prediction accuracy using the log-likelihood evaluated at the posterior simulations of the parameter values.\footnote{The widely applicable information criteria (WAIC) produces similar results, but the estimates for the CINC model may be driven by an unusual observation.} 
+All diagnostics indicate the LOO results are not driven by unusual observations. 
+As with other information criteria, lower values indicate better fit. 
+
+ 
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrrrrrrrr}
+  \hline
+ Allied Capability & elpd\_diff & se\_diff & elpd\_loo & se\_elpd\_loo  \\ 
+  \hline
+  Normalized by Year & 0.000 & 0.000 & -1159.513 & 184.714 \\ 
+  Rescaled by Maximum & -3.165 & 2.643 & -1162.679 & 184.723  \\ 
+  Recaled by 2SD & -10.749 & 6.116 & -1170.262 & 184.741  \\ 
+  Total Allied CINC & -12.308 & 5.576 & -1171.821 & 184.683  \\ 
+   \hline
+\end{tabular}
+\caption{Leave-one-out cross validation to assess model fit with different rescalings or normalizations of alliance capability. }
+\label{tab:loo-zcontents}
+\end{table}
+
+\autoref{tab:loo-zcontents} summarizes the assessment of each model using the expected log pointwise predictive density (elpd). 
+I use the model from the paper as the comparison model: a negative elpd\_diff implies the normalized model fits the data better. 
+The difference also has some uncertainty, which is summarized by the se\_diff column of \autoref{tab:loo-zcontents}. 
+The other three models have a negative elpd\_diff compared to the model with normalized capability by year. 
+For the models with CINC and rescaling by two standard deviations the difference is large, relative to the se\_diff, so there is a clear preference for the normalized model. 
+Normalizing by year provides at best a marginal improvement over a model where capability is rescaled using the maximum. 
+Rescaling capability by the maximum produces similar inferences about alliance characteristics, including treaty depth. 
+
+
+
 \section{Fake Data Simulation Check}
 
 
-With any complicated model, simulating fake data and seeing if the model can recover known parameters is an essential check. 
+With any complicated model, simulating fake data and seeing if the model can recover known parameters is essential. 
 Fake-data simulation helps validate model results. 
 This section summarizes results from fitting the multilevel model to fake data.
 
 
 I simulated a dataset of 2000 t-distributed observations with 50 states observed for 200 years and 100 alliances. 
-The outcome has a different scale than the military spending growth variable in the paper.
+The outcome has a different scale than the military spending outcome variable in the paper.
 Thus coefficient values here will not match reported values in the paper.  
 I then simulated two state and alliance level variables and a sparse matrix of state membership in alliances. 
 Last, I ran the model without evaluating the likelihood, generating a posterior prediction of the outcome based on the fake data.
@@ -123,8 +196,6 @@ The next section provides more detail on results from the major and non-major po
 I do not present tabular summaries of the alliance-level parameters in the manuscript. 
 The next table summarizes the posteriors of the alliance-level parameters. 
 Using a 90\% credible intervals implies there is a 90\% chance the coefficient is between the 5\% and 95\% values. 
-Because Hypotheses 1 is directional, I report the negative posterior probability in the manuscript.  
-Like a one-tailed hypothesis test, the positive and negative posterior probabilities match the hypotheses better. 
 
 
 \autoref{tab:alliance-level-min} summarize the 90\% credible intervals for the alliance-level regression parameters in the non-major power sample. 
@@ -135,47 +206,78 @@ The number of effective samples is adequate for all parameters.
 \centering
 \begin{tabular}{rrrrrrr}
   \hline
- & Mean & S.D. & 5\% & 95\% & Num. Eff. & $\hat{R}$ \\ 
+ & mean & sd & 5\% & 95\% & n\_eff & $\hat{R}$ \\ 
   \hline
-Constant & -0.03 & 0.03 & -0.08 & 0.02 & 1677.92 & 1.00 \\ 
-  Depth & 0.02 & 0.02 & -0.00 & 0.05 & 2521.36 & 1.00 \\ 
-  Econ. Link & -0.02 & 0.02 & -0.04 & 0.01 & 2997.70 & 1.00 \\ 
-  FP Conc. & 0.01 & 0.01 & -0.00 & 0.03 & 4019.10 & 1.00 \\ 
-  Number Members & 0.00 & 0.00 & -0.00 & 0.00 & 3820.06 & 1.00 \\ 
-  FP Similarity & 0.00 & 0.03 & -0.04 & 0.05 & 2254.34 & 1.00 \\ 
-  Democratic Membership & -0.00 & 0.00 & -0.00 & 0.00 & 4412.89 & 1.00 \\ 
-  Wartime & 0.04 & 0.03 & -0.01 & 0.08 & 3474.44 & 1.00 \\ 
-  Asymmetric & -0.03 & 0.02 & -0.07 & 0.01 & 3474.45 & 1.00 \\ 
-  US. Mem & 0.02 & 0.02 & -0.01 & 0.05 & 2330.47 & 1.00 \\ 
-  USSR Mem. & 0.04 & 0.05 & -0.03 & 0.12 & 3859.50 & 1.00 \\ 
-  $\sigma$ Alliances & 0.02 & 0.01 & 0.00 & 0.03 & 1201.91 & 1.01 \\ 
+Constant & -0.042 & 0.067 & -0.151 & 0.069 & 1885.051 & 1.000 \\ 
+  Depth & -0.031 & 0.040 & -0.097 & 0.034 & 3412.530 & 1.000 \\ 
+  Uncond Milsup & -0.058 & 0.072 & -0.174 & 0.061 & 3093.259 & 1.000 \\ 
+  Econ. Link & 0.089 & 0.075 & -0.028 & 0.215 & 2602.695 & 1.001 \\ 
+  FP Conc. & -0.024 & 0.039 & -0.093 & 0.036 & 2284.209 & 1.004 \\ 
+  Number Members & -0.000 & 0.003 & -0.006 & 0.004 & 2783.488 & 1.002 \\ 
+  FP Similarity & 0.052 & 0.084 & -0.086 & 0.193 & 2107.466 & 1.001 \\ 
+  Democratic Membership & 0.004 & 0.005 & -0.003 & 0.012 & 3143.990 & 1.000 \\ 
+  Wartime & 0.002 & 0.057 & -0.093 & 0.094 & 2878.776 & 1.000 \\ 
+  Asymmetric & 0.001 & 0.056 & -0.092 & 0.092 & 2639.631 & 1.001 \\ 
+  US. Mem & -0.078 & 0.076 & -0.204 & 0.043 & 2966.152 & 1.002 \\ 
+  USSR Mem. & -0.048 & 0.101 & -0.212 & 0.112 & 3081.566 & 1.000 \\ 
+  $\sigma$ Alliances & 0.255 & 0.071 & 0.148 & 0.379 & 951.846 & 1.005 \\ 
    \hline
 \end{tabular}
-\caption{90\% Credible intervals non-major power alliance-level parameters}
-\label{tab:alliance-level-min}
+\caption{Posterior Intervals, the effective sample size and $\hat{R}$ statistic for all parameters in the alliance-level regression.} 
+\label{tab:alliance-level-min} 
 \end{table}
 
 
+\section{Robustness Check 1: Alternative Measure of Military Spending}
 
-\section{Robustness Check: Single-Level Regression}
-
-Though the multilevel model best reflects the theory, I find similar results with single-level models. 
-In what follows, I briefly present results from robust regressions of state-year growth in military spending. 
-In these models, the key independent variable is the average depth of a state's alliances. 
-This compares states as the depth of their alliance portfolio shifts. 
-In addition to the state-level controls in the multilevel model, I included averages of alliance size and democracy and the log of total allied capability as controls. 
+The main findings in the manuscript rely on the Correlates of War military spending. 
+Due to reporting issues, definition problems and measurement challenges, other measures of military spending could lead to different results. 
+I check the robustness of my results by using \citet{Nordhausetal2012}'s measure of military spending, which combines data from the COW project and the Stockholm International Peace Research Institute (SIPRI). 
+\citet{DigiuseppePoast2016} use this measure of military spending in their paper. 
 
 
-I estimated several models, including robust regressions on all states, non-major powers, and non-major powers in alliances. 
-I also applied fixed effects to an OLS model of growth in defense expenditures. 
-The estimated association between average treaty depth and military spending growth is summarized in \autoref{fig:single-level-mplot}. 
-In all four models, average treaty depth has a positive and statistically significant association with spending growth in one-tailed tests. 
+I estimate the same multilevel model on this measure of military spending, which covers from 1949 to 2001. 
+This model also checks whether the way treaty depth modifies the impact of alliance participation on military spending changes after World War II.
+As the coefficient on a lagged dependent variable in this model, I use changes in military spending as the outcome of interest. 
 
 
 \begin{figure}[htbp]
 	\centering
+		\includegraphics[width=0.95\textwidth]{post45-beta-res.png}
+	\caption{90\% credible intervals of the $\beta$ parameters from an analysis of changes in non-major power military spending from 1949 to 2001.}
+	\label{fig:post45-beta-res}
+\end{figure}
+
+
+\autoref{fig:post45-beta-res} summarizes the alliance-level regression parameters. 
+As with the COW data, the credible interval for treaty depth is negative and does not overlap zero. 
+All the parameter estimates are similar in this data, which increases my confidence that the results are not driven by the COW spending data. 
+
+ 
+
+
+\section{Robustness Check 2: Single-Level Regression}
+
+Though the multilevel model best reflects the theory, I also fit some more standard panel 
+In what follows, I briefly present results from robust regressions of state-year percentage changes in military spending in the same sample of non-major powers. 
+As in the multilevel model, I applied the inverse hyperbolic sine transformation to the outcome. 
+In these models, I employ two indicators of alliance depth. 
+The first is the average depth of a state's alliances. 
+The second is a dummy which equals 1 if a state has at least one alliance with greater than average depth. 
+Both variables compare states as the depth of their alliance portfolio shifts. 
+In addition to the state-level controls in the multilevel model, I included averages of alliance size and democracy and the log of total allied capability as controls. 
+
+
+I estimated several models, including robust regressions on all states, non-major powers, and non-major powers in alliances. 
+I also applied fixed effects to an OLS model of percentage changes in defense expenditures. 
+The estimated association between average treaty depth and military spending changes is summarized in \autoref{fig:single-level-mplot}. 
+Results are inconsistent- the average depth measure fails to reject the null without fixed effects. 
+The deep alliance dummy coefficient estimate is negative and statistically significant across a range of samples and model specification, however. 
+
+\begin{figure}[htbp]
+	\centering
 		\includegraphics[width=0.95\textwidth]{single-level-mplot.png}
-	\caption{Estimated effect of average alliance treaty depth on growth in military spending }
+	\caption{Estimated effect of average alliance treaty depth or a dummy indicator of participation in a deep alliance on percentage changes in non-major power military spending.}
 	\label{fig:single-level-mplot}
 \end{figure}
 
@@ -186,16 +288,16 @@ To assess the robustness of the coefficient estimate in the sample of non-major 
 Specifically, I present results from \citet{Sala-i-Martin1997}'s method of bounds analysis in \autoref{fig:eba-single-level}. 
 
 
-\autoref{fig:eba-single-level} shows the distribution of the average treaty depth coefficient and an indicator of whether the alliance includes economic agreements. 
-Across many specifications, where all regression coefficients are doubtful, the CDF of the average depth coefficient has 98\% positive mass. 
-Even though the normality assumption is tenuous, the histogram in \autoref{fig:eba-single-level} shows little evidence increases in treaty depth reduce growth in military spending. 
-The bounds analysis indicates average treaty depth is a robust predictor of growth in military spending across over 1500 possible specifications. 
+\autoref{fig:eba-single-level} shows the distribution of the deep alliance coefficient and an indicator of whether the alliance includes economic agreements. 
+Across many specifications, where all regression coefficients are doubtful, the CDF of the average depth coefficient has 99\% negative mass. 
+Even though the normality assumption is clearly violated, the histogram in \autoref{fig:eba-single-level} shows little evidence increases in treaty depth increase percentage changes in military spending. 
+The bounds analysis indicates average treaty depth is a robust predictor of percentage changes in military spending across over 1500 single-level model specifications. 
 
 
 \begin{figure}[htbp]
 	\centering
 		\includegraphics[width=0.95\textwidth]{eba-single-level.png}
-	\caption{Histogram of regression}
+	\caption{Histogram of coefficient values for a deep alliance dummy and economic concessions in at least one alliance in a single-level robust regression of non-major powers in alliances.}
 	\label{fig:eba-single-level}
 \end{figure}
 
