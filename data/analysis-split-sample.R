@@ -259,6 +259,7 @@ lambda.depth.min <- ggplot(lambda.df.min, aes(x = latent.depth.mean, y = lambda)
 lambda.depth.min
 ggsave("figures/lambda-ld-nonmaj.png", height = 6, width = 8)
 
+
 # Compare all in one plot w/ multiplot.ggplot function
 multiplot.ggplot(lambda.depth.maj, lambda.depth.min)
 
@@ -359,6 +360,18 @@ colnames(lambda.min.sum) <- c("atopid", "us.mem", "lambda.mean",
                               "latent.depth.mean", "lower", "upper")
 
 
+# plot non-major power lambdas against depth w/ credible intervals
+# hard to read, so this did not make the paper
+ggplot(lambda.min.sum, aes(x = latent.depth.mean, y = lambda.mean)) +
+  geom_hline(yintercept = 0) +
+  geom_point() +
+  geom_errorbar(aes(ymin = lower, ymax = upper, alpha = .15)) +
+  geom_smooth(method = "lm") + theme_classic() +
+  labs(x = "Latent Treaty Depth", y = "Effect of Allied Spending") +
+  ggtitle("Non-Major Powers: Association Between Depth and Alliance Impact")
+
+
+
 # Make the plot
 lambda.us.int <- lambda.min.sum %>%
                  filter(us.mem == 1) %>%
@@ -456,23 +469,16 @@ growth.pred.res.max <- growth.pred.res %>%
 
 
 
-# plot 
+# plot: illeible
 ggplot(growth.pred.res, aes(x = latent.depth.mean, y = mean.pred)) +
   geom_hline(yintercept = 0) +
-  geom_point(position = position_jitter(width = 0.1)) + 
+  geom_point(position = position_jitter(width = 0.1), alpha = .25) + 
 #  geom_errorbar(aes(ymin = mean.pred - 2*sd.pred, ymax = mean.pred + 2*sd.pred)) +
   geom_smooth(method = "lm") + 
   labs(x = "Latent Depth", y = "Mean Predicted Growth from Alliance") +
   theme_classic() 
 cor.test(growth.pred.res$latent.depth.mean, growth.pred.res$mean.pred)
 
-
-ggplot(growth.pred.res, aes(x = begyr, y = mean.pred)) +
-  geom_hline(yintercept = 0) +
-  geom_point(position = position_jitter(width = 0.5)) + 
-  geom_errorbar(aes(ymin = mean.pred - 2*sd.pred, ymax = mean.pred + 2*sd.pred)) +
-  geom_smooth(method = "lm") + 
-  theme_classic() 
 
 
 

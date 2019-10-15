@@ -71,7 +71,7 @@ ggplot(atop.milsup, aes(x = latent.depth.mean)) +
   geom_histogram(color = "black", fill = "grey") +
   theme_carly_presents() + labs(x = "Mean Latent Depth", y = "Treaties") +
   geom_vline(xintercept = -0.8, linetype = "dashed", size = 1)  + 
-  geom_text(label="France-Poland 1925", x = -0.7, y = 60, hjust = -0.01, size = 5) 
+  geom_text(label="France-Poland 1925", x = -0.7, y = 60, hjust = -0.1, size = 5) 
 ggsave("presentation/ld-hist-shallow.png", height = 6, width = 8)
 
 

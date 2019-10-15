@@ -351,7 +351,9 @@ ls.styear
 # Combine plots 
 multiplot.ggplot(ls.hist, ls.styear)
 
-
+# 171 alliances with depth above -.6 
+sum(atop.milsup$latent.depth.mean > -.6)
+summary(atop.milsup$latent.depth.mean)
 
 # highlight NATO
 atop.milsup %>% 
@@ -371,8 +373,6 @@ heatmap(as.matrix(commitment.depth[, 2:4]), scale="column")
 
 
 # Look at correlation between FP similarity and depth
-
-# Treaties with military support
 cor.test(atop.milsup$mean.kap.sc, atop.milsup$latent.depth.mean)
 cor.test(atop.milsup$low.kap.sc, atop.milsup$latent.depth.mean)
 
@@ -385,6 +385,7 @@ t.test(atop.milsup$low.kap.sc ~ atop.milsup$econagg.dum)
 
 
 # Plot alliance depth against size
+cor.test(atop.milsup$num.mem, atop.milsup$latent.depth.mean)
 ggplot(atop.milsup, aes(x = num.mem, y = latent.depth.mean)) +
   geom_point()
 

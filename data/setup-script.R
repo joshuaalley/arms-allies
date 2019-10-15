@@ -29,7 +29,6 @@ library(interflex)
 library(ExtremeBounds)
 library(bfa)
 library(coda)
-library(GJRM)
 library(loo)
 
 
