@@ -141,6 +141,14 @@ mcmc_areas(lambda.change.depth, pars = "impact.milex", prob = .9) +
   theme(axis.text.y = element_blank())
 ggsave("presentation/pred-impact-depth.png", height = 6, width = 8)
 
+ggplot(impact.milex.comp, aes(x = value, fill = Var2)) +
+  geom_density(alpha = .5) +
+  scale_fill_brewer(palette="Dark2") +
+  labs(x = "Predicted Military Spending") +
+  theme_carly_presents() +
+  theme(axis.text.y = element_blank())
+
+
 ### Plot treaty depth against lambda
 
 # blank axis for illustrative purposes

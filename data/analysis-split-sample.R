@@ -138,7 +138,7 @@ rownames(beta.summary.min) <- c("Constant", "Depth", "Uncond Milsup", "Econ. Lin
                                  "sigma Alliances")
 
 print(beta.summary.min)
-xtable(beta.summary.maj, digits = 3) # for appendix
+xtable(beta.summary.min, digits = 3) # for appendix
 
 
 
@@ -183,7 +183,7 @@ mean(coef.maj$beta[, 2] < 0) # depth: major
 mean(coef.min$beta[, 2] < 0) # depth: non-major
 mean(coef.maj$beta[, 3] < 0) # uncond milsup: major
 mean(coef.min$beta[, 3] < 0) # uncond milsup: non-major
-mean(coef.maj$beta[, 4] < 0) # econ link: major
+mean(coef.maj$beta[, 4] > 0) # econ link: major
 mean(coef.min$beta[, 4] < 0) # econ link: non-major
 mean(coef.maj$beta[, 5] < 0) # FP concessions: major
 mean(coef.min$beta[, 5] > 0) # FP concessions: non-major

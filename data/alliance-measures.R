@@ -324,6 +324,10 @@ atop.milsup$latent.depth.mean <- as.numeric(t(latent.depth$post.scores.mean))
 atop.milsup$latent.depth.var <- as.numeric(t(latent.depth$post.scores.var))
 atop.milsup$latent.depth.sd <- sqrt(atop.milsup$latent.depth.var)
 
+# Export full posteriors of latent depth to depth-sources project
+write.csv(post.score[1, 1:289, 1:1000], "../Dissertation/depth-sources/data/depth-post.csv",
+          row.names = FALSE)
+
 
 # Summarize latent depth: treaties with military support only
 # weakest is 1870 France-UK offense/neutrality pact- meant to ensure Belgian neutrality
@@ -390,9 +394,12 @@ ggplot(atop.milsup, aes(x = num.mem, y = latent.depth.mean)) +
   geom_point()
 
 
-# Export to public-goods-test paper
+# Export to public-goods-test paper and sources of depth paper
 write.csv(atop, 
           "../Dissertation/public-goods-test/data/atop-additions.csv", 
+          row.names = F)
+write.csv(atop.milsup, 
+          "../Dissertation/depth-sources/data/atop-milsup.csv", 
           row.names = F)
 
 

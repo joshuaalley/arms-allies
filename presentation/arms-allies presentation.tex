@@ -55,7 +55,7 @@ How does alliance participation affect military spending?
 
 %------------------------------------------------
  
- \begin{frame}{A Tale of Two French Alliances} 
+ \begin{frame}{A Tale of Two Franco-Belgian Alliances} 
 
 \begin{columns}
 
@@ -71,7 +71,7 @@ How does alliance participation affect military spending?
 
 \uncover<3->{
 \begin{column}{0.5\textwidth}
-\textbf{France and Poland 1925}
+\textbf{France, Belgium and Company 1925}
  
 \includegraphics[width = .95\textwidth]{locarno-sign.jpeg}  
  
@@ -95,7 +95,7 @@ How does alliance participation affect military spending?
 % Here's my point. 
  \begin{frame}[standout]
 
-Treaty depth increases free-riding in alliances by non-major powers.  
+Treaty depth leads to free-riding in alliances by non-major powers.  
 
  \end{frame}
  
@@ -226,9 +226,9 @@ I make my claim about alliance participation and military spending in three ways
 Alliances are a form of international cooperation. There are two connected forms of opportunism: 
 \begin{enumerate} 
 \pause
-\item Abandonment.   
+\item Abandonment: address with reassurance.  
 \pause
-\item Free-riding.
+\item Free-riding: address with leverage. 
 \end{enumerate}  
 
 \end{frame}
@@ -283,9 +283,9 @@ There are two ways depth increases alliance members ability to free-ride.
 
 \begin{enumerate}
 \pause
-\item Greater alliance credibility: reduces leverage over free-riding.   
+\item Greater alliance credibility and less fear of abandonment.   
 \pause
-\item Efficiency gains from defense cooperation.  
+\item Reduced leverage over free-riding.
 \end{enumerate}
 
 \end{frame}
@@ -860,25 +860,24 @@ The 90\% credible intervals contain the known value for all regression parameter
 
 \begin{frame}{Alliance-Level Regression Table: Non-Major Powers}
 
-8,668 observations and 192 alliances. 
-
 \resizebox{.95\textwidth}{!}{
 \begin{tabular}{rrrrrrr}
   \hline
  & mean & sd & 5\% & 95\% & n\_eff & $\hat{R}$ \\ 
   \hline
-Constant & -0.03 & 0.03 & -0.08 & 0.02 & 1677.92 & 1.00 \\ 
-  Depth & 0.02 & 0.02 & -0.00 & 0.05 & 2521.36 & 1.00 \\ 
-  Econ. Link & -0.02 & 0.02 & -0.04 & 0.01 & 2997.70 & 1.00 \\ 
-  FP Conc. & 0.01 & 0.01 & -0.00 & 0.03 & 4019.10 & 1.00 \\ 
-  Number Members & 0.00 & 0.00 & -0.00 & 0.00 & 3820.06 & 1.00 \\ 
-  FP Similarity & 0.00 & 0.03 & -0.04 & 0.05 & 2254.34 & 1.00 \\ 
-  Democratic Membership & -0.00 & 0.00 & -0.00 & 0.00 & 4412.89 & 1.00 \\ 
-  Wartime & 0.04 & 0.03 & -0.01 & 0.08 & 3474.44 & 1.00 \\ 
-  Asymmetric & -0.03 & 0.02 & -0.07 & 0.01 & 3474.45 & 1.00 \\ 
-  US. Mem & 0.02 & 0.02 & -0.01 & 0.05 & 2330.47 & 1.00 \\ 
-  USSR Mem. & 0.04 & 0.05 & -0.03 & 0.12 & 3859.50 & 1.00 \\ 
-  $\sigma$ Alliances & 0.02 & 0.01 & 0.00 & 0.03 & 1201.91 & 1.01 \\ 
+Constant & -0.025 & 0.049 & -0.109 & 0.055 & 2332.133 & 1.000 \\ 
+  Depth & -0.035 & 0.020 & -0.068 & -0.002 & 3566.248 & 1.000 \\ 
+  Uncond Milsup & -0.020 & 0.038 & -0.084 & 0.041 & 3369.350 & 1.001 \\ 
+  Econ. Link & 0.018 & 0.041 & -0.047 & 0.084 & 2597.771 & 1.002 \\ 
+  FP Conc. & 0.030 & 0.021 & -0.005 & 0.063 & 3251.107 & 1.000 \\ 
+  Number Members & 0.001 & 0.002 & -0.001 & 0.004 & 4309.891 & 1.001 \\ 
+  FP Similarity & 0.017 & 0.058 & -0.078 & 0.111 & 2523.621 & 1.000 \\ 
+  Democratic Membership & -0.001 & 0.004 & -0.007 & 0.005 & 2843.301 & 1.002 \\ 
+  Wartime & 0.047 & 0.048 & -0.030 & 0.125 & 3921.848 & 1.002 \\ 
+  Asymmetric & 0.039 & 0.055 & -0.048 & 0.130 & 3165.178 & 1.001 \\ 
+  US. Mem & -0.044 & 0.043 & -0.110 & 0.027 & 2603.217 & 1.000 \\ 
+  USSR Mem. & -0.129 & 0.091 & -0.276 & 0.021 & 2826.512 & 1.001 \\ 
+  $\sigma$ Alliances & 0.118 & 0.050 & 0.037 & 0.203 & 746.918 & 1.004 \\ 
    \hline
 \end{tabular}
 }
@@ -1000,6 +999,30 @@ Argentina 1955 & .418  & 0 & \ldots  \\
 \end{tabular}
 
  \end{frame}
+ 
+ 
+ %------------------------------------------------
+
+
+\begin{frame}{Choice of Capability in Z} 
+
+Used leave-one-out cross validation to assess model fit with different codings of \textbf{Z}. 
+
+\begin{center}
+\begin{tabular}{rrrrrrrrr}
+  \hline
+ Allied Capability & elpd\_diff & se\_diff & elpd\_loo & se\_elpd\_loo  \\ 
+  \hline
+  Normalized by Year & 0.000 & 0.000 & -1159.513 & 184.714 \\ 
+  Rescaled by Maximum & -3.165 & 2.643 & -1162.679 & 184.723  \\ 
+  Recaled by 2SD & -10.749 & 6.116 & -1170.262 & 184.741  \\ 
+  Total Allied CINC & -12.308 & 5.576 & -1171.821 & 184.683  \\ 
+   \hline
+\end{tabular}
+\end{center} 
+
+ \end{frame}
+
 
 
 
@@ -1159,6 +1182,32 @@ I give $\beta_j$ a multivariate normal prior with prior scale $\tau$:
 	\centering
 		\includegraphics[width=0.95\textwidth]{vs-res-full.png}
 \end{figure}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}{Impact of Alliances on US}
+
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.95\textwidth]{us-agg-imp.png}
+\end{figure}
+
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}{Impact of NATO on US}
+
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.95\textwidth]{nato-imp-us.png}
+\end{figure}
+
 
 \end{frame}
 

@@ -518,7 +518,9 @@ alliance.year <- alliance.year %>%
                   )
 
 alliance.democ <- filter(alliance.year, begyr == year) %>% 
-                 select(c(atopid, avg.democ)) 
+                 select(c(atopid, avg.democ))
+write.csv(alliance.democ, "../Dissertation/depth-sources/data/alliance-democ.csv",
+          row.names = FALSE)
 
 # merge with alliance characteristics data
 alliance.char <- left_join(alliance.char, alliance.democ, by = "atopid")

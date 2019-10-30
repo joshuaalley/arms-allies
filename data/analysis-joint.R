@@ -99,17 +99,17 @@ mean(ml.model.sum$beta[, 2, 2] < 0) # major
 mean(ml.model.sum$beta[, 1, 3] < 0) # non-major
 mean(ml.model.sum$beta[, 2, 3] < 0) # major
 # econonmic agreement
-mean(ml.model.sum$beta[, 1, 4] > 0) # non-major
-mean(ml.model.sum$beta[, 2, 4] < 0) # major
+mean(ml.model.sum$beta[, 1, 4] < 0) # non-major
+mean(ml.model.sum$beta[, 2, 4] > 0) # major
 # FP concessions
 mean(ml.model.sum$beta[, 1, 5] > 0) # non-major
 mean(ml.model.sum$beta[, 2, 5] < 0) # major
 # number of members
 mean(ml.model.sum$beta[, 1, 6] < 0) # non-major
-mean(ml.model.sum$beta[, 2, 6] < 0) # major
+mean(ml.model.sum$beta[, 2, 6] > 0) # major
 # FP similarity
 mean(ml.model.sum$beta[, 1, 7] > 0) # non-major
-mean(ml.model.sum$beta[, 2, 7] < 0) # major
+mean(ml.model.sum$beta[, 2, 7] > 0) # major
 # avg democracy
 mean(ml.model.sum$beta[, 1, 8] < 0) # non-major
 mean(ml.model.sum$beta[, 2, 8] > 0) # major
@@ -118,7 +118,7 @@ mean(ml.model.sum$beta[, 1, 9] > 0) # non-major
 mean(ml.model.sum$beta[, 2, 9] < 0) # major
 # asymmetric 
 mean(ml.model.sum$beta[, 1, 10] < 0) # non-major
-mean(ml.model.sum$beta[, 2, 10] < 0) # major
+mean(ml.model.sum$beta[, 2, 10] > 0) # major
 
 
 # Figure out way to combine below intervals 

@@ -62,3 +62,18 @@ summary(lambda.change.depth$impact.milex)
 
 summary(lambda.change.depth$impact.milex)
 quantile(lambda.change.depth$impact.milex, c(.05, .95))
+
+
+# Split densities- predict impact of alliance participation on milex in low and high depth
+# Calculate impact in high and low and bind togeter
+impact.milex.high <- lambda.change.depth$lambda.hdepth*median(state.mem.cap$ally.spend.norm)
+impact.milex.low  <- lambda.change.depth$lambda.ldepth*median(state.mem.cap$ally.spend.norm)
+impact.milex.comp <- cbind(impact.milex.high, impact.milex.low)
+colnames(impact.milex.comp) <- c("High Depth", "Low Depth")
+
+# Melt for plotting
+impact.milex.comp <- melt(impact.milex.comp)
+# plot
+ggplot(impact.milex.comp, aes(x = value, fill = Var2)) +
+  geom_density(alpha = .5) +
+  scale_color_brewer(palette="Dark2") 
