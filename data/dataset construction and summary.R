@@ -338,7 +338,7 @@ state.vars$disputes[is.na(state.vars$disputes)] <- 0
 
 
 
-# Remove pacific micro-states (comprehensive missing data, not random)
+# Remove pacific micro-states (comprehensive missing data)
 state.vars <- filter(state.vars, ccode <= 920) # New Zealand is ccode 920.
 
 
@@ -434,6 +434,7 @@ state.vars$avg.rival.milex[is.na(state.vars$avg.rival.milex)] <- 0
 
 
 # export data to test of public goods theory
+state.vars <- filter(state.vars, year <= 2007)
 write.csv(state.vars, 
           "C:/Users/jkalley14/Dropbox/Research/Dissertation/public-goods-test/data/state-vars.csv", 
           row.names = F)

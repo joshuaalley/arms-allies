@@ -173,9 +173,9 @@ colnames(coef.min$gamma) <- colnames(reg.state.mat.min)
 color_scheme_set("darkgray")
 mcmc_intervals(coef.min$beta, 
            prob = .9) +
+  labs(x = "Effect on Impact of Total Allied Military Spending") +
   ggtitle("90% Credible Intervals of Alliance-Level Regression Coefficients")
 ggsave("figures/alliance-reg-nonmaj.png", height = 6, width = 8)
-color_scheme_set("blue")
 
 
 # Baseline posterior probabilities
