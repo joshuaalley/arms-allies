@@ -139,11 +139,10 @@ ggplot(lambda.df.min, aes(x = avg.democ, y = lambda)) +
 
 
 # matrix multiplication of membership matrix by mean lambda 
-lambda.maj.split <- sum.maj.post$lambda
 # lambda.maj.joint <- extract(ml.model, pars = c("lambda_maj"), permuted = TRUE)
 
 # agg.all.maj.full  <- state.mem.maj%*%t(ml.model.sum$lambda_maj)
-agg.all.maj.full  <- state.mem.maj%*%t(lambda.maj.split)
+agg.all.maj.full  <- state.mem.maj%*%t(sum.maj.post$lambda)
 
 # summarize the 90% credible interval 
 agg.all.maj.sum <- t(apply(agg.all.maj.full, 1, function(x) quantile(x, c(.05, .95))))
@@ -459,6 +458,32 @@ ggplot(phl.agg.melt, aes(x = value, y = year, group = year)) +
 
 
 
+# Poland 
+pol.agg.melt <- agg.all.min.full %>% 
+  filter(ccode == 290) %>%
+  melt(id.vars = c("ccode", "year")) %>%
+  filter(value != 0)
+
+
+agg.all.min.sum %>%
+  filter(ccode == 290) %>%
+  ggplot(aes(y = agg.all.impact, x = year)) + 
+  geom_point() + 
+  geom_errorbar(aes(ymax = h.90, ymin = l.05)) +
+  geom_hline(yintercept = 0) +
+  ggtitle("Aggregate Impact of Alliance Participation on Polish Defense Spending") +
+  theme_bw()
+
+ggplot(pol.agg.melt, aes(x = value, y = year, group = year)) + 
+  scale_y_reverse() +
+  geom_vline(xintercept = 0) +
+  geom_density_ridges(rel_min_height = 0.03, scale = 3) + 
+  theme_ridges(grid = FALSE, center_axis_labels = TRUE) +
+  xlim(-0.08, 0.07) +
+  ggtitle("Aggregate Impact of Alliance Participation on Polish Defense Spending")
+
+
+
 # Calculate the impact of NATO 
 nato.imp.maj <- state.mem.maj[, 91]%*%t(lambda.maj.split[, 91])
 
@@ -483,7 +508,7 @@ nato.imp.maj.sum %>%
 
 
 # non-major powers
-nato.imp.min <- state.mem.min[, 66]%*%t(lambda.min.joint$lambda[, 66])
+nato.imp.min <- state.mem.min[, 66]%*%t(sum.min.post$lambda[, 66])
 
 
 # summarize the 90% credible interval 
@@ -635,6 +660,6 @@ ggplot(fp25.imp.min.sum, aes(y = agg.all.impact, x = year)) +
 
 
 # Remove all these filtered and melted datasets from the environment
-rm(list = c("jp.agg.melt", "nk.agg.melt", "phl.agg.melt", "can.agg.melt", 
+rm(list = c("jp.agg.melt", "nk.agg.melt", "phl.agg.melt", "can.agg.melt", "pol.agg.melt",
             "egy.agg.melt", "esp.agg.melt", "fr.agg.melt", "uk.agg.melt", "us.agg.melt", "ussr.agg.melt"))         
 

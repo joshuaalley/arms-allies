@@ -8,7 +8,6 @@ atop <- read.csv("data/atop-alliance-level.csv")
 atop.mem.full <- read.csv("data/atop-member-level.csv")
 
 
-
 # identify non-aggression only pacts
 # Also, recode arms requirements and military aid variables from ATOP into dummy 
 # variables that capture conditions where increases in arms spending are likely

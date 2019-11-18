@@ -37,7 +37,7 @@ model.1 <- stan_model(file = "data/multi-member ML model.stan")
 ml.model.vb <- vb(model.1, data = stan.data, seed = 12)
 
 # Remove vb model and associated summary
-rm(list = c("ml.model.vb", "vb.model.sum"))
+rm(list = c("ml.model.vb"))
 
  
 # Regular STAN: takes about 2 days. 
@@ -138,11 +138,12 @@ mcmc_intervals(ml.model.sum$beta[, 2, ],
 beta.summary <- summary(ml.model, pars = c("beta"), 
                         probs = c(0.05, 0.95))$summary
 beta.summary <- beta.summary[, -2]
-rownames(beta.summary) <- c("Constant: Non-Major", "Latent Scope: Non-Major", 
+rownames(beta.summary) <- c("Constant: Non-Major", "Latent Depth: Non-Major", 
                             "Number Members: Non-Major", "FP Similarity: Non-Major",
                             "Democratic Membership: Non-Major", 
                             "Wartime: Non-Major", "Asymmetric: Non-Major",
-                            "US Member: Non-Major", "USSR Member: Non-Major", "Constant: Major", "Latent Scope: Major", 
+                            "US Member: Non-Major", "USSR Member: Non-Major", 
+                            "Constant: Major", "Latent Depth: Major", 
                             "Number Members: Major", "FP Similarity: Major",
                             "Democratic Membership: Major", 
                             "Wartime: Major", "Asymmetric: Major",

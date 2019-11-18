@@ -25,7 +25,25 @@
 
 \doublespace 
 
-This online appendix provides more detail about the multilevel model and some checks of the results. 
+This online appendix provides more detail about the multilevel model and checks the results. I also briefly describe a single-level test of the depth hypothesis. 
+
+
+\section*{Control Variables} 
+
+
+In the state-level regression, I adjust for several correlates of alliance participation and military spending. 
+State-level covariates include GDP growth \citep{Boltetal2018} regime type, international war \citep{Reiteretal2016}, civil war participation \citep{SarkeesWayman2010}, annual MIDs \citep{Gibleretal2016}, rival military spending \citep{ThompsonDreyer2012} and a dummy for Cold War years.
+Conflict participation, alliances, and military spending are all correlated \citep{SeneseVasquez2008}.
+I include growth in GDP instead of levels because GDP levels are non-stationary and economic growth shapes the opportunity costs of military spending \citep{Kimball2010, Zielinskietal2017}.  
+
+ 
+Other alliance level variables are correlates of treaty design and military spending, including the number of members and share of democracies in a treaty at time of formation \citep{Chibaetal2015}. 
+I control for issue linkages by creating a dummy indicator of whether the alliance promises any kind of economic cooperation \citep{Poast2013, LongLeeds2006}. 
+As an indicator of hierarchical security relationships, I include a count of foreign policy concessions in the alliance. 
+I also mark the presence of unconditional military support using a dummy variable I constructed using existing indicators of conditional support in the ATOP data. 
+I adjust for superpower membership--- whether the United States or Soviet Union participated in a treaty during the Cold War. 
+Two dummy indicators of wartime alliances and asymmetric obligations \citep{Leedsetal2002} complete the alliance-level regression specification. 
+Though I discuss these variables as controls, many of them are theoretically interesting in their own right. 
 
 
 \section*{Priors}
@@ -124,7 +142,7 @@ Rescaling capability by the maximum produces similar inferences about alliance c
 
 
 With any complicated model, simulating fake data and seeing if the model can recover known parameters is essential. 
-Fake-data simulation helps validate results from observed data and catch potential pathologies. 
+Fake-data simulation helps validate results from observed data and identify problems. 
 This section summarizes results from fitting the multilevel model to fake data.
 
 
@@ -154,16 +172,16 @@ Credible interval coverage for the variance hyperparameters and $\gamma$ paramet
 
 
  
-Even with small multiples, the 100 $\lambda$ parameters are harder to plot, so I offer a descriptive summary here. 
+Even with small multiples, the 100 $\lambda$ parameters are hard to plot, so I offer a descriptive summary here. 
 Among the $\lambda$ parameters, 93 of 100 intervals contain the known $\lambda$ value.
 Given the large number of parameters and smaller sample, this is acceptable accuracy. 
 Even the seven inaccurate confidence intervals were quite close--- all were within .015 of the known parameter.\footnote{Fine margins around these intervals implies that the exact number of accurate $\lambda$ intervals is sensitive to simulation variance.}
 
 
-In summary, convergence diagnostics and fake data fitting both suggest that the multilevel model is working well. 
+In summary, convergence diagnostics and fake data fitting both suggest that the multilevel model works as expected. 
 No convergence diagnostics indicate problems exploring the posterior. 
 Just as importantly, the model can recover known parameters from fake data. 
-The next section provides more detail on results from the major and non-major power samples. 
+The next section provides a check of the results with a different measure of military spending. 
 
 
 

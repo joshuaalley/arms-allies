@@ -24,6 +24,7 @@ reg.state.comp.maj$year.id <- reg.state.comp.maj %>% group_indices(year)
 # run model on the full sample
 # Define the data list 
 reg.state.comp.maj <- as.data.frame(reg.state.comp.maj)
+reg.state.mat.maj <- as.matrix(reg.state.comp.maj[, 4:10])
 stan.data.maj <- list(N = nrow(reg.state.comp.maj), y = reg.state.comp.maj[, 3],
                   state = reg.state.comp.maj$state.id, S = length(unique(reg.state.comp.maj$state.id)),
                   year = reg.state.comp.maj$year.id, T = length(unique(reg.state.comp.maj$year.id)),
@@ -67,7 +68,9 @@ reg.state.comp.min$state.id <- reg.state.comp.min %>% group_indices(ccode)
 reg.state.comp.min$year.id <- reg.state.comp.min %>% group_indices(year)
 
 
+# STAN data 
 reg.state.comp.min <- as.data.frame(reg.state.comp.min)
+reg.state.mat.min <- as.matrix(reg.state.comp.min[, 4:10])
 stan.data.min <- list(N = nrow(reg.state.comp.min), y = reg.state.comp.min[, 3],
                       state = reg.state.comp.min$state.id, S = length(unique(reg.state.comp.min$state.id)),
                       year = reg.state.comp.min$year.id, T = length(unique(reg.state.comp.min$year.id)),
@@ -107,7 +110,7 @@ ggsave("appendix/trace-all-min.png", height = 6, width = 8)
 
 ### Compare the results
 
-# Summarize Scope by major and minor powers
+# Summarize depth by major and minor powers
 summary(reg.all.data.maj$latent.depth.mean) # major powers
 summary(reg.all.data.min$latent.depth.mean) # minor powers
 
@@ -165,7 +168,7 @@ colnames(coef.min$beta) <- c("Constant", "Depth", "Uncond Milsup", "Econ. Link",
                              "FP Conc.",
                              "Number Members", "FP Similarity",
                              "Democratic Membership", 
-                             "Wartime", "Asymmetric", "US. Mem", "USSR Mem.")
+                             "Wartime", "Asymmetric Obligations", "US. Mem", "USSR Mem.")
 colnames(coef.min$gamma) <- colnames(reg.state.mat.min)
 
 
@@ -188,7 +191,7 @@ mean(coef.min$beta[, 4] < 0) # econ link: non-major
 mean(coef.maj$beta[, 5] < 0) # FP concessions: major
 mean(coef.min$beta[, 5] > 0) # FP concessions: non-major
 mean(coef.maj$beta[, 6] > 0) # number members: major
-mean(coef.min$beta[, 6] < 0) # number members: non-major
+mean(coef.min$beta[, 6] > 0) # number members: non-major
 mean(coef.maj$beta[, 7] < 0) # FP similarity: major
 mean(coef.min$beta[, 7] > 0) # FP similarity: non-major
 mean(coef.maj$beta[, 8] < 0) # Dem. Membership: major
@@ -197,19 +200,6 @@ mean(coef.maj$beta[, 9] < 0) # wartime: major
 mean(coef.min$beta[, 9] > 0) # wartime: non-major
 mean(coef.maj$beta[, 10] < 0) # asymmetric: major
 mean(coef.min$beta[, 10] > 0) # asymmetric: non-major
-
-
-# Create a nice comparison plot: secret weapon
-depth.dens <- cbind(coef.maj$beta[, 2], coef.min$beta[, 2])
-colnames(depth.dens) <- c("Major", "Non-Major")
-depth.dens <- melt(depth.dens)
-
-ggplot(depth.dens, aes(x = value,  fill = Var2)) +
-  geom_density(alpha = 0.25) +
-  scale_fill_manual(name = "Sample", values=c("#999999", "#000000")) +
-  ggtitle("Posterior Distributions of Treaty Depth: Major and Non-Major Powers") +
-  theme_classic()
-ggsave("figures/depth-dens-split.png", height = 6, width = 8)
 
 
 
@@ -323,7 +313,8 @@ sum.min.post <- extract(ml.model.min, pars = c("beta", "gamma", "lambda"),
 
 # Check how many lambda parameters can be reliably distinguished from zero:
 lambda.probs.min <- apply(sum.min.post$lambda, 2, positive.check)
-lambda.probs.min <- cbind.data.frame(colnames(state.mem.min), round(lambda.df.min$lambda, digits = 4), lambda.df.min$latent.depth.mean, lambda.probs.min)
+lambda.probs.min <- cbind.data.frame(colnames(state.mem.min), round(lambda.df.min$lambda, digits = 4), 
+                                     lambda.df.min$latent.depth.mean, lambda.probs.min)
 colnames(lambda.probs.min) <- c("atopid", "lambda.mean", "latent.depth.mean", "pos.post.prob")
 # binary indicator if posterior probability is greater than 90% for positive or negative
 lambda.probs.min$non.zero <- ifelse(lambda.probs.min$pos.post.prob >= .90 | lambda.probs.min$pos.post.prob <= .10, 1, 0)
@@ -348,16 +339,19 @@ lambda.probs.min %>%
 
 
 
-# Plot Lambdas for US alliances: error bars
+# Plot Lambdas with error bars 
 
 # Get credible intervals
 lambda.min.sum <- apply(sum.min.post$lambda, 2, function(x) quantile(x, c(.05, .95)))
 
-lambda.min.sum <- cbind.data.frame(lambda.probs.min$atopid, reg.all.data.min$us.mem,
-                                   lambda.probs.min$lambda.mean, reg.all.data.min$latent.depth.mean,
+lambda.min.sum <- cbind.data.frame(as.numeric(colnames(state.mem.min)),
+                                   lambda.probs.min$lambda.mean,
                                   t(lambda.min.sum))
-colnames(lambda.min.sum) <- c("atopid", "us.mem", "lambda.mean", 
-                              "latent.depth.mean", "lower", "upper")
+colnames(lambda.min.sum) <- c("atopid", "lambda.mean", 
+                               "lower", "upper")
+
+# add other alliance details 
+lambda.min.sum <- left_join(lambda.min.sum, atop.milsup)
 
 
 # plot non-major power lambdas against depth w/ credible intervals
@@ -371,21 +365,24 @@ ggplot(lambda.min.sum, aes(x = latent.depth.mean, y = lambda.mean)) +
   ggtitle("Non-Major Powers: Association Between Depth and Alliance Impact")
 
 
+# subset data by start year
+# post 45
+lambda.min.sum %>% filter(begyr >= 1945) %>%
+ggplot(aes(x = latent.depth.mean, y = lambda.mean)) +
+  geom_hline(yintercept = 0) +
+  geom_point() +
+  geom_smooth(method = "lm") + theme_classic() +
+  labs(x = "Latent Treaty Depth", y = "Effect of Allied Spending") +
+  ggtitle("Non-Major Powers: Association Between Depth and Alliance Impact")
 
-# Make the plot
-lambda.us.int <- lambda.min.sum %>%
-                 filter(us.mem == 1) %>%
-                   ggplot( aes(x = lambda.mean, y = atopid)) +
-                    geom_point(size = 2) +
-                    geom_errorbarh(aes(xmin = lower, xmax = upper),
-                      size = 1.5) +
-                    ggtitle("Impact of Alliance with US on Non-major Power Military Spending") +
-                  labs(x = "Alliance Impact", y = "ATOPID") +
-                  geom_vline(xintercept = 0) +
-                  theme_classic()
-lambda.us.int
-ggsave("figures/lambda-us-min.png", height = 6, width = 8)
-
+# Pre 1945 
+lambda.min.sum %>% filter(begyr < 1945) %>%
+  ggplot(aes(x = latent.depth.mean, y = lambda.mean)) +
+  geom_hline(yintercept = 0) +
+  geom_point() +
+  geom_smooth(method = "lm") + theme_classic() +
+  labs(x = "Latent Treaty Depth", y = "Effect of Allied Spending") +
+  ggtitle("Non-Major Powers: Association Between Depth and Alliance Impact")
 
 
 # Highlight alliances with US membership 
@@ -401,7 +398,20 @@ lambda.depth.us <- ggplot(lambda.min.sum, aes(x = latent.depth.mean, y = lambda.
 lambda.depth.us
 ggsave("figures/lambda-depth-us.png", height = 6, width = 8)
 
-multiplot.ggplot(lambda.us.int, lambda.depth.us)
+
+# highlight alliances with Soviet membership
+lambda.depth.ussr <- ggplot(lambda.min.sum, aes(x = latent.depth.mean, y = lambda.mean, shape = factor(ussr.mem))) +
+                     geom_hline(yintercept = median(lambda.min.sum$lambda.mean)) +
+                     geom_vline(xintercept = median(lambda.min.sum$latent.depth.mean)) +
+  geom_point(mapping = aes(color = factor(ussr.mem)), size = 3) +
+  scale_color_manual(values = c("#999999", "#000000")) +
+  labs(x = "Latent Depth", y = "Alliance Impact",
+       color = "USSR Membership", shape = "USSR Membership") +
+  ggtitle("Depth and Impact of Soviet Alliances") +
+  theme_classic()
+lambda.depth.ussr
+
+multiplot.ggplot(lambda.depth.us, lambda.depth.ussr, cols=2)
 
 
 ### Calculate aggregate impact of alliance participation on growth in spending 
@@ -415,6 +425,7 @@ agg.all.maj  <- state.mem.maj%*%lambda.means.maj[, 5]
 summary(agg.all.maj)
 agg.all.maj <- cbind(reg.state.comp.maj$ccode,
                      reg.state.comp.maj$year, agg.all.maj)
+
 
 # non-major power
 dim(state.mem.min)
@@ -469,7 +480,7 @@ growth.pred.res.max <- growth.pred.res %>%
 
 
 
-# plot: illeible
+# plot: illegible
 ggplot(growth.pred.res, aes(x = latent.depth.mean, y = mean.pred)) +
   geom_hline(yintercept = 0) +
   geom_point(position = position_jitter(width = 0.1), alpha = .25) + 

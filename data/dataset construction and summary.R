@@ -433,8 +433,11 @@ state.vars$rival.milex[is.na(state.vars$rival.milex)] <- 0
 state.vars$avg.rival.milex[is.na(state.vars$avg.rival.milex)] <- 0
 
 
-# export data to test of public goods theory
+# Cut state variables down to years with comprehensive coverage of controls
 state.vars <- filter(state.vars, year <= 2007)
+
+
+# export data to test of public goods theory
 write.csv(state.vars, 
           "C:/Users/jkalley14/Dropbox/Research/Dissertation/public-goods-test/data/state-vars.csv", 
           row.names = F)
