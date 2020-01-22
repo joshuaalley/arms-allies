@@ -23,7 +23,7 @@ all.data.ldepth["ussr.mem"] <- 1
 
 # vector with cpa present
 all.data.hdepth <- all.data.ldepth
-all.data.hdepth["latent.depth.mean"] <- 1 # key IV: 3rd quartile
+all.data.hdepth["latent.depth.mean"] <- 1.5 # key IV: 3rd quartile
 
 
 # Simulate the effect 

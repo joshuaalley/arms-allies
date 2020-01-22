@@ -237,7 +237,8 @@ atop <- left_join(atop, all.fpsim.first)
 atop.milsup <- filter(atop, offense == 1 | defense == 1) 
 atop.depth <- select(atop.milsup,
                      intcom, compag.mil,  
-                     milaid, milcon, base, organ1) 
+                     milaid, milcon, base, 
+                     organ1, subord, contrib) 
 atop.depth <- as.data.frame(atop.depth)
 for(i in 1:ncol(atop.depth)){
   atop.depth[, i] <- as.ordered(atop.depth[, i])
@@ -245,35 +246,10 @@ for(i in 1:ncol(atop.depth)){
 
 
 
-# Create a 1-dimensional IRT model (all dummy inputs)
-atop.depth.mat <- as.matrix(atop.depth)
-latent.depth.irt <- MCMCirtKd(datamatrix = atop.depth.mat, 
-                              dimensions = 1,
-                              burnin = 10000, mcmc = 40000,
-                              thin = 40,
-                              item.constraints = list("uncond.milsup" = list(2,"+")),
-                              store.ability = TRUE,
-                              store.item = TRUE, 
-                              b0 = 0, # prior mean of zero for item parameters
-                              B0 = .5, # prior precision of variances 
-                              verbose = 5000)
-plot(latent.depth.irt)
-
-
-
-# Diagnosis of convergence with coda
-effectiveSize(latent.depth.irt)
-diag.geweke  <- geweke.diag(latent.depth.irt)
-
-# Plot to see if Geweke Z-scores appear to be from Normal(0, 1) distribution
-par(mfrow=c(1, 1))
-plot(density(diag.geweke$z))
-lines(density(rnorm(10000, 0, 1)))
-
-
 # Use Murray BFA approach
 latent.depth <- bfa_mixed(~ intcom + compag.mil + 
-                            milaid + milcon + base + organ1, 
+                            milaid + milcon + base + 
+                            organ1 + subord + contrib, 
                           data = atop.depth, num.factor = 1,
                           factor.scales = FALSE,
                           keep.scores = TRUE, loading.prior = "gdp", 
@@ -297,7 +273,7 @@ lines(density(rnorm(10000, 0, 1)))
 # Create a dataset of factors
 latent.factors <- cbind.data.frame(c("Integrated Command", "Companion Mil. Agreement", 
                                      "Military Aid", "Policy Coordination", "Bases",
-                                     "Formal IO"),
+                                     "Formal IO", "Subordination", "Contribution"),
                                    latent.depth[["post.loadings.mean"]],
                                    sqrt(latent.depth[["post.loadings.var"]])
 )
@@ -307,14 +283,15 @@ colnames(latent.factors) <- c("var", "mean", "sd")
 latent.factors <- arrange(latent.factors, desc(mean)) 
 latent.factors$var<- reorder(latent.factors$var, latent.factors$mean)
 
-ggplot(latent.factors, aes(x = mean, y = var)) + 
-  geom_point(size = 2) +
-  geom_errorbarh(aes(xmin = mean - 2*sd, 
-                     xmax = mean + 2*sd),
-                 height = .2, size = 1) +
-  geom_vline(xintercept = 0) +
-  labs(x = "Factor Loading", y = "Variable") +
-  theme_classic()
+factor.loadings <- ggplot(latent.factors, aes(x = mean, y = var)) + 
+                    geom_point(size = 2) +
+                    geom_errorbarh(aes(xmin = mean - 2*sd, 
+                      xmax = mean + 2*sd),
+                      height = .2, size = 1) +
+                    geom_vline(xintercept = 0) +
+                    labs(x = "Factor Loading", y = "Variable") +
+                     theme_classic()
+factor.loadings
 ggsave("figures/factor-loadings.png", height = 6, width = 8)
 
 # get posterior scores of latent factor: mean and variance
@@ -353,6 +330,10 @@ ls.styear <- ggplot(atop.milsup, aes(x = begyr, y = latent.depth.mean)) +
 ls.styear
 # Combine plots 
 multiplot.ggplot(ls.hist, ls.styear)
+
+
+# For the manuscript: combine loadings and start year plot
+multiplot.ggplot(factor.loadings, ls.styear)
 
 # 171 alliances with depth above -.6 
 sum(atop.milsup$latent.depth.mean > -.6)
@@ -396,9 +377,6 @@ ggplot(atop.milsup, aes(x = num.mem, y = latent.depth.mean)) +
 # Export to public-goods-test paper and sources of depth paper
 write.csv(atop, 
           "../Dissertation/public-goods-test/data/atop-additions.csv", 
-          row.names = F)
-write.csv(atop.milsup, 
-          "../Dissertation/depth-sources/data/atop-milsup.csv", 
           row.names = F)
 
 

@@ -15,7 +15,7 @@ alliance.char <- select(atop.milsup, atopid,
                     offense, defense, consul, neutral, nonagg, base,
                     armred.rc, organ1, milaid.rc, us.mem, ussr.mem,
                     ecaid, trade.dum, milcor.index, econagg.dum, fp.conc.index, econagg.index, 
-                    num.mem, nonagg.only, wartime, asymm, asymm.cap, low.kap.sc)
+                    num.mem, nonagg.only, wartime, asymm, asymm.cap, low.kap.sc, milinst)
 
 # Expand alliance characteristics data to make it alliance characteristic-year data
 # Don't care about truncation here, just need to know if alliance is operational
@@ -476,7 +476,7 @@ atop.cow.year[order(atop.cow.year$ccode, atop.cow.year$year, atop.cow.year$atopi
 atop.cow.year$atopid[is.na(atop.cow.year$atopid)] <- 0
 
 # If no ATOP alliance, fill all other alliance characteristic variables with a zero.
-atop.cow.year[4:26][is.na(atop.cow.year[, 4:26] & atop.cow.year$atopid == 0)] <- 0
+atop.cow.year[4:38][is.na(atop.cow.year[, 4:38] & atop.cow.year$atopid == 0)] <- 0
 
 # export data to test of public goods theory
 write.csv(atop.cow.year, 
@@ -515,6 +515,7 @@ alliance.year[order(alliance.year$atopid, alliance.year$year),]
 
 
 # Merge mean democracy into alliance characteristics data
+# this is democracy at time of formation
 alliance.year <- alliance.year %>% 
                   group_by(atopid) %>%
                   mutate(
