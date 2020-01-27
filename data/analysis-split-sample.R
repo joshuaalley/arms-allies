@@ -80,8 +80,6 @@ stan.data.min <- list(N = nrow(reg.state.comp.min), y = reg.state.comp.min[, 3],
                       W = reg.state.mat.min, M = ncol(reg.state.mat.min)
 )
 
-# Compile the model code: 
-model.2 <- stan_model(file = "data/ml-model-split.stan")
 
 # Regular STAN
 system.time(
@@ -243,9 +241,9 @@ cor.test(lambda.df.min$lambda, lambda.df.min$latent.depth.mean,
 lambda.depth.min <- ggplot(lambda.df.min, aes(x = latent.depth.mean, y = lambda)) +
             geom_hline(yintercept = 0) +
              geom_point() +
-                  geom_smooth(method = "lm") + theme_classic() +
-            labs(x = "Latent Treaty Depth", y = "Effect of Allied Spending") +
-            ggtitle("Non-Major Powers: Association Between Depth and Alliance Impact")
+                  geom_smooth(method = "lm") + theme_bw() +
+            labs(x = "Latent Treaty Depth", y = "Allied Capability Coefficent") +
+            ggtitle("Association Between Depth and Alliance Impact")
 lambda.depth.min
 ggsave("figures/lambda-ld-nonmaj.png", height = 6, width = 8)
 
@@ -414,17 +412,7 @@ lambda.depth.ussr
 multiplot.ggplot(lambda.depth.us, lambda.depth.ussr, cols=2)
 
 
-### Calculate aggregate impact of alliance participation on growth in spending 
-
-# Major powers 
-dim(state.mem.maj)
-
-# matrix multiplication of membership matrix by mean lambda 
-agg.all.maj  <- state.mem.maj%*%lambda.means.maj[, 5]
-
-summary(agg.all.maj)
-agg.all.maj <- cbind(reg.state.comp.maj$ccode,
-                     reg.state.comp.maj$year, agg.all.maj)
+### Calculate aggregate impact of alliance participation on growth in spending
 
 
 # non-major power
@@ -468,28 +456,65 @@ for(i in 1:a.min){
 # combine means and sds in a dataframe 
 growth.pred.res <- cbind(do.call(rbind, growth.pred.mean), unlist(growth.pred.sd))
 colnames(growth.pred.res) <- c("mean.pred", "atopid", "sd.pred")
+growth.pred.res$mean.pred <- sinh(growth.pred.res$mean.pred) # reverse IHS transformation
+growth.pred.res$sd.pred <- sinh(growth.pred.res$sd.pred) # reverse IHS transformation
 growth.pred.res$atopid <- as.numeric(growth.pred.res$atopid)
 
 # Add alliance characteristics
 growth.pred.res <- left_join(growth.pred.res, alliance.char)
 
 # Create a dataframe with maximum predicted change, positive or negative 
-growth.pred.res.max <- growth.pred.res %>%
-                        group_by(atopid) %>% 
-                         filter(mean.pred == max(abs(mean.pred)))    
+growth.pred.res.max <- growth.pred.res %>% 
+                        select(atopid, latent.depth.mean, mean.pred) %>% 
+                         group_by(atopid) %>%
+                          summarise_each(funs(.[which.max(abs(.))]))  
 
 
 
-# plot: illegible
+# plot: hard to read with all the data points
 ggplot(growth.pred.res, aes(x = latent.depth.mean, y = mean.pred)) +
-  geom_hline(yintercept = 0) +
-  geom_point(position = position_jitter(width = 0.1), alpha = .25) + 
-#  geom_errorbar(aes(ymin = mean.pred - 2*sd.pred, ymax = mean.pred + 2*sd.pred)) +
-  geom_smooth(method = "lm") + 
-  labs(x = "Latent Depth", y = "Mean Predicted Growth from Alliance") +
-  theme_classic() 
-cor.test(growth.pred.res$latent.depth.mean, growth.pred.res$mean.pred)
+                      geom_hline(yintercept = 0) +
+                      geom_point(position = position_jitter(width = 0.1), alpha = .25) + 
+                      geom_smooth(method = "lm") + 
+                      labs(x = "Latent Depth", y = "Mean Predicted Military Spending Growth from Alliance") +
+                      ggtitle("Predicted Military Spending Growth and Treaty Depth") +
+                       theme_bw() 
+cor.test(growth.pred.res$latent.depth.mean, growth.pred.res$mean.pred) # expected negative correlation
 
+
+# Another way to attack the clear overplotting problem
+growth.depth.plot <- ggplot(growth.pred.res, aes(x = latent.depth.mean, y = mean.pred)) +
+                      geom_hline(yintercept = 0) +
+                       stat_bin_hex(colour="white", na.rm=TRUE) +
+                       scale_fill_gradientn(colours=c("#999999","#333333"), 
+                         name = "Frequency", 
+                         na.value=NA) +
+                       labs(x = "Latent Depth",
+                          y = "Mean Predicted Spending Growth from Alliance") +
+                       ggtitle("Predicted Military Spending Growth and Treaty Depth") +
+                       theme_bw() 
+growth.depth.plot
+
+# take largest absolute value for each alliance
+ggplot(growth.pred.res.max, aes(x = latent.depth.mean, y = mean.pred)) +
+  geom_hline(yintercept = 0) +
+  geom_point() + 
+  geom_smooth(method = "lm") + 
+  labs(x = "Latent Depth", y = "Largest Mean Predicted Military Spending Growth from Alliance") +
+  theme_classic() 
+cor.test(growth.pred.res.max$latent.depth.mean, growth.pred.res.max$mean.pred) # expected negative correlation
+
+
+
+# Major powers 
+dim(state.mem.maj)
+
+# matrix multiplication of membership matrix by mean lambda 
+agg.all.maj  <- state.mem.maj%*%lambda.means.maj[, 5]
+
+summary(agg.all.maj)
+agg.all.maj <- cbind(reg.state.comp.maj$ccode,
+                     reg.state.comp.maj$year, agg.all.maj)
 
 
 

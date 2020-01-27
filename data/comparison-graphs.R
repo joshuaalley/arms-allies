@@ -143,6 +143,7 @@ ggplot(lambda.df.min, aes(x = avg.democ, y = lambda)) +
 
 # agg.all.maj.full  <- state.mem.maj%*%t(ml.model.sum$lambda_maj)
 agg.all.maj.full  <- state.mem.maj%*%t(sum.maj.post$lambda)
+agg.all.maj.full <- sinh(agg.all.maj.full)
 
 # summarize the 90% credible interval 
 agg.all.maj.sum <- t(apply(agg.all.maj.full, 1, function(x) quantile(x, c(.05, .95))))
@@ -260,11 +261,12 @@ ggplot(fr.agg.melt, aes(x = value, y = year, group = year)) +
 
 
 
-# matrix multiplication of membership matrix by mean lambda 
-# lambda.min.joint <- extract(ml.model, pars = c("lambda_min"), permuted = TRUE)
+### non-major powers
+# matrix multiplication of membership matrix by mean lambda
 
 # Multiply by state membeship matrix
-agg.all.min.full  <- state.mem.min%*%t(sum.min.post$lambda)
+agg.all.min.full <- state.mem.min%*%t(sum.min.post$lambda)
+agg.all.min.full <- sinh(agg.all.min.full)
 
 # summarize the 90% credible interval 
 agg.all.min.sum <- t(apply(agg.all.min.full, 1, function(x) quantile(x, c(.05, .95))))

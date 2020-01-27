@@ -30,6 +30,8 @@ library(ExtremeBounds)
 library(bfa)
 library(coda)
 library(loo)
+library(gridExtra)
+library(hexbin)
 
 
 # Look at conflicts 
@@ -60,8 +62,6 @@ conflict_prefer("refit", "modeltools")
 conflict_prefer("lmList", "nlme")
 conflict_prefer("collapse", "dplyr")
 conflict_prefer("loo", "loo")
-conflict_prefer("pack", "tidyr")
-conflict_prefer("unpack", "tidyr")
 
 
 # Set up RSTAN guidelines
