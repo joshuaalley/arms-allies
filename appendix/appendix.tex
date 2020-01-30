@@ -28,22 +28,57 @@
 This online appendix provides more detail about the multilevel model and checks the results. I also briefly describe a single-level test of the depth hypothesis and assess other measures of alliance treaty depth. 
 
 
-\section{Control Variables} 
+\section{Descriptive Statistics of Key Variables} 
+
+This section provides two tables of descriptive statistics for the state and alliance-level variables. 
 
 
-In the state-level regression, I adjust for several correlates of alliance participation and military spending. 
-State-level covariates include GDP growth \citep{Boltetal2018} regime type, international war \citep{Reiteretal2016}, civil war participation \citep{SarkeesWayman2010}, annual MIDs \citep{Gibleretal2016}, rival military spending \citep{ThompsonDreyer2012} and a dummy for Cold War years.
-Conflict participation, alliances, and military spending are all correlated \citep{SeneseVasquez2008}.
-I include growth in GDP instead of levels because GDP levels are non-stationary and economic growth shapes the opportunity costs of military spending \citep{Kimball2010, Zielinskietal2017}.  
 
- 
-Other alliance level variables are correlates of treaty design and military spending, including the number of members and share of democracies in a treaty at time of formation \citep{Chibaetal2015}. 
-I control for issue linkages by creating a dummy indicator of whether the alliance promises any kind of economic cooperation \citep{Poast2013, LongLeeds2006}. 
-As an indicator of hierarchical security relationships, I include a count of foreign policy concessions in the alliance. 
-I also mark the presence of unconditional military support using a dummy variable I constructed using existing indicators of conditional support in the ATOP data. 
-I adjust for superpower membership--- whether the United States or Soviet Union participated in a treaty during the Cold War. 
-Two dummy indicators of wartime alliances and asymmetric obligations \citep{Leedsetal2002} complete the alliance-level regression specification. 
-Though I discuss these variables as controls, many of them are theoretically interesting in their own right. 
+\begin{table}[!htbp] \centering 
+  \caption{State-Level Variables} 
+  \label{tab:state-level-sum} 
+\begin{tabular}{@{\extracolsep{5pt}}lccccccc} 
+\\[-1.8ex]\hline 
+\hline \\[-1.8ex] 
+Statistic & \multicolumn{1}{c}{N} & \multicolumn{1}{c}{Mean} & \multicolumn{1}{c}{St. Dev.} & \multicolumn{1}{c}{Min} & \multicolumn{1}{c}{Pctl(25)} & \multicolumn{1}{c}{Pctl(75)} & \multicolumn{1}{c}{Max} \\ 
+\hline \\[-1.8ex] 
+International War & 8,280 & 0.029 & 0.167 & 0 & 0 & 0 & 1 \\ 
+Civil War Participant & 8,280 & 0.082 & 0.275 & 0 & 0 & 0 & 1 \\ 
+Rival Military Spending & 8,280 & $-$0.062 & 0.432 & $-$0.263 & $-$0.263 & 0.101 & 3.444 \\ 
+GDP growth & 8,280 & 0.008 & 0.516 & $-$3.699 & $-$0.187 & 0.184 & 20.202 \\ 
+POLITY & 8,280 & $-$0.011 & 0.502 & $-$0.738 & $-$0.532 & 0.496 & 0.633 \\ 
+Cold War & 8,280 & 0.503 & 0.500 & 0 & 0 & 1 & 1 \\ 
+Annual MIDS & 8,280 & $-$0.060 & 0.384 & $-$0.245 & $-$0.245 & 0.144 & 9.869 \\ 
+\hline \\[-1.8ex] 
+\end{tabular} 
+\end{table} 
+
+
+
+\begin{table}[!htbp] \centering 
+  \caption{Alliance-Level Variables. Number of members, foreign policy disagreement, average democracy, and average threat are all measured for the first year of the alliance.} 
+  \label{tab:all-level-sum} 
+\begin{tabular}{@{\extracolsep{5pt}}lccccccc} 
+\\[-1.8ex]\hline 
+\hline \\[-1.8ex] 
+Statistic & \multicolumn{1}{c}{N} & \multicolumn{1}{c}{Mean} & \multicolumn{1}{c}{St. Dev.} & \multicolumn{1}{c}{Min} & \multicolumn{1}{c}{Pctl(25)} & \multicolumn{1}{c}{Pctl(75)} & \multicolumn{1}{c}{Max} \\ 
+\hline \\[-1.8ex] 
+Latent Depth Mean & 190 & 0.069 & 0.898 & $-$0.843 & $-$0.776 & 0.878 & 1.979 \\ 
+Unconditional Military Support & 190 & 0.521 & 0.501 & 0 & 0 & 1 & 1 \\ 
+Economic Issue Linkages & 190 & 0.579 & 0.495 & 0 & 0 & 1 & 1 \\ 
+Foreign Policy Concessions & 190 & 0.805 & 0.860 & 0 & 0 & 1 & 3 \\ 
+Number of Members& 190 & 3.879 & 5.677 & 2 & 2 & 3 & 43 \\ 
+Foreign Policy Disagreement & 190 & 0.653 & 0.346 & $-$0.103 & 0.360 & 0.972 & 1.000 \\ 
+Average Democracy & 190 & $-$2.127 & 5.708 & $-$10 & $-$7 & 1.5 & 10 \\ 
+Wartime Alliance & 190 & 0.126 & 0.333 & 0 & 0 & 0 & 1 \\ 
+Asymmetric Obligations & 190 & 0.216 & 0.412 & 0 & 0 & 0 & 1 \\ 
+Average Threat & 190 & 0.356 & 0.163 & 0.000 & 0.253 & 0.473 & 0.674 \\ 
+US Membership & 190 & 0.095 & 0.294 & 0 & 0 & 0 & 1 \\ 
+USSR Membership & 190 & 0.074 & 0.262 & 0 & 0 & 0 & 1 \\ 
+\hline \\[-1.8ex] 
+\end{tabular} 
+\end{table} 
+
 
 
 \section{Priors}
@@ -72,7 +107,7 @@ $ p(\nu) \sim gamma(2, 0.1)$
 \end{table} 
 
 
-\section*{Hamiltonian Monte Carlo Diagnostics}
+\section{Hamiltonian Monte Carlo Diagnostics}
 
 There were no divergent iterations in either sample running 4 chains for 2,000 iterations with 1,000 warmup iterations. 
 The $\hat{R}$ is less than 1.1 for all parameters in both samples. 
@@ -93,7 +128,7 @@ Taken together, all of this implies that the chains adequately explored the post
 % Justify use of annual normalization
 As noted in the paper, I place allied capability in the membership matrix \textbf{Z} on the same scale as the other parameters by normalizing it by year. 
 Within each year, I divide the total military spending of allied states by the maximum value, so capability values within each year range from just above zero to one. 
-This ensures that allied capability is comparable within years, and that I do not treat more modern alliances as the most capable as raw defense budget sizes increase. 
+This ensures that allied capability is comparable within years, and that I do not treat more modern alliances as the most capable due to increases in raw defense budget sizes. 
 
 
 The choice of this specific normalization is less theoretically informed than using capability itself. 
@@ -141,7 +176,7 @@ Rescaling capability by the maximum produces similar inferences about alliance c
 \section{Fake Data Simulation Check}
 
 
-With any complicated model, simulating fake data and seeing if the model can recover known parameters is essential. 
+With any model, simulating fake data and seeing if the model can recover known parameters is essential. 
 Fake-data simulation helps validate results from observed data and identify problems. 
 This section summarizes results from fitting the multilevel model to fake data.
 
@@ -196,7 +231,7 @@ I check the robustness of my results by using \citet{Nordhausetal2012}'s measure
 
 I estimate the same multilevel model on this measure of military spending, which covers from 1949 to 2001. 
 This model also checks whether how treaty depth modifies the impact of alliance participation on military spending changes after World War II.
-Because the coefficient on a lagged dependent variable in this model is close to one, implying a probable lack of stationarity in levels, I use changes in military spending as the outcome of interest. 
+Because the coefficient on a lagged dependent variable in this model is close to one, implying probable non-stationarity in levels, I use changes in military spending as the outcome of interest. 
 
 
 \begin{figure}[htbp]
@@ -216,6 +251,7 @@ All the parameter estimates are similar in this data, which increases my confide
 
 \section{Robustness Check 2: Single-Level Regression}
 
+
 Though the multilevel model best reflects the theory, I also fit some more standard panel data models. 
 In what follows, I briefly present results from robust regressions of state-year percentage changes in military spending in the same sample of non-major powers. 
 As in the multilevel model, I applied the inverse hyperbolic sine transformation to the outcome. 
@@ -223,13 +259,14 @@ In these models, I employ two indicators of alliance depth.
 The first is the average depth of a state's alliances. 
 The second is a dummy which equals 1 if a state has at least one alliance with greater than average depth. 
 Both variables compare states as the depth of their alliance portfolio shifts. 
-In addition to the state-level controls in the multilevel model, I included averages of alliance size and democracy and the log of total allied capability as controls. 
+In addition to the state-level controls in the multilevel model, I included average alliance size, average allied democracy and the log of total allied capability as controls. 
 
 
-I estimated several models, including robust regressions on all states, non-major powers, and non-major powers in alliances. 
+I estimated several models, including robust regressions on non-major powers and non-major powers in alliances. 
+Comparing non-major powers with at least one alliance is a crude approximation of the depth coefficient in the multilevel model, which compares deep and shallow alliances. 
 I also applied fixed effects to an OLS model of percentage changes in defense expenditures. 
 The estimated association between average treaty depth and military spending changes is summarized in \autoref{fig:single-level-mplot}. 
-Results are inconsistent- the average depth measure fails to reject the null without fixed effects. 
+Results are inconsistent- I do not reject the null hypothesis for the average depth measure unless the model includes fixed effects. 
 The deep alliance dummy coefficient estimate is negative and statistically significant across several samples and model specifications, however. 
 
 \begin{figure}[htbp]
@@ -240,15 +277,14 @@ The deep alliance dummy coefficient estimate is negative and statistically signi
 \end{figure}
 
 
-The analysis of non-major powers in alliances is the best approximation of the multilevel model, as it compares non-major powers with different kinds of alliances. 
-Analyzing a sample of all non-major powers includes states with no alliances, with does not match the multilevel model. 
-In the multilevel model, the main coefficients compare deep and shallow alliances. 
-To assess the robustness of the coefficient estimate in the sample of non-major powers with alliances, I performed Extreme Bounds analysis. 
+I focus on the deep alliance dummy because the state-level averages may be misleading, and the deep alliance dummy matches \citep{DigiuseppePoast2016}'s design.
+To assess the robustness of the deep alliance dummy coefficient estimate in the sample of non-major powers, I performed Extreme Bounds analysis. 
 Specifically, I present results from \citet{Sala-i-Martin1997}'s method of bounds analysis in \autoref{fig:eba-single-level}. 
+This uses linear regression, so there is an imperfect comparison with the above robust regressions. 
 
 
 \autoref{fig:eba-single-level} shows the distribution of the deep alliance coefficient and an indicator of whether the alliance includes economic agreements. 
-Across many specifications, where all regression coefficients are doubtful, the CDF of the deep alliance coefficient has 99\% negative mass. 
+Across many specifications, where all regression coefficients are doubtful, the CDF of the deep alliance coefficient has 90\% negative mass. 
 Even though the normality assumption is clearly violated, the histogram in \autoref{fig:eba-single-level} shows little evidence having a deep alliance increases percentage changes in military spending. 
 The bounds analysis indicates a deep alliance dummy is a robust predictor of percentage changes in military spending across over 1500 single-level model specifications. 
 
@@ -256,7 +292,7 @@ The bounds analysis indicates a deep alliance dummy is a robust predictor of per
 \begin{figure}[htbp]
 	\centering
 		\includegraphics[width=0.95\textwidth]{eba-single-level.png}
-	\caption{Histogram of coefficient values for a deep alliance dummy and economic concessions in at least one alliance in a single-level robust regression of non-major powers in alliances.}
+	\caption{Histogram of coefficient values for a deep alliance dummy and economic concessions in a single-level robust regression of non-major powers. Each dummy variable marks whether a state has at least one alliance with greater than average depth or economic concessions.}
 	\label{fig:eba-single-level}
 \end{figure}
 
@@ -265,44 +301,43 @@ The bounds analysis indicates a deep alliance dummy is a robust predictor of per
 
 \section{Alternative Measures of Alliance Treaty Depth}
 
-This part of the appendix compares my latent measure of treaty depth with similar measures by \citet{LeedsAnac2005} as well as \citet{BensonClinton2016}. 
+This part of the appendix compares my latent measure of treaty depth with measures of related concepts.  
 I first show that there are important differences between my measure and the military institutionalization measure of \citet{LeedsAnac2005}, but using military institutionalization instead of latent depth generates similar inferences. 
-Then I move to the conceptual differences between my latent measure and that of \citet{BensonClinton2016}.
+Then I show the important conceptual differences between my latent measure and that of \citet{BensonClinton2016}.
 
 
 \subsection{Leeds and Anac 2005}
 
 
 \citet{LeedsAnac2005} create an ordinal measure of alliance treaty depth to study whether alliance institutionalization improves treaty reliability and performance. 
-They argue that commitments of an integrated military command, common defense policy, or any sort of basing rights generate high military institutionalization. 
+They argue that commitments of an integrated military command, common defense policy, or any basing rights generate high military institutionalization. 
 Official contact between military officials, formal organizations, training or technology, subordination of forces, or specific contributions reflect moderate institutionalization. 
-If at least one factors is present, the offensive or defensive alliance is coded as the corresponding level of institutionalization. 
+If at least one factor is present, the offensive or defensive alliance is coded as the corresponding level of institutionalization. 
 This assumes that alliances with multiple sources of depth as just as deep/institutionalized as alliances with one factor and understates the amount of variation in alliance treaty depth. 
 
 
 \begin{figure}[htbp]
 	\centering
 		\includegraphics[width=0.95\textwidth]{leeds-anac-comp.png}
-	\caption{Scatter plot of latent treaty depth across the values of military institutionalization from \citet{LeedsAnac2005}. The box plots summarize the distribution of latent treaty depth within each category of military institutionalization.}
+	\caption{Scatter plot of latent treaty depth across the values of military institutionalization from \citet{LeedsAnac2005}. The box plots summarize the distribution of latent treaty depth within each category of military institutionalization. Points are jittered within each level of the institutionalization score.}
 	\label{fig:leeds-anac-comp}
 \end{figure}
 
 
-As \autoref{fig:leeds-anac-comp} shows, this ordinal measure and my latent measure make fairly similar conclusions and are positively correlated. 
+As \autoref{fig:leeds-anac-comp} shows, this ordinal measure and my latent measure are positively correlated. 
 The deepest alliances on the latent measure also have the highest military institutionalization score. 
 There are substantial differences within each category and overlap in the latent measure across the categories, however. 
-For example, some alliances that \citet{LeedsAnac2005} assign a moderate institutionalization score have far more depth than alliances with high institutionalization scores because these alliance treaties include multiple sources of depth. 
+For example, some alliances that \citet{LeedsAnac2005} assign a moderate institutionalization score have more depth than alliances with high institutionalization scores because these alliance treaties include multiple sources of depth. 
 
 
 There are a few alliances where my measure makes a marked departure from Leeds and Anac. 
 Frist, there are some alliances with no institutionalization that my measure assigns some depth to. 
 These alliances are primarily the result of companion military agreements, which I include as a source of depth in addition to Leeds and Anac's variables. 
 Second, Leeds and Anac assign missing values to some institutionalization scores if all sources of high or moderate depth are missing, which is a reasonable choice with their measurement strategy.
-My latent measure assigns some depth to these treaties, because it ignores missing data on a subset of variables. 
-Missing values have no effect on the depth score, but observed values contribute. 
+My latent measure gives these treaties some depth, because it ignores missing data on a subset of variables but allows observed values to contribute. 
 
 
-Because the military institutionalization measure captures a similar concept, but has some differences, a robustness check is necessary. 
+Although I prefer the latent depth measure, I find similar results with the ordinal measure of military institutionalization. 
 To check the robustness of my results, I implemented the same multilevel model of non-major power military spending, but replaced the mean latent treaty depth variable with the institutionalization measure. 
 \autoref{tab:milinst-res} summarizes the results. 
 
@@ -311,7 +346,7 @@ To check the robustness of my results, I implemented the same multilevel model o
 \centering
 \begin{tabular}{rrrrrrr}
   \hline
- & mean & sd & 5\% & 95\% & n\_eff & Rhat \\ 
+ & mean & sd & 5\% & 95\% & n\_eff & $\hat{R}$ \\ 
   \hline
 Constant & 0.003 & 0.058 & -0.094 & 0.096 & 2688.743 & 1.001 \\ 
   Military Inst. & -0.035 & 0.024 & -0.075 & 0.004 & 3960.366 & 1.000 \\ 
@@ -325,10 +360,10 @@ Constant & 0.003 & 0.058 & -0.094 & 0.096 & 2688.743 & 1.001 \\
   Asymmetric & 0.056 & 0.059 & -0.037 & 0.155 & 2909.115 & 0.999 \\ 
   US. Mem & -0.033 & 0.049 & -0.112 & 0.049 & 2617.047 & 1.000 \\ 
   USSR Mem. & -0.079 & 0.098 & -0.237 & 0.083 & 3185.998 & 1.000 \\ 
-  sigma Alliances & 0.143 & 0.054 & 0.060 & 0.234 & 914.843 & 1.003 \\ 
+  $\sigma$ Alliances & 0.143 & 0.054 & 0.060 & 0.234 & 914.843 & 1.003 \\ 
    \hline
 \end{tabular}
-\caption{Results from an analysis that replaces the latent measure of treaty depth with an ordinal measure of military institutionalization from \citet{LeedsAnac2005}. The negative correlation between treaty depth and the impact of alliance participation on military spending remains.}
+\caption{Results from an analysis that replaces the latent measure of treaty depth with an ordinal measure of military institutionalization from \citet{LeedsAnac2005}. The negative correlation between military institutionalization and the impact of alliance participation on military spending matches earlier conclusions about the way treaty depth impacts military spending.}
 \label{tab:milinst-res}
 \end{table}
 
@@ -344,7 +379,7 @@ Alliances with moderate institutionalization have mixed effects.
 Last, participation in alliances with high institutionalization tends to reduce military spending. 
 This corresponds to the predictions of Hypotheses 1 and 2. 
 The trend across military institutionalization is less clear than with the latent measure of treaty depth, however.
-This is probably because the military institutionalization measure lumps diverse alliances into coarse bins. 
+This is probably because the military institutionalization measure understates the amount of variation in treaty depth.  
 
 
 \begin{figure}[htbp]
@@ -361,7 +396,7 @@ This is probably because the military institutionalization measure lumps diverse
 
 \citet{BensonClinton2016} use a latent variable model to estimate alliance scope, depth and capability. 
 I do not use their measure of depth because it captures a different concept, and thus diverges from my aims in this project. 
-Benson and Clinton define depth as the general costliness of alliance obligations, which leads them to include neutrality pacts. 
+Benson and Clinton define depth as the general costliness of alliance obligations, which leads them to include other variables and analyze neutrality pacts. 
 I define depth as military coordination and cooperation and am only interested in alliances with active military support. 
 My focus on defensive and offensive alliances follows existing scholarship on alliance participation and military spending.
 These differences, coupled with my use of a different estimator, mean that we draw different conclusions about the factor loadings and the latent depth scores.
@@ -378,6 +413,7 @@ In Benson and Clinton's measure, neutrality pacts have very little depth, which 
 Neutrality is less costly in general.  
 Only a few alliances with only neutrality obligations have any depth, as \autoref{fig:bc2016-neutral} shows.  
 
+
 \begin{figure}[htbp]
 	\centering
 		\includegraphics[width=0.95\textwidth]{bc2016-neutral.png}
@@ -388,13 +424,12 @@ Only a few alliances with only neutrality obligations have any depth, as \autore
 
 In Benson and Clinton's model, limited alliances with neutrality promises are a sort of reference category for military alliances. 
 Neutrality pacts have limited depth, but they will inform inferences about the depth of alliances with offensive or defensive promises. 
-As with other statistical models, inferences from measurement models can be sensitive to different reference categories. 
 By including neutrality pacts, Benson and Clinton's model compares alliances with generally limited obligations to more costly military support pacts.
 
 
 Again, Benson and Clinton's decision to measure the depth of neutrality pacts is not a problem for their paper. 
 It limits my ability to apply their measure to this project, however. 
-I do not address neutrality pacts in my argument, so my measure of depth must focus on offensive and defensive alliances. 
+I do not address neutrality pacts in my argument, so my measure of depth must capture variation only among offensive and defensive alliances. 
 My emphasis on defense pacts leads to a more narrow focus on military cooperation.
 Coupled with my use of an estimator that breaks problematic correlations between the latent variables and dependence structure \citep{Murrayetal2013}, I draw different conclusions about the factor loadings and depth of different alliance treaties. 
 
@@ -402,9 +437,9 @@ Coupled with my use of an estimator that breaks problematic correlations between
 % differences in loadings and estimator have important consequences for depth scores
 \autoref{fig:bc-2016-comp} describes the key differences between my latent measure of depth and Benson and Clinton's measure.
 On the top panel, I look at differences in the factor loadings across the two models.\footnote{Recall that I removed economic aid and secrecy from the observed data in my measure, because they are distinct from military cooperation.} 
-Benson and Clinton break the policy coordination variable into military contact and common defense policy, but I treat this as an ordinal variable, which is the largest source of depth.\footnote{The military contact variable on which the policy coordination score is based gives alliances that require wartime military contact a score of one, scores treaties with peacetime military contact as a two, and assigns alliances with defense cooperation a score of three. There is a clear progression in the extent of policy coordination required as this variable increases.}
+Benson and Clinton break the ATOP policy coordination variable into military contact and common defense policy, but I treat this as an ordinal variable, which is the largest source of depth.\footnote{The military contact variable on which the policy coordination score is based gives alliances that require wartime military contact a score of one, scores treaties with peacetime military contact as a two, and assigns alliances with defense cooperation a score of three. There is a order to the extent of policy coordination required as this variable increases.}
 I also find larger correlations between formal organization and integrated military command and latent depth than Benson and Clinton.
-It is harder to distinguish between other loadings, but Benson and Clinton's measure assigns marginally more weight to military aid and basing rights.  
+Distinguishing between other loadings is harder, but Benson and Clinton's measure assigns marginally more weight to military aid and basing rights.  
 
 
 \begin{figure}[htbp]
@@ -416,11 +451,11 @@ It is harder to distinguish between other loadings, but Benson and Clinton's mea
 
 
 In the bottom panel of \autoref{fig:bc-2016-comp}, I plot my measure of treaty depth against Benson and Clinton's. 
-To facilitate this comparison, I rescaled both depth measures by dividing them by two standard deviations \citep{Gelman2008}.
-Benson and Clinton's measure suggests 5 alliances are well over 3 standard deviations from the mean, while my measure contains no such alliances. 
+To facilitate this comparison, I rescaled both depth measures by dividing them by one standard deviation.
+Benson and Clinton's measure suggests 18 alliances are 2 or more standard deviations from the mean, while my measure contains 9 such alliances. 
 In general, many treaties Benson and Clinton assign relatively high depth to score somewhat lower relative to other alliances on my measure.
 The two measures identify a common set of six extremely deep alliances, however. 
-Salient differences in the relative depth of alliance treaties are the result of differences in the factor loadings. 
+Salient distinctions in the relative depth of alliance treaties are the result of differences in the factor loadings. 
 
 
 Though the two measures of depth are correlated, they capture slightly different concepts. 

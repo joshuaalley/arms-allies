@@ -53,11 +53,6 @@ yrep.maj <- yrep.maj$y_pred[1:100, ]
 ppc_dens_overlay(asinh(stan.data.maj$y), yrep.maj)
 
 
-# trace plot for appendix
-traceplot(ml.model.maj, pars = "beta")
-ggsave("appendix/trace-all-maj.png", height = 6, width = 8)
-
-
 
 
 ### Now move to non-major powers
@@ -120,7 +115,7 @@ rownames(beta.summary.maj) <- c("Constant", "Depth", "Uncond Milsup", "Econ. Lin
                                 "FP Conc.",
                                 "Number Members", "FP Similarity",
                                 "Democratic Membership", 
-                                "Wartime", "Asymmetric", "US. Mem", "USSR Mem.",
+                                "Wartime", "Asymmetric", "Mean Threat", "US. Mem", "USSR Mem.",
                                 "sigma Alliances")
 
 
@@ -135,7 +130,7 @@ rownames(beta.summary.min) <- c("Constant", "Depth", "Uncond Milsup", "Econ. Lin
                                  "FP Conc.",
                                  "Number Members", "FP Similarity",
                                  "Democratic Membership", 
-                                 "Wartime", "Asymmetric", "US. Mem", "USSR Mem.",
+                                 "Wartime", "Asymmetric", "Mean Threat", "US. Mem", "USSR Mem.",
                                  "sigma Alliances")
 
 print(beta.summary.min)
@@ -166,7 +161,8 @@ colnames(coef.min$beta) <- c("Constant", "Depth", "Uncond Milsup", "Econ. Link",
                              "FP Conc.",
                              "Number Members", "FP Similarity",
                              "Democratic Membership", 
-                             "Wartime", "Asymmetric Obligations", "US. Mem", "USSR Mem.")
+                             "Wartime", "Asymmetric Obligations",
+                             "Mean Threat", "US. Mem", "USSR Mem.")
 colnames(coef.min$gamma) <- colnames(reg.state.mat.min)
 
 
@@ -198,7 +194,8 @@ mean(coef.maj$beta[, 9] < 0) # wartime: major
 mean(coef.min$beta[, 9] > 0) # wartime: non-major
 mean(coef.maj$beta[, 10] < 0) # asymmetric: major
 mean(coef.min$beta[, 10] > 0) # asymmetric: non-major
-
+mean(coef.maj$beta[, 11] < 0) # threat: major
+mean(coef.min$beta[, 11] > 0) # threat: non-major
 
 
 # Examine state-level parameters

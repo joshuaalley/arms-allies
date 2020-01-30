@@ -508,7 +508,10 @@ alliance.year <- atop.cow.year %>%
     total.cap = sum(cinc, na.rm = TRUE),
     total.expend = sum(ln.milex, na.rm = TRUE),
     total.gdp = sum(ln.gdp),
-    num.mem = n()
+    num.mem = n(),
+    max.threat = max(lsthreat, na.rm = TRUE),
+    min.threat = min(lsthreat, na.rm = TRUE),
+    mean.threat = mean(lsthreat, na.rm = TRUE)
   )
 
 alliance.year[order(alliance.year$atopid, alliance.year$year),] 
@@ -523,7 +526,7 @@ alliance.year <- alliance.year %>%
                   )
 
 alliance.democ <- filter(alliance.year, begyr == year) %>% 
-                 select(c(atopid, avg.democ))
+                 select(c(atopid, avg.democ, max.threat, min.threat, mean.threat))
 write.csv(alliance.democ, "../Dissertation/depth-sources/data/alliance-democ.csv",
           row.names = FALSE)
 
@@ -538,8 +541,19 @@ cor.test(alliance.char$avg.democ, alliance.char$latent.depth.mean)
 ggplot(alliance.char, aes(x = avg.democ, y = latent.depth.mean)) + 
   geom_point() + theme_classic()
 
-# and t-test foruncond milsup 
+# and t-test for uncond milsup 
 t.test(alliance.char$avg.democ ~ alliance.char$uncond.milsup)
+
+
+# Quick check: are avg threat and avg depth correlated?
+summary(alliance.char$mean.threat)
+cor.test(alliance.char$latent.depth.mean, alliance.char$mean.threat)
+ggplot(alliance.char, aes(x = mean.threat, y = latent.depth.mean)) +
+  geom_point() 
+
+
+# max threat driven more by major powers
+# min threat is too conservative
 
 
 # Create a membership matrix with the spending of all 
@@ -737,7 +751,7 @@ cor(reg.state.mat, method = "pearson")
 
 # General set of alliance-level regressors
 reg.all.data <- select(alliance.char, atopid, latent.depth.mean, uncond.milsup, econagg.dum, fp.conc.index, num.mem, low.kap.sc, 
-         avg.democ, wartime, asymm, us.mem, ussr.mem)
+         avg.democ, wartime, asymm, mean.threat, us.mem, ussr.mem)
 
 
 # Create the matrix of alliance-level variables for major and non-major power groups
@@ -745,7 +759,7 @@ reg.all.data <- select(alliance.char, atopid, latent.depth.mean, uncond.milsup, 
 # Make the alliance characteristics data match the membership matrix
 reg.all.data.min <- filter(alliance.char, atopid %in% colnames(state.mem.min)) %>%
   select(atopid, latent.depth.mean, uncond.milsup, econagg.dum, fp.conc.index, num.mem, low.kap.sc, 
-         avg.democ, wartime, asymm, us.mem, ussr.mem) %>%
+         avg.democ, wartime, asymm, mean.threat, us.mem, ussr.mem) %>%
   na.omit
 
 state.mem.min <- state.mem.min[, colnames(state.mem.min) %in% reg.all.data.min$atopid]
@@ -761,7 +775,7 @@ alliance.reg.mat.min <- as.matrix(alliance.reg.mat.min)
 # Make the alliance characteristics data match the membership matrix
 reg.all.data.maj <- filter(alliance.char, atopid %in% colnames(state.mem.maj)) %>%
   select(atopid, latent.depth.mean, uncond.milsup, econagg.dum, fp.conc.index, num.mem, low.kap.sc, 
-         avg.democ, wartime, asymm, us.mem, ussr.mem) %>%
+         avg.democ, wartime, asymm, mean.threat, us.mem, ussr.mem) %>%
   na.omit
 
 state.mem.maj <- state.mem.maj[, colnames(state.mem.maj) %in% reg.all.data.maj$atopid]
@@ -781,3 +795,6 @@ min.id <- filter(reg.state.comp, majpower == 0) %>% select(state.id, year.id)
 
 
 
+# quick tables of summary statistics
+stargazer(reg.all.data.min, summary = TRUE)
+stargazer(alliance.reg.mat.min, summary = TRUE)

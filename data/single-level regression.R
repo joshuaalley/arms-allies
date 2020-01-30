@@ -65,7 +65,7 @@ duplicates <- state.char.full %>% group_by(ccode, year) %>% filter(n() > 1)
 nrow(duplicates)
 rm(duplicates)
 
-
+   
 
 # Analysis
 # IV: avg alliance depth 
@@ -369,8 +369,7 @@ coef.dum
 multiplot.ggplot(coef.avg, coef.dum)
 # save in  appendix as "single-level-mplot.png"
 
-# export data as CSV for checking selection on unobservables in STATA
-write.csv(state.char.full, "data/state-char-full.csv", row.names = FALSE, na = "")
+
 
 
 

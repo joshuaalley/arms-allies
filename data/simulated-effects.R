@@ -18,6 +18,7 @@ all.data.ldepth["low.kap.sc"] <- median(reg.all.data.min$low.kap.sc)
 all.data.ldepth["avg.democ"] <- median(reg.all.data.min$avg.democ)
 all.data.ldepth["wartime"] <- 0
 all.data.ldepth["asymm"] <- 0
+all.data.ldepth["mean.threat"] <- median(reg.all.data.min$mean.threat)
 all.data.ldepth["us.mem"] <- 0
 all.data.ldepth["ussr.mem"] <- 0
 
@@ -81,7 +82,7 @@ impact.milex.comp <- rbind.data.frame(
                        c(mean(lambda.change.depth$impact.milex), quantile(lambda.change.depth$impact.milex, c(.05, .95)))
 )
 colnames(impact.milex.comp) <- c("mean", "lower", "upper")
-impact.milex.comp$Depth <- c("Low", "High", "Difference")
+impact.milex.comp$Depth <- c("Shallow", "Deep", "Difference")
 
 
 # Remove simulated objects

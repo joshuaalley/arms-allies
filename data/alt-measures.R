@@ -111,8 +111,12 @@ head(benson.clinton.2016)
 benson.clinton.comp <- left_join(atop.milsup, benson.clinton.2016, by = "atopid")
 
 # rescale variables to facilitate comparison
-benson.clinton.comp$latent.depth.rs <- rescale(benson.clinton.comp$latent.depth.mean)
-benson.clinton.comp$Depth.score.rs <- rescale(benson.clinton.comp$Depth.score)
+benson.clinton.comp$latent.depth.rs <- (benson.clinton.comp$latent.depth.mean -
+                                         mean(benson.clinton.comp$latent.depth.mean)) /
+                                           sd(benson.clinton.comp$latent.depth.mean)
+benson.clinton.comp$Depth.score.rs <- (benson.clinton.comp$Depth.score -
+                                         mean(benson.clinton.comp$Depth.score, na.rm = TRUE)) /
+                                          sd(benson.clinton.comp$Depth.score, na.rm = TRUE)
 
 # correlation is strong and positive
 cor.test(benson.clinton.comp$latent.depth.mean, benson.clinton.comp$Depth.score)
@@ -209,5 +213,9 @@ factors.comp <- ggplot(factors.data, aes(x = mean, y = var, color = Model)) +
                  theme_bw()
 factors.comp
 
-# combine with first plot 
-multiplot.ggplot(factors.comp, bc.score.comp)
+# combine with scatter plot 
+grid.arrange(factors.comp, bc.score.comp,
+             nrow = 2)
+bc.comp.plot <- arrangeGrob(factors.comp, bc.score.comp,
+                               nrow = 2)
+ggsave("appendix/bc-2016-comp.png", bc.comp.plot, height = 8, width = 8) #save file
