@@ -505,9 +505,11 @@ alliance.year <- atop.cow.year %>%
   group_by(atopid, year) %>%
   summarize(
     avg.democ = mean(polity2, na.rm = TRUE),
+    max.democ = max(polity2, na.rm = TRUE),
+    min.democ = min(polity2, na.rm = TRUE),
     total.cap = sum(cinc, na.rm = TRUE),
     total.expend = sum(ln.milex, na.rm = TRUE),
-    total.gdp = sum(ln.gdp),
+    total.gdp = sum(gdp, na.rm = TRUE),
     num.mem = n(),
     max.threat = max(lsthreat, na.rm = TRUE),
     min.threat = min(lsthreat, na.rm = TRUE),
@@ -526,7 +528,7 @@ alliance.year <- alliance.year %>%
                   )
 
 alliance.democ <- filter(alliance.year, begyr == year) %>% 
-                 select(c(atopid, avg.democ, max.threat, min.threat, mean.threat))
+                 select(c(atopid, avg.democ, max.democ, min.democ, max.threat, min.threat, mean.threat))
 write.csv(alliance.democ, "../Dissertation/depth-sources/data/alliance-democ.csv",
           row.names = FALSE)
 
@@ -573,12 +575,12 @@ atop.cow.year$ln.milex[is.na(atop.cow.year$ln.milex)] <- 0
 # Create the dataset
 state.mem.cap <- atop.cow.year %>% 
   filter(defense == 1 | offense == 1) %>%
-  select(atopid, ccode, year, cinc, ln.milex, ln.gdp) %>% 
+  select(atopid, ccode, year, cinc, ln.milex, gdp) %>% 
   left_join(alliance.year) %>%
   mutate(alliance.contrib = ln.milex / total.expend,
          ally.spend = total.expend - ln.milex,
          ally.cap = total.cap - cinc,
-         contrib.gdp = ln.gdp / total.gdp) %>%
+         contrib.gdp = gdp / total.gdp) %>%
   distinct(atopid, ccode, year, .keep_all = TRUE) %>%
   select(ccode, atopid, year, ally.spend, ally.cap, avg.democ, alliance.contrib, contrib.gdp) 
 

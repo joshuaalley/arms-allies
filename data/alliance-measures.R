@@ -333,7 +333,12 @@ multiplot.ggplot(ls.hist, ls.styear)
 
 
 # For the manuscript: combine loadings and start year plot
-multiplot.ggplot(factor.loadings, ls.styear)
+grid.arrange(factor.loadings, ls.styear,
+             nrow = 2)
+
+ld.summary <- arrangeGrob(factor.loadings, ls.styear,
+                              nrow = 2)
+ggsave("figures/ld-summary.png", ld.summary, height = 6, width = 8) #save file
 
 # 171 alliances with depth above -.6 
 sum(atop.milsup$latent.depth.mean > -.6)
