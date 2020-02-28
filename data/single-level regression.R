@@ -365,10 +365,14 @@ coef.dum <- multiplot(rreg.min.dum, m1.all.dum, m1.reg.fe.dum,
             horizontal = FALSE
         ) + theme_bw()
 coef.dum
-# plot both results together 
-multiplot.ggplot(coef.avg, coef.dum)
-# save in  appendix as "single-level-mplot.png"
 
+
+# plot both results together 
+grid.arrange(coef.avg, coef.dum,
+             nrow = 2)
+results.singlelev <- arrangeGrob(coef.avg, coef.dum,
+                               nrow = 2)
+ggsave("appendix/single-level-mplot.png", results.singlelev, height = 6, width = 8) #save file
 
 
 

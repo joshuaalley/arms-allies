@@ -486,9 +486,9 @@ growth.depth.plot <- ggplot(growth.pred.res, aes(x = latent.depth.mean, y = mean
                        scale_fill_gradientn(colours=c("#999999","#333333"), 
                          name = "Frequency", 
                          na.value=NA) +
-                       labs(x = "Latent Depth",
-                          y = "Mean Predicted Spending Growth from Alliance") +
-                       ggtitle("Predicted Military Spending Growth and Treaty Depth") +
+                       labs(x = "Latent Treaty Depth",
+                          y = "Mean Estimated Spending Growth from Alliance") +
+                       ggtitle("Estimated Military Spending Growth and Treaty Depth") +
                        theme_bw() 
 growth.depth.plot
 

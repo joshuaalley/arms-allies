@@ -91,6 +91,7 @@ rm(list = c("impact.milex.low", "impact.milex.high"))
 
 # Plot the results
 impact.milex.nonmaj <- ggplot(impact.milex.comp, aes(y = Depth, x = mean)) +
+                        geom_vline(xintercept = 0) +
                         geom_point(size = 4) +
                         geom_errorbarh(aes(xmin = lower, xmax = upper, height = .1), size = 2) +
                         labs(x = "Predicted Growth in Military Spending",

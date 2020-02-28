@@ -17,11 +17,8 @@ library(rstan)
 library(bayesplot)
 library(shinystan)
 library(reshape2)
-library(party)
 library(xtable)
 library(coefplot)
-library(ggcarly)
-library(ggridges)
 library(MASS)
 library(plm)
 library(margins)
@@ -33,6 +30,7 @@ library(loo)
 library(gridExtra)
 library(hexbin)
 library(stargazer)
+library(overlapping)
 
 
 # Look at conflicts 
@@ -66,6 +64,8 @@ conflict_prefer("loo", "loo")
 conflict_prefer("combine", "dplyr")
 conflict_prefer("pack", "tidyr")
 conflict_prefer("unpack", "tidyr")
+conflict_prefer("matches", "tidyr")
+conflict_prefer("compare", "loo")
 
 
 # Set up RSTAN guidelines
