@@ -211,11 +211,6 @@ Given the large number of parameters and smaller sample, this is acceptable accu
 Even the seven inaccurate confidence intervals were quite close--- all were within .015 of the known parameter.\footnote{Fine margins around these intervals implies that the exact number of accurate $\lambda$ intervals is sensitive to simulation variance.}
 
 
-In summary, convergence diagnostics and fake data fitting both suggest that the multilevel model gives valid estimates. 
-No convergence diagnostics indicate problems exploring the posterior. 
-Just as importantly, the model can recover known parameters from fake data. 
-
-
 
 %\section{Robustness Check: Alternative Measure of Military Spending}
 %
@@ -310,6 +305,7 @@ Then I describe the conceptual and empirical differences between my latent measu
 They argue that commitments of an integrated military command, common defense policy, or any basing rights generate high military institutionalization. 
 Official contact between military officials, formal organizations, providing training or technology, subordination of forces, or specific contributions reflect moderate institutionalization. 
 If at least one factor is present, Leeds and Anac assign alliance the highest corresponding level of institutionalization. 
+This approach assumes that alliances with multiple sources of depth as just as deep/institutionalized as alliances with one factor and understates the amount of variation in alliance treaty depth. 
 
 
 \begin{figure}[htbp]
@@ -319,7 +315,7 @@ If at least one factor is present, Leeds and Anac assign alliance the highest co
 	\label{fig:leeds-anac-comp}
 \end{figure}
 
-This approach assumes that alliances with multiple sources of depth as just as deep/institutionalized as alliances with one factor and understates the amount of variation in alliance treaty depth. 
+
 Even so, as \autoref{fig:leeds-anac-comp} shows, this ordinal measure and my latent measure are positively correlated. 
 The deepest alliances on the latent measure also have the highest military institutionalization score, because they rely on similar variables. 
 There are substantial differences within each category and overlap in the latent scores across the categories, however. 
@@ -333,7 +329,7 @@ Second, Leeds and Anac assign missing values to some institutionalization scores
 My latent measure gives these treaties some depth, because it accommodates missing data on a subset of variables. 
 
 
-Although I the latent depth measure has some advantages, I find similar results with the ordinal measure of military institutionalization. 
+Although the latent depth measure has some advantages, I find similar results with the ordinal measure of military institutionalization. 
 To check the robustness of my results, I implemented the same multilevel model of non-major power military spending, but replaced the mean latent treaty depth variable with the military institutionalization measure. 
 \autoref{tab:milinst-res} summarizes the results. 
 
@@ -403,7 +399,6 @@ There is an understandable choice, but it means their measure diverges from the 
 Neutrality pacts are qualitatively different, because peacetime coordination is not focused on ensuring the delivery of military support. 
 
 
-
 In Benson and Clinton's measure, neutrality pacts have very little depth, which is unsurprising.
 Neutrality is less costly in general.  
 Only a few alliances with only neutrality obligations have any depth. % as \autoref{fig:bc2016-neutral} shows.  
@@ -422,13 +417,13 @@ By including neutrality pacts, Benson and Clinton's model compares alliances wit
 
 Again, Benson and Clinton's decision to measure the depth of neutrality pacts is not a problem for their paper. 
 It limits the applicability of their measure to this project, however. 
-I do not address neutrality pacts in my argument, so my measure of depth emphasizes variation only among offensive and defensive alliances. 
+I do not address neutrality pacts in my argument, so my measure of depth only considers variation among offensive and defensive alliances. 
 My theoretical focus on military cooperation also leads me to exclude indicators of secrecy and economic aid that Benson and Clinton use to predict treaty depth. 
 Although Benson and Clinton's measure is close to my purposes, it captures a slightly different concept. 
 
 
 % differences in loadings and estimator have important consequences for depth scores
-Given conceptuial differences and my decision to use an estimator that breaks problematic correlations between the latent variables and dependence structure \citep{Murrayetal2013}, I draw different conclusions about the factor loadings and distribution of treaty depth. 
+Given conceptuial differences and my decision to use a semiparametric estimator that breaks problematic correlations between the latent variables and dependence structure \citep{Murrayetal2013}, I draw different conclusions about the factor loadings and distribution of treaty depth. 
 \autoref{fig:bc-2016-comp} describes the key differences between my latent measure of depth and Benson and Clinton's measure.
 In the top panel, I look at differences in the factor loadings across the two models.\footnote{Recall that I removed economic aid and secrecy from the observed data in my measure, because they are distinct from military cooperation.} 
 Benson and Clinton break the ATOP policy coordination variable into military contact and common defense policy, but I treat this as an ordinal variable, which is the largest source of depth.\footnote{The military contact variable on which the policy coordination score is based gives alliances that require wartime military contact a score of one, scores treaties with peacetime military contact as a two, and assigns alliances with defense cooperation a score of three. There is a order to the extent of policy coordination required as this variable increases.}
@@ -439,7 +434,7 @@ It is harder to distinguish between the other loadings, but Benson and Clinton's
 \begin{figure}[htbp]
 	\centering
 		\includegraphics[width=0.95\textwidth]{bc-2016-comp.png}
-	\caption{Comparison of latent measures of alliance treaty depth, one from this paper, and the other from \citet{BensonClinton2016}. The top panel compares the factor loadings from the two variables. The scatter plot compares latent depth scores from the semiparametric factor analysis with depth scores from \citet{BensonClinton2016}. The two latent measures have been rescaled by two standard deviations to facilitate comparisons. This comparison only includes alliances from version 3 of the ATOP data, because these are the alliances for which both models have scores.}
+	\caption{Comparison of latent measures of alliance treaty depth, one from this paper, and the other from \citet{BensonClinton2016}. The top panel compares the factor loadings from the two variables. The scatter plot compares latent depth scores from the semiparametric factor analysis with depth scores from \citet{BensonClinton2016}. The two latent measures have been rescaled by one standard deviation to facilitate comparisons. This comparison only includes alliances from version 3 of the ATOP data, because these are the alliances for which both models have scores.}
 	\label{fig:bc-2016-comp}
 \end{figure}
 
@@ -448,7 +443,7 @@ In the bottom panel of \autoref{fig:bc-2016-comp}, I plot my measure of treaty d
 To facilitate this comparison, I rescaled both depth measures by dividing them by one standard deviation.
 Benson and Clinton's measure suggests 18 alliances are 2 or more standard deviations from the mean, while my measure contains 9 such alliances. 
 Many treaties with high depth on Benson and Clinton's measure have lower depth relative to other alliances on my measure.
-The two measures identify a common set of six extremely deep alliances, but disagree about how distincetive they are from other treaties. 
+The two measures identify a common set of six extremely deep alliances, but disagree about how distinctive they are from other treaties. 
 Salient distinctions in the relative depth of alliance treaties follow from differences in the factor loadings. 
 
 

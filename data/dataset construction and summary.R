@@ -645,7 +645,7 @@ ggplot(state.mem.cap, aes(x = ally.spend.rescale2sd)) + geom_histogram()
 state.mem.cap <- state.mem.cap %>% 
                   group_by(year) %>%
                    mutate(
-                     ally.spend.norm = ally.spend / max(ally.spend)
+                     ally.spend.norm = ally.spend / max(ally.spend, na.rm = TRUE)
                    ) %>%
                   group_by()
                   
@@ -718,7 +718,7 @@ state.mem.maj <- state.mem.maj[, colSums(state.mem.maj != 0) > 0]
 reg.state.comp.min <- filter(reg.state.comp, majpower == 0)
 # Create a matrix of npn-major membership in alliances (Z in STAN model)
 state.mem.min <- as.matrix(reg.state.comp.min[, 12: ncol(reg.state.comp.min)])
-# remove alliances with no non-major power participation
+# remove alliances with no non-major power participation or missing capability data
 state.mem.min <- state.mem.min[, colSums(state.mem.min != 0) > 0]
 
 

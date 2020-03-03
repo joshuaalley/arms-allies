@@ -238,7 +238,7 @@ atop.milsup <- filter(atop, offense == 1 | defense == 1)
 atop.depth <- select(atop.milsup,
                      intcom, compag.mil,  
                      milaid, milcon, base, 
-                     organ1, subord, contrib) 
+                     organ1, contrib) 
 atop.depth <- as.data.frame(atop.depth)
 for(i in 1:ncol(atop.depth)){
   atop.depth[, i] <- as.ordered(atop.depth[, i])
@@ -249,8 +249,9 @@ for(i in 1:ncol(atop.depth)){
 # Use Murray BFA approach
 latent.depth <- bfa_mixed(~ intcom + compag.mil + 
                             milaid + milcon + base + 
-                            organ1 + subord + contrib, 
+                            organ1 , 
                           data = atop.depth, num.factor = 1,
+                          restrict = list(c("intcom", 1, ">0")),
                           factor.scales = FALSE,
                           keep.scores = TRUE, loading.prior = "gdp", 
                           px = TRUE, imh.iter = 1000, imh.burn = 1000,
@@ -273,7 +274,7 @@ lines(density(rnorm(10000, 0, 1)))
 # Create a dataset of factors
 latent.factors <- cbind.data.frame(c("Integrated Command", "Companion Mil. Agreement", 
                                      "Military Aid", "Policy Coordination", "Bases",
-                                     "Formal IO", "Subordination", "Contribution"),
+                                     "Formal IO"),
                                    latent.depth[["post.loadings.mean"]],
                                    sqrt(latent.depth[["post.loadings.var"]])
 )
@@ -283,15 +284,14 @@ colnames(latent.factors) <- c("var", "mean", "sd")
 latent.factors <- arrange(latent.factors, desc(mean)) 
 latent.factors$var<- reorder(latent.factors$var, latent.factors$mean)
 
-factor.loadings <- ggplot(latent.factors, aes(x = mean, y = var)) + 
-                    geom_point(size = 2) +
-                    geom_errorbarh(aes(xmin = mean - 2*sd, 
-                      xmax = mean + 2*sd),
-                      height = .2, size = 1) +
-                    geom_vline(xintercept = 0) +
-                    labs(x = "Factor Loading", y = "Variable") +
-                     theme_classic()
-factor.loadings
+ggplot(latent.factors, aes(x = mean, y = var)) + 
+  geom_point(size = 2) +
+  geom_errorbarh(aes(xmin = mean - 2*sd, 
+                     xmax = mean + 2*sd),
+                 height = .2, size = 1) +
+  geom_vline(xintercept = 0) +
+  labs(x = "Factor Loading", y = "Variable") +
+  theme_classic()
 ggsave("figures/factor-loadings.png", height = 6, width = 8)
 
 # get posterior scores of latent factor: mean and variance
@@ -330,15 +330,6 @@ ls.styear <- ggplot(atop.milsup, aes(x = begyr, y = latent.depth.mean)) +
 ls.styear
 # Combine plots 
 multiplot.ggplot(ls.hist, ls.styear)
-
-
-# For the manuscript: combine loadings and start year plot
-grid.arrange(factor.loadings, ls.styear,
-             nrow = 2)
-
-ld.summary <- arrangeGrob(factor.loadings, ls.styear,
-                              nrow = 2)
-ggsave("figures/ld-summary.png", ld.summary, height = 6, width = 8) #save file
 
 # 171 alliances with depth above -.6 
 sum(atop.milsup$latent.depth.mean > -.6)

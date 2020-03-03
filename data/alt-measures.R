@@ -6,7 +6,7 @@
 ### Leeds and Anac 2005: Military Institutionalization
 # Plot the two variables against each other
 ggplot(atop.milsup, aes(x = as.ordered(milinst), y = latent.depth.mean)) +
-  geom_boxplot() +
+  geom_boxplot(outlier.shape = NA) +
   geom_jitter(alpha = .5) +
   labs(x = "Leeds and Anac Military Institutionalization",
        y = "Latent Treaty Depth") +
@@ -92,7 +92,7 @@ cor.test(lambda.df.milinst$lambda, lambda.df.milinst$latent.depth.mean,
 # plot
 ggplot(lambda.df.milinst, aes(x = as.factor(milinst), y = lambda)) +
   geom_hline(yintercept = 0) +
-  geom_boxplot() +
+  geom_boxplot(outlier.shape = NA) +
   geom_jitter(alpha = .5) +
   theme_bw() +
   labs(x = "Military Instituionalization", y = "Effect of Allied Spending") 
@@ -154,7 +154,7 @@ table(bc.comp.full$neutral, bc.comp.full$neut.only) # most neutrality pacts are 
 
 # look at depth scores by neutrality
 ggplot(bc.comp.full, aes(y = Depth.score, x = as.factor(neut.only))) +
-  geom_boxplot() +
+  geom_boxplot(outlier.shape = NA) +
   geom_jitter(alpha = .5) +
   scale_x_discrete(labels = c("0" = "Military Support",
                               "1" = "Neutrality Only")) +
