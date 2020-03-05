@@ -503,14 +503,24 @@ state.mem <- spread(state.mem, key = atopid, value = member, fill = 0)
 alliance.year <- atop.cow.year %>%
   filter(atopid > 0) %>%
   group_by(atopid, year) %>%
+  mutate(
+    cinc.share = cinc / max(cinc, na.rm = TRUE),
+    democ.weight = polity2 * cinc.share
+  )%>% 
   summarize(
     avg.democ = mean(polity2, na.rm = TRUE),
     max.democ = max(polity2, na.rm = TRUE),
     min.democ = min(polity2, na.rm = TRUE),
+    
     total.cap = sum(cinc, na.rm = TRUE),
     total.expend = sum(ln.milex, na.rm = TRUE),
     total.gdp = sum(gdp, na.rm = TRUE),
     num.mem = n(),
+    
+    avg.democ.weight = mean(democ.weight, na.rm = TRUE),
+    max.democ.weight = max(democ.weight, na.rm = TRUE),
+    min.democ.weight = min(democ.weight, na.rm = TRUE),
+    
     max.threat = max(lsthreat, na.rm = TRUE),
     min.threat = min(lsthreat, na.rm = TRUE),
     mean.threat = mean(lsthreat, na.rm = TRUE)
@@ -528,7 +538,9 @@ alliance.year <- alliance.year %>%
                   )
 
 alliance.democ <- filter(alliance.year, begyr == year) %>% 
-                 select(c(atopid, avg.democ, max.democ, min.democ, max.threat, min.threat, mean.threat))
+                 select(c(atopid, avg.democ, max.democ, min.democ, 
+                          avg.democ.weight, max.democ.weight, min.democ.weight,
+                          max.threat, min.threat, mean.threat))
 write.csv(alliance.democ, "../Dissertation/depth-sources/data/alliance-democ.csv",
           row.names = FALSE)
 
