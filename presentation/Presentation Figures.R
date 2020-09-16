@@ -60,8 +60,8 @@ ggsave("presentation/ld-hist.png", height = 6, width = 8)
 ggplot(atop.milsup, aes(x = latent.depth.mean)) + 
   geom_histogram(color = "black", fill = "grey") +
   theme_carly_presents() + labs(x = "Mean Latent Depth", y = "Treaties") +
-  geom_vline(xintercept = 2.05, linetype = "dashed", size = 1)  + 
-  geom_text(label="UAE-Yemen 1958", x = 2, y = 60, hjust = 1, size = 5)  # UAR
+  geom_vline(xintercept = 1.95, linetype = "dashed", size = 1)  + 
+  geom_text(label="UAE-Yemen 1958", x = 1.9, y = 60, hjust = 1, size = 5)  # UAR
 ggsave("presentation/ld-hist-deep.png", height = 6, width = 8)
 
 
@@ -75,21 +75,23 @@ ggplot(atop.milsup, aes(x = latent.depth.mean)) +
 ggsave("presentation/ld-hist-shallow.png", height = 6, width = 8)
 
 
-# Show typical treaty: -0.149679 which is ATOPID 4370: Czech-Slovak 1993
+# Show typical treaty: 
+atop.milsup$atopid[atop.milsup$latent.depth.mean == median(atop.milsup$latent.depth.mean)]
 # Defense pact with regular intergovernmental meetings 
 ggplot(atop.milsup, aes(x = latent.depth.mean)) + 
   geom_histogram(color = "black", fill = "grey") +
   theme_carly_presents() + labs(x = "Mean Latent Depth", y = "Treaties") +
-  geom_vline(xintercept = -0.11, linetype = "dashed", size = 1)  + 
+  geom_vline(xintercept = -0.09, linetype = "dashed", size = 1)  + 
   geom_text(label="OAS", x = -0.05, y = 60, hjust = -.1, size = 5) 
 ggsave("presentation/ld-hist-median.png", height = 6, width = 8)
 
 
 # Show NATO
+atop.milsup$latent.depth.mean[atop.milsup$atopid == 3180]
 ggplot(atop.milsup, aes(x = latent.depth.mean)) + 
   geom_histogram(color = "black", fill = "grey") +
   theme_carly_presents() + labs(x = "Mean Latent Depth", y = "Treaties") +
-  geom_vline(xintercept = 0.37, linetype = "dashed", size = 1)  + 
+  geom_vline(xintercept = 0.33, linetype = "dashed", size = 1)  + 
   geom_text(label="NATO", x = 0.4, y = 60, hjust = 1.2, size = 5) # NATO
 ggsave("presentation/ld-hist-nato.png", height = 6, width = 8)
 
@@ -139,21 +141,19 @@ mcmc_areas(lambda.change.depth, pars = "impact.milex", prob = .9) +
   ggtitle("Predicted Impact on Military Spending") +
   theme_carly_presents() +
   theme(axis.text.y = element_blank())
-ggsave("presentation/pred-impact-depth.png", height = 6, width = 8)
 
-ggplot(impact.milex.comp, aes(x = value, fill = Var2)) +
-  geom_density(alpha = .5) +
-  scale_fill_brewer(palette="Dark2") +
-  labs(x = "Predicted Military Spending") +
-  theme_carly_presents() +
-  theme(axis.text.y = element_blank())
+
+impact.milex.nonmaj +
+  ggtitle("") +
+  theme_carly_presents() 
+ggsave("presentation/pred-impact-depth.png", height = 6, width = 8)
 
 
 ### Plot treaty depth against lambda
 
 # blank axis for illustrative purposes
 ggplot(lambda.df.min, aes(x = latent.depth.mean, y = lambda)) +
-  labs(x = "Latent Treaty Depth", y = "Alliance Part. Impact") +
+  labs(x = "Latent Treaty Depth", y = "Alliance\n Coefficient") +
   theme_carly_presents()
 ggsave("presentation/ld-lambda-blank.png", height = 6, width = 8)
 
@@ -162,9 +162,22 @@ ggplot(lambda.df.min, aes(x = latent.depth.mean, y = lambda)) +
   geom_hline(yintercept = 0) +
   geom_point() +
   geom_smooth(method = "lm") + 
-  labs(x = "Latent Treaty Depth", y = "Alliance Part. Impact") +
+  labs(x = "Latent Treaty Depth", y = "Alliance\n Coefficient") +
   theme_carly_presents()
 ggsave("presentation/ld-lambda-min.png", height = 6, width = 8)
+
+
+# Plot with substantive estimates from observed data
+ggplot(growth.pred.res, aes(x = latent.depth.mean, y = mean.pred)) +
+  geom_hline(yintercept = 0) +
+  stat_bin_hex(colour="white", na.rm=TRUE) +
+  scale_fill_gradientn(colours=c("#999999","#333333"), 
+                       name = "Frequency", 
+                       na.value=NA) +
+  labs(x = "Latent Treaty Depth",
+       y = "Predicted\n % Change") +
+  theme_carly_presents()
+ggsave("presentation/ld-growth-min.png", height = 6, width = 8)
 
 
 # Major powers 
@@ -211,18 +224,19 @@ ggplot(lambda.min.sum, aes(x = latent.depth.mean, y = lambda.mean, shape = facto
   theme_carly_presents() 
 ggsave("presentation/lambda-depth-us.png", height = 6, width = 8)
 
-
-# Only US Alliances
-lambda.min.sum %>%
+# Plot with substantive estimates from observed data:
+# US alliances only
+growth.pred.res %>% 
   filter(us.mem == 1) %>%
-  ggplot(aes(x = latent.depth.mean, y = lambda.mean)) +
-  geom_hline(yintercept = median(lambda.min.sum$lambda.mean)) +
-  geom_vline(xintercept = median(lambda.min.sum$latent.depth.mean)) +
-  geom_point(size = 4) +
-  labs(x = "Latent Depth", y = "Alliance Impact") +
+  ggplot(aes(x = latent.depth.mean, y = mean.pred)) +
+  geom_hline(yintercept = 0) +
+  stat_bin_hex(colour="white", na.rm=TRUE) +
+  scale_fill_gradientn(colours=c("#999999","#333333"), 
+                       name = "Frequency", 
+                       na.value=NA) +
+  labs(x = "Latent Treaty Depth",
+       y = "Predicted\n % Change") +
   theme_carly_presents()
-ggsave("presentation/lambda-depth-usonly.png", height = 6, width = 8)
-
 
 
 ## Impact of alliances
@@ -291,11 +305,6 @@ ggsave("presentation/bel-eu-imp.png", height = 6, width = 8)
 
 
 
-### Appendix Slides
-illus.plot 
-ggsave("presentation/illus-arg.png", height = 6, width = 9)
-
-
 # Plot depth and uncertainty against start year
 ls.styear + theme_carly_presents()
 ggsave("presentation/ld-start-year.png", height = 6, width = 8)
@@ -338,6 +347,7 @@ ggsave("presentation/var-slopes-depth.png", height = 6, width = 8)
 
 
 # All the coefficients from the varying slopes model
+color_scheme_set("blue")
 # non-major powers
 non.maj.vs <- mcmc_intervals(ml.model.sum$beta[, 1, ], 
                prob = .9) + 
@@ -378,6 +388,40 @@ b2.sim.plot.pres
 multiplot.ggplot(b1.sim.plot.pres, b2.sim.plot.pres)
 
 
+
+### models with alternative depth measures
+# Leeds and Anac Milinst
+
+# comparison
+ggplot(atop.milsup, aes(x = as.ordered(milinst), y = latent.depth.mean)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(alpha = .5) +
+  labs(x = "Military Institutionalization",
+       y = "Latent\n Depth") +
+  theme_carly_presents()
+ggsave("presentation/milinst-comp.png", height = 5, width = 8)
+
+# show lambda res
+ggplot(lambda.df.milinst, aes(x = as.factor(milinst), y = lambda)) +
+  geom_hline(yintercept = 0) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(alpha = .5) +
+  theme_carly_presents() +
+  labs(x = "Military Instituionalization", y = "Alliance\n Coefficient") 
+ggsave("presentation/milinst-lambda.png", height = 6, width = 8)
+
+# benson and clinton
+bc.score.comp + 
+  labs(y = "Rescaled Benson and\n Clinton",
+       x = "Rescaled BFA Measure") +
+  theme_carly_presents()
+ggsave("presentation/bc-score-comp.png", height = 6, width = 8)
+
+factors.comp + 
+  scale_color_brewer(palette="Dark2") +
+  labs(y = " ") + ggtitle("") +
+  theme_carly_presents()
+ggsave("presentation/bc-factor-comp.png", height = 6, width = 8)
 
 
 ### Single-level regression check 
