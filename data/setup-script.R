@@ -31,7 +31,8 @@ library(gridExtra)
 library(hexbin)
 library(stargazer)
 library(overlapping)
-
+library(ggcarly)
+library(ggridges)
 
 # Look at conflicts 
 conflict_scout()

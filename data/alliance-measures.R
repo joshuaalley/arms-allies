@@ -238,7 +238,7 @@ atop.milsup <- filter(atop, offense == 1 | defense == 1)
 atop.depth <- select(atop.milsup,
                      intcom, compag.mil,  
                      milaid, milcon, base, 
-                     organ1, contrib) 
+                     organ1, contrib, subord) 
 atop.depth <- as.data.frame(atop.depth)
 for(i in 1:ncol(atop.depth)){
   atop.depth[, i] <- as.ordered(atop.depth[, i])
@@ -249,11 +249,11 @@ for(i in 1:ncol(atop.depth)){
 # Use Murray BFA approach
 latent.depth <- bfa_mixed(~ intcom + compag.mil + 
                             milaid + milcon + base + 
-                            organ1 , 
+                            organ1 + contrib + subord, 
                           data = atop.depth, num.factor = 1,
                           restrict = list(c("intcom", 1, ">0")),
                           factor.scales = FALSE,
-                          keep.scores = TRUE, loading.prior = "gdp", 
+                          keep.scores = TRUE, loading.prior = "normal", 
                           px = TRUE, imh.iter = 1000, imh.burn = 1000,
                           nburn = 20000, nsim = 30000, thin = 30, print.status = 2000)
 
@@ -274,7 +274,7 @@ lines(density(rnorm(10000, 0, 1)))
 # Create a dataset of factors
 latent.factors <- cbind.data.frame(c("Integrated Command", "Companion Mil. Agreement", 
                                      "Military Aid", "Policy Coordination", "Bases",
-                                     "Formal IO"),
+                                     "Formal IO", "Specific Contrib", "Subordination"),
                                    latent.depth[["post.loadings.mean"]],
                                    sqrt(latent.depth[["post.loadings.var"]])
 )
@@ -299,10 +299,6 @@ post.score <- get_posterior_scores(latent.depth)
 atop.milsup$latent.depth.mean <- as.numeric(t(latent.depth$post.scores.mean))
 atop.milsup$latent.depth.var <- as.numeric(t(latent.depth$post.scores.var))
 atop.milsup$latent.depth.sd <- sqrt(atop.milsup$latent.depth.var)
-
-# Export full posteriors of latent depth to depth-sources project
-write.csv(post.score[1, 1:289, 1:1000], "../Dissertation/depth-sources/data/depth-post.csv",
-          row.names = FALSE)
 
 
 # Summarize latent depth: treaties with military support only
@@ -356,7 +352,7 @@ heatmap(as.matrix(commitment.depth[, 2:4]), scale="column")
 cor.test(atop.milsup$mean.kap.sc, atop.milsup$latent.depth.mean)
 cor.test(atop.milsup$low.kap.sc, atop.milsup$latent.depth.mean)
 
-ggplot(atop.milsup, aes(x = mean.kap.sc, y = latent.depth.mean)) + 
+ggplot(atop.milsup, aes(x = low.kap.sc, y = latent.depth.mean)) + 
   geom_point() + theme_classic()
 
 # t-test w/ FP disagreement: higher FP agreement w/ economic agreements 

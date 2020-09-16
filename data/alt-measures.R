@@ -199,7 +199,7 @@ ggplot(bc.latent.factors, aes(x = mean, y = var)) +
 
 # Plot the two loadings together
 factors.data <- rbind(latent.factors, bc.latent.factors)
-factors.data$Model <- c(rep("Alley", nrow(latent.factors)),
+factors.data$Model <- c(rep("BFA", nrow(latent.factors)),
                         rep("Benson and Clinton", nrow(bc.latent.factors)))
 
 factors.comp <- ggplot(factors.data, aes(x = mean, y = var, color = Model)) +

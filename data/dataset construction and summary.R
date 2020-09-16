@@ -13,9 +13,10 @@ alliance.char <- select(atop.milsup, atopid,
                     begyr, endyr,
                     uncond.milsup, scope.index, latent.depth.mean,
                     offense, defense, consul, neutral, nonagg, base,
-                    armred.rc, organ1, milaid.rc, us.mem, ussr.mem,
+                    armred.rc, organ1, milaid.rc, us.mem, ussr.mem,  
                     ecaid, trade.dum, milcor.index, econagg.dum, fp.conc.index, econagg.index, 
-                    num.mem, nonagg.only, wartime, asymm, asymm.cap, low.kap.sc, milinst)
+                    num.mem, nonagg.only, wartime, asymm, asymm.cap, non.maj.only,
+                    low.kap.sc, milinst)
 
 # Expand alliance characteristics data to make it alliance characteristic-year data
 # Don't care about truncation here, just need to know if alliance is operational
@@ -439,7 +440,7 @@ state.vars <- filter(state.vars, year <= 2007)
 
 # export data to test of public goods theory
 write.csv(state.vars, 
-          "C:/Users/jkalley14/Dropbox/Research/Dissertation/public-goods-test/data/state-vars.csv", 
+          "../Dissertation/depth-sources/data/state-vars.csv", 
           row.names = F)
 
 
@@ -504,19 +505,27 @@ alliance.year <- atop.cow.year %>%
   filter(atopid > 0) %>%
   group_by(atopid, year) %>%
   mutate(
-    cinc.share = cinc / max(cinc, na.rm = TRUE),
-    democ.weight = polity2 * cinc.share
-  )%>% 
+    most.cap = ifelse(cinc == max(cinc, na.rm = TRUE), 1, 0),
+    maxcap.democ = ifelse(most.cap == 1, polity2, 0),
+    cinc.share = cinc / sum(cinc, na.rm = TRUE),
+    democ.weight = polity2 * cinc.share,
+    democ = ifelse(polity2 > 5, 1, 0)
+      ) %>% 
   summarize(
     avg.democ = mean(polity2, na.rm = TRUE),
     max.democ = max(polity2, na.rm = TRUE),
     min.democ = min(polity2, na.rm = TRUE),
+    maxcap.democ.max = max(maxcap.democ, na.rm = TRUE),
+    maxcap.democ.min = min(maxcap.democ, na.rm = TRUE),
+    joint.democ = ifelse(min.democ > 5, 1, 0), 
+    democ.count = sum(democ, na.rm = TRUE),
     
     total.cap = sum(cinc, na.rm = TRUE),
     total.expend = sum(ln.milex, na.rm = TRUE),
     total.gdp = sum(gdp, na.rm = TRUE),
     num.mem = n(),
-    
+  
+    dem.prop = democ.count / num.mem,
     avg.democ.weight = mean(democ.weight, na.rm = TRUE),
     max.democ.weight = max(democ.weight, na.rm = TRUE),
     min.democ.weight = min(democ.weight, na.rm = TRUE),
@@ -538,11 +547,10 @@ alliance.year <- alliance.year %>%
                   )
 
 alliance.democ <- filter(alliance.year, begyr == year) %>% 
-                 select(c(atopid, avg.democ, max.democ, min.democ, 
+                 select(c(atopid, dem.prop, joint.democ, avg.democ, max.democ, min.democ, 
                           avg.democ.weight, max.democ.weight, min.democ.weight,
-                          max.threat, min.threat, mean.threat))
-write.csv(alliance.democ, "../Dissertation/depth-sources/data/alliance-democ.csv",
-          row.names = FALSE)
+                          max.threat, min.threat, mean.threat, 
+                          maxcap.democ.min, maxcap.democ.max))
 
 # merge with alliance characteristics data
 alliance.char <- left_join(alliance.char, alliance.democ, by = "atopid")
