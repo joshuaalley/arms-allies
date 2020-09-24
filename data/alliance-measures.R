@@ -247,7 +247,7 @@ for(i in 1:ncol(atop.depth)){
 
 
 # Use Murray BFA approach
-latent.depth <- bfa_mixed(~ intcom + compag.mil + 
+latent.depth <- bfa_copula(~ intcom + compag.mil + 
                             milaid + milcon + base + 
                             organ1 + contrib + subord, 
                           data = atop.depth, num.factor = 1,
