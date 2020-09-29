@@ -70,7 +70,7 @@ In addition to commitments of military support, deep treaties require defense co
 
 
 To explore the consequences of deep and shallow alliances, I examine a particular set of states: non-major powers. 
-I focus on non-major powers because these states clearly show a tradeoff between reassurance and allied military spending in deep alliances.\footnote{I explore the process connecting alliance participation and military spending for major powers in a separate paper.} 
+I focus on non-major powers because these states clearly show a tradeoff between reassurance and allied military spending in deep alliances.
 Participation in deep alliances allows non-major powers to reduce military spending due to greater treaty credibility and reduced allied leverage on defense spending. 
 Joining a shallow alliance often increases non-major power military spending because realizing foreign policy gains from alliance participation depends on defense spending when members fear abandonment.
 
@@ -427,8 +427,7 @@ The next section describes the research design in more detail.
 % two contributions: Develop latent depth measure and then put it into an ML model
 The research design involves two steps. 
 First, I develop a latent measure of treaty depth for alliances with military support. 
-Second, I employ that measure in a multilevel model to estimate how treaty depth modifies the impact of alliance participation on military spending. 
-I then estimate the multilevel model in a sample of non-major powers from 1816 to 2007. 
+Second, I employ that measure in a multilevel model to estimate how treaty depth modifies the impact of alliance participation on military spending and apply the multilevel model to a sample of non-major powers from 1816 to 2007. 
 The next section describes the measure of alliance treaty depth. 
 
 
@@ -436,51 +435,51 @@ The next section describes the measure of alliance treaty depth.
 
 
 % Intuituion behind latent measures: observed char reflects underlying concept
-I start by assuming that formal treaty commitments reflect alliance depth.\footnote{Formal treaty obligations may not be fully implemented, but formal depth is more likely to produce practical depth as states try to uphold the credibility of their commitments.}
-I then use observed alliance treaty characteristics to infer depth. 
+Formal treaty commitments reflect alliance depth,\footnote{Formal treaty obligations may not be fully implemented, but formal depth should produce practical depth as states try to uphold the credibility of their commitments.} so I use observed alliance treaty characteristics to infer depth. 
 This approach could produce ordinal or continuous measures of treaty depth.
-Before describing my measure, I discuss two related measures in previous work, one of which is ordinal, and the other of which is continuous. 
+Before describing my measure, I discuss two related measures in previous work.\footnote{Neither of these measures uses an additive index of the different sources of treaty depth. Adding together the presence of different sources of depth assumes that every source is equally important, which creates theoretical and empirical problems with making comparisons between alliances \citep[pg. 876]{BensonClinton2016}.} 
+Due to the limitations of these measures for my purposes in this paper, I create a new measure of treaty depth in offensive and defensive ATOP alliances using a semiparametric factor analysis. 
 
 
-In an ordinal index of treaty depth, researchers theoretically assign a range of depth values. 
-\citep{LeedsAnac2005} develop an ordinal measure by assigning alliances military institutionalization scores of zero, one or two based on the extent of investment in joint action required by the alliance treaty. 
-The resulting measure roughly captures treaty depth, but it understates variation in treaty depth. 
-This measurement strategy imposes equal weights on different depth sources and does not aggregate multiple sources of depth. 
+In an ordinal index of treaty depth, researchers theoretically assign depth values to alliances. 
+\citep{LeedsAnac2005} develop an ordinal measure of military institutionalization alliance that includes scores of zero, one or two based on the extent of investment in joint action required by the alliance treaty. 
+This measure is not an additive index of treaty depth, as it weights different alliance obligations.  
+The resulting measure roughly captures treaty depth, but it understates variation in this crucial concept. 
+Leed's and Anac's measurement strategy imposes equal weights on different sets of depth variables and does not aggregate multiple sources of depth. 
 For example, it treats an integrated military command and military bases as equivalent sources of depth, and does not aggregate the two promises if both are present. 
+Therefore an alliance with an integrated command and bases is just as institutionalized as an alliance with only an integrated command. 
 Given these limitations, I employ a more flexible measurement strategy.
- 
- 
-I use latent variable modeling to create a continuous measure of treaty depth that makes more nuanced distinctions between alliances.
-The measurement model uses correlations between observable alliance treaty content and unobserved latent depth to predict the depth of each treaty. 
-With this approach, theory identifies the relevant correlates of treaty depth, but the data drives how much depth each observed variable adds to the alliance. 
 
 
-% Justify use 
-Measurement models have a rich history in political science \citep{Clintonetal2004, TreierJackman2008, Fariss2014}.
 My particular measure builds on work by \citet{BensonClinton2016}, who use a latent variable model \citep{Quinn2004} to measure alliance scope, depth and capability.  
-I emulate Benson and Clinton's approach, but use a different concept, sample of alliances and estimator. 
-Conceptually, \citet{BensonClinton2016} define depth as the general costliness of the alliance, so they include measures of economic issue linkages and secrecy.
-My definition of depth emphasizes military cooperation only, and I treat issue linkages as a separate source of credibility. 
+Measurement models have a rich history in political science e.g. \citep{Clintonetal2004, Fariss2014}.
+Latent variable modeling uses data to estimate the weights of different observable variables in some unobserved concept. 
+In this case, the measurement model uses correlations between observable alliance treaty content and unobserved latent depth to predict the depth of each treaty. 
+With this approach, theory identifies the relevant correlates of treaty depth, but the data drives how much depth each observed variable adds to the alliance.
+
+
+Given the advantages of latent variable modeling, I emulate Benson and Clinton's approach, but use a different concept, sample of alliances and estimator. 
+Conceptually, \citet{BensonClinton2016} define depth as the general costliness of the alliance, so they include measures of economic issue linkages and secrecy in their observed data.
+My definition of depth emphasizes military cooperation between alliance members, and I view issue linkages as a separate source of credibility. 
 Given their broad definition of depth, Benson and Clinton also include neutrality pacts in their sample of alliances.
 I am only interested in offensive and defensive alliances, however.  
-As for the estimator, in some fully parametric latent variable models, the latent variables influence the form of the dependence structure and the marginal distributions of the latent value estimates. 
+As for the estimator, in Benson and Clinton's parametric latent variable models, the latent variables influence the form of the dependence structure and the marginal distributions of the latent value estimates. 
 These correlations can produce misleading inferences about latent scores, so I employ a semiparametric estimator.
+ 
 
-
-Due to the limits of ordinal measures and conceptual differences with Benson and Clinton's latent measure, existing measures of treaty depth do not fit my purposes in this paper.\footnote{See the appendix for a more detailed justification of this choice and evidence that \citet{LeedsAnac2005}'s measure of institutionalization produces similar inferences.}
-Therefore, I create a new measure of treaty depth in offensive and defensive ATOP alliances using a semiparametric factor analysis. 
-I use a Bayesian Gaussian Copula Factor Model \citep{Murrayetal2013} to measure alliance treaty depth. 
+I use a Bayesian Gaussian Copula Factor Model \citep{Murrayetal2013} to measure alliance treaty depth in offensive and defensive alliances. 
 Murray et al's model improves inferences from mixed factor analysis for continuous, ordinal, and binary observed data by relaxing distributional assumptions.
 Given discrete observed variables and non-Gaussian latent variables, the dependence among the latent variables and their marginal distributions are both influenced by the latent variables.
 This approach breaks the dependence between the latent factors and marginal distributions by using copulas to encode the dependence among the latent variables.\footnote{Copulas are a distribution function on $[0, 1]^p$ where each univariate marginal distribution is uniform on [0, 1].}
 Beyond the semiparametric aspect, this measurement model is a standard ordinal factor analysis.
 
 
-I estimated the measurement model using observed data from 289 alliances with offensive or defensive obligations in the alliance-level ATOP data \citep{Leedsetal2002}. 
+I estimated the measurement model using observed data from all 289 alliances with offensive or defensive obligations in the alliance-level ATOP data \citep{Leedsetal2002}. 
+This includes major power alliances, non-major power alliances, and asymmetric alliances. 
 I examine alliances with military support because prior studies of alliance participation and military spending focus on these treaties.
-Indicators of treaty depth include military aid, bases, international organization formation, integrated military command, defense policy coordination, subordination of forces in wartime, specific contribution requirements, and commitments to form companion military agreements.\footnote{These are the variables \citet{LeedsAnac2005} use, with the addition of a companion military agreements dummy.}
-The argument suggests there is a single factor underlying variation in all eight indicators, so I fit the model with one latent factor. 
-To estimate the model, I used Parameter expanded Gibbs sampling, the default generalized double Pareto (GDP) prior, 20,000 burn-in iterations of the MCMC chain, and 30,000 samples thinned every 30 observations to ensure convergence. 
+Indicators of treaty depth include military aid, bases, international organization formation, integrated military command, defense policy coordination, subordination of forces in wartime, specific contribution requirements, and commitments to form companion military agreements.
+The argument suggests there is a single factor underlying variation in all eight binary and ordinal indicators, so I fit the model with one latent factor. 
+To estimate the model, I used Parameter expanded Gibbs sampling, a normal prior on the factor loadings, 20,000 burn-in iterations of the MCMC chain, and 30,000 samples thinned every 30 observations to ensure convergence. 
 The estimates include posterior distributions for the factor loadings and the latent factor. 
 
 
@@ -491,7 +490,19 @@ The posterior mean captures the expected depth of an alliance treaty, conditiona
 There is substantial variation in alliance treaty depth, which has several sources. 
 The top panel in \autoref{fig:ld-summary} shows the factor loadings from the latent variable model, which are essentially correlations between the observed variables and latent factor. 
 Military policy coordination, integrated military command, and formal organizations are the three largest correlates of depth. 
-The other five factors have similar associations with latent treaty depth. 
+The other five factors have smaller but still strong and positive associations with latent depth. 
+
+
+% these are reasonable? 
+The factor loadings behind this model match the argument. 
+First, all the variables have strong positive factor loadings, as all require additional cooperation between alliance members. 
+Second, I define depth as the extent of cooperation a treaty requires, so it makes sense that an integrated command, policy coordination requirements, and formal organizations have the highest factor loadings. 
+All three of these variables are key sources of peacetime cooperation. 
+Third, thinking about depth in terms of coordination and cooperation may also explain why basing rights falls into the second tier of factor loadings, which is a perhaps the least intuitive estimate. 
+Though basing rights in an alliance treaty clearly increase treaty depth, they may not add as much depth as some other factors because basing mixes cooperative and hierarchical elements. 
+Providing basing rights and managing their daily interactions is cooperative, of course. 
+But bases can also operate as enclaves and focus more on power projection or control than alliance-building.  
+Relative to the top sources of treaty depth, basing rights are easier to separate from alliance cooperation. 
 
 
 The bottom panel of \autoref{fig:ld-summary} plots the posterior means and uncertainty of the depth estimates against the start year of the treaty. 
@@ -547,7 +558,7 @@ The 1865 Triple Alliance between Brazil, Argentina and Uruguay included extensiv
 An 1893 Franco-Russian alliance called for policy coordination and specified the number of troops each partner would provide in war. 
 France's 1935 alliance with Poland has a minimal depth score, as it did not include any cooperation besides defensive and consultation obligations. 
 As a result of ATOP's decision to omit the integrated command from formal treaty obligations, NATO scores above average on latent treaty depth, but it is not an overwhelmingly deep alliance in its formal treaty obligations.\footnote{Participation in the integrated command is not required by the NATO treaty, so ATOP does not count this as a treaty obligation. Basing rights are part of a 1951 additional protocol.}
-Because the Warsaw Pact obligates members to participate in a formal organization, coordinate defense policy, and participate in an integrated command, it has greater formal depth than NATO. 
+Because the Warsaw Pact obligates members to join a formal organization, coordinate defense policy, and participate in an integrated command, it has greater formal depth than NATO. 
 NATO has less depth because states like France and Greece could leave the integrated command structure without violating the alliance. 
 
 
@@ -566,14 +577,13 @@ I use a multilevel model to capture this relationship, and summarize the estimat
 
 
 % Best fit for theoretical process. Can compare alliances. 
-Because alliances and state-year observations are separate levels of analysis, I use a multilevel model to estimate the association between treaty depth and military spending.  
-Multilevel modeling bridges levels of analysis \citep{SteenbergenJones2002, GelmanHill2007}. 
+Because alliances and state-year observations are separate levels of analysis, I use a multilevel model to estimate the association between treaty depth and military spending and bridge the two data levels \citep{SteenbergenJones2002, GelmanHill2007}. 
 My model estimates heterogeneous effects of alliance participation on military spending as a function of alliance characteristics, in order to make inferences about how alliance characteristics like formal depth modify the impact of individual alliances on military spending. 
 To facilitate computation and interpretation, I fit the model using Bayesian estimation in STAN \citep{Carpenteretal2016}. 
 See the appendix for details of the weakly informative prior distributions and evidence the chains converged.
 
 
-This research design is more complicated than a panel data model like the estimator \citet{DigiuseppePoast2016} use,\footnote{See the appendix for results from several models with state-level indicators of alliance depth.} but the multilevel components add substantial value, especially by connecting the argument and research design.
+This research design is more complicated than a panel data model like the estimator \citet{DigiuseppePoast2016} use, but the multilevel components add substantial value, especially by connecting the argument and research design.
 I argue that treaty depth modifies the impact of alliance participation on growth in military spending. 
 Differences in how alliance participation impacts military spending are the outcome of interest.  
 The multilevel model explicitly compares the impact of participation in deep and shallow alliances by estimating how changes in treaty depth modify the consequences of alliance participation. 
@@ -591,7 +601,7 @@ Furthermore, multiple alliance characteristics affect the consequences of allian
 The multilevel model captures multiple sources of heterogeneity in how alliances impact military spending. 
 Treaty depth is correlated with other aspects of alliance membership and design, so this step is important.\footnote{For example, I show in another paper that democratic alliance membership is positively correlated with treaty depth.}
 In a panel estimator with state-level proxies for alliance characteristics, accounting for correlated alliance characteristics is difficult. 
-To acocout for several alliance characteristics, panel estimates must average different parts of a state's alliance portfolio or subset the data.
+To account for several alliance characteristics, panel estimates must average different parts of a state's alliance portfolio or subset the data.
 Averaging reduces theoretically interesting alliance-level variation, and analysis of multiple subsets risks generating spurious findings through multiple comparisons.  
 In a multilevel model, I can account for how multiple alliance characteristics change the consequences of alliance participation by including other variables besides treaty depth in an alliance level regression. 
 Therefore, my estimate of how treaty depth modifies the impact of alliance participation on military spending holds key alliance and state characteristics constant. 
@@ -629,7 +639,7 @@ $\textbf{Z}$ is a matrix of state participation in alliances.
 Columns correspond to each of the $a$ alliances in the data, and rows to state-year observations. 
 For this sample of non-major powers, $\textbf{Z}$ has 190 columns and 8,290 rows. 
 If a state is not in a particular alliance, the corresponding matrix cell in that alliance column is zero.
-If a state is part of the alliance in a given year, the matrix element contains the log of total allied military spending, which is normalized by year.\footnote{Normalization keeps the parameters on similar scales, which is important for modeling.} %I selected normalization by the annual maximum theoretically and corroborated this choice by comparing models fit with different ways of expressing allied capability. See the appendix for details.} 
+If a state is part of the alliance in a given year, the matrix element contains the log of total allied military spending, which is normalized by year.\footnote{Normalization keeps the parameters on similar scales, which is important for modeling. The normalization is based of all 289 ATOP alliances, not just alliances with non-major powers.} %I selected normalization by the annual maximum theoretically and corroborated this choice by comparing models fit with different ways of expressing allied capability. See the appendix for details.} 
 I use total allied spending to express the effect of alliance participation to match the theoretical emphasis on allied capability. 
 $\textbf{Z}$ encodes a quasi-spatial indicator of alliance participation for all $a$ alliances in the data. 
 States can be members of multiple treaties, so state-year observations are not neatly nested within alliances. 
@@ -798,6 +808,12 @@ As Hypothesis 1 predicts, participation in shallow alliances regularly increases
 Many alliances with shallow depth have little effect on military spending, however. 
 As treaty depth increases, alliance participation is more likely to reduce military spending growth.\footnote{Wartime alliances are the main exception to this trend.}
 Some of the deepest alliances have a negligible effect on military spending despite negative $\lambda$ values due to limited capability. 
+
+
+The appendix contains a series of robustness checks for this specification.
+First, I fit models with the three-level ordinal measure of \citep{LeedsAnac2005}, and find that their military institutionalization measure also reduces the impact of alliance participation on non-major power military spending. 
+I also fit a model that shifted the distribution of latent depth to include only zero and positive values. 
+Last, I include single level panel regressions that average or summarize states' alliance portfolio in several ways. 
 
 
 In summary, I find that treaty depth modifies the impact of alliance participation on military spending.  
