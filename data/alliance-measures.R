@@ -71,8 +71,10 @@ atop <- atop %>%
     
     milaid.dum = ifelse(milaid > 0, 1, 0), # dummy indicator of military aid
     uncond.milsup = ifelse(conditio == 0 & (offense == 1 | defense == 1), 1, 0), # unconditional military support
-    base.dum = ifelse(base > 0, 1, 0),
-    milcon.dum = ifelse(milcon > 0, 1, 0),
+    base.dum = ifelse(base > 1, 1, 0),
+    milcon.dum = ifelse(milcon < 3 &
+                          milcon > 0, 1, 0),
+    def.cor.dum = ifelse(milcon == 3, 1, 0),
     
     trade.dum = ifelse(ecaid == 3, 1, 0), # dummy indicator of economic aid
     compag.econ = ifelse(compag == 2, 1, 0),
@@ -237,7 +239,8 @@ atop <- left_join(atop, all.fpsim.first)
 atop.milsup <- filter(atop, offense == 1 | defense == 1) 
 atop.depth <- select(atop.milsup,
                      intcom, compag.mil,  
-                     milaid, milcon, base, 
+                     milaid, milcon,
+                     base.dum, 
                      organ1, contrib, subord) 
 atop.depth <- as.data.frame(atop.depth)
 for(i in 1:ncol(atop.depth)){
@@ -248,7 +251,8 @@ for(i in 1:ncol(atop.depth)){
 
 # Use Murray BFA approach
 latent.depth <- bfa_copula(~ intcom + compag.mil + 
-                            milaid + milcon + base + 
+                            milaid + milcon +
+                             base.dum + 
                             organ1 + contrib + subord, 
                           data = atop.depth, num.factor = 1,
                           restrict = list(c("intcom", 1, ">0")),
@@ -258,7 +262,7 @@ latent.depth <- bfa_copula(~ intcom + compag.mil +
                           nburn = 20000, nsim = 30000, thin = 30, print.status = 2000)
 
 # Little bit of diagnosis
-plot(get_coda(latent.depth))
+# plot(get_coda(latent.depth))
 
 # Diagnosis of convergence with coda
 lcap.sam <- get_coda(latent.depth, scores = TRUE)
@@ -273,7 +277,8 @@ lines(density(rnorm(10000, 0, 1)))
 # plot density of factors
 # Create a dataset of factors
 latent.factors <- cbind.data.frame(c("Integrated Command", "Companion Mil. Agreement", 
-                                     "Military Aid", "Policy Coordination", "Bases",
+                                     "Military Aid", "Policy Coordination", 
+                                     "Bases",
                                      "Formal IO", "Specific Contrib", "Subordination"),
                                    latent.depth[["post.loadings.mean"]],
                                    sqrt(latent.depth[["post.loadings.var"]])
