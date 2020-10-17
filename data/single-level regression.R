@@ -165,21 +165,6 @@ plot(rreg.min$residuals, rreg.min$w)
 
 
 
-# Exterme bounds analysis of this result 
-eba.full <- eba(data = state.char.full, y = "ihs.growth.milex", 
-               doubtful = c("deep.alliance", "econagg.pres", 
-                            "atwar", "civilwar.part", "polity", "gdp.growth", "ln.ally.expend",
-                            "lsthreat", "cold.war", "avg.num.mem", "avg.dem.prop"), 
-               focus = c("deep.alliance", "econagg.pres"),
-               k = 0:9, reg.fun = lm)
-print(eba.full)
-hist(eba.full, variables = c("deep.alliance", "econagg.pres"),
-     main = c(deep.alliance = "Deep Alliance Dummy", econagg.pres = "Presence of Economic Concessions"),
-     normal.show = TRUE
-)
-
-
-
 # Interact major power indicator with depth
 rreg.int <- rlm(ihs.growth.milex ~ avg.depth + as.factor(majpower) + avg.depth:as.factor(majpower) + 
                   econagg.pres + uncond.milsup.pres +
@@ -281,49 +266,6 @@ hist(eba.all, variables = c("deep.alliance", "econagg.pres"),
 
 
 
-# Robust regression: average relative contribution (includes major and non-major)
-m1.all.irel <- rlm(ihs.growth.milex ~ avg.depth + avg.treaty.contrib + avg.depth:avg.treaty.contrib + 
-                     econagg.pres + uncond.milsup.pres +
-                     atwar + civilwar.part + polity + gdp.growth + 
-                     lsthreat + cold.war + avg.num.mem + ln.ally.expend + avg.dem.prop,
-                   data = inter.data.rel, subset = (majpower == 0)
-)
-summary(m1.all.irel)
-
-# Calculate marginal effects
-margins(m1.all.irel)
-cplot(m1.all.irel, x = "avg.treaty.contrib", dx = "avg.depth", what = "effect",
-      main = "Average Marginal Effect of Treaty Depth")
-abline(h = 0)
-
-cplot(m1.all.irel, x = "avg.depth", dx = "avg.treaty.contrib", what = "effect",
-      main = "Average Marginal Effect of Treaty Contribution")
-abline(h = 0)
-
-
-# Interflex check
-bin.rel <- inter.binning(Y = "growth.milex", D = "avg.treaty.contrib", X = "avg.depth", 
-                         Z = c("econagg.pres", "atwar", "civilwar.part", "polity",
-                               "lsthreat", "cold.war", "avg.num.mem", 
-                               "ln.ally.expend", "avg.dem.prop", "gdp.growth"), 
-                         data = inter.data.rel,
-                         na.rm = TRUE
-)
-bin.rel
-
-# Kernel: 
-kernel.rel <- inter.kernel(Y = "growth.milex", D = "avg.treaty.contrib", X = "avg.depth", 
-                           Z = c("econagg.pres", "atwar", "civilwar.part", "polity",
-                                 "lsthreat", "cold.war", "avg.num.mem", 
-                                 "ln.ally.expend", "avg.dem.prop", "gdp.growth"), 
-                           data = inter.data.rel,
-                           na.rm = TRUE,
-                           nboots = 200, parallel = TRUE, cores = 4
-)
-kernel.rel
-
-
-
 # Plot key coefficients 
 coef.avg <- multiplot(rreg.min, m1.all, m1.reg.fe, 
             names = c("Non-Major Powers",
@@ -380,6 +322,6 @@ ggsave("appendix/single-level-mplot.png", results.singlelev, height = 6, width =
 
 
 # Remove all these regressions from environment
-rm(list = c("m1r.reg", "rreg.ex", "rreg.maj", "rreg.min", "m1.all", "m1.all.iabs", "m1.all.irel",
-            "m1.reg.fe", "m1.fgls", "reg.ex.gls", "reg.ex", "rreg.pre45", "rreg.post45", "rreg.int"))
+rm(list = c("rreg.maj", "rreg.min",
+            "m1.reg.fe", "rreg.int"))
 

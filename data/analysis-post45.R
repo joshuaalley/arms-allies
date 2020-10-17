@@ -3,31 +3,42 @@
 # Checks reliance on COW data with rebased spending data, mostly from SIPRI 
 
 
-
-# create a state index variable
-post45.min$state.id <- post45.min %>% group_indices(ccode)
-# Create a year index variable 
-post45.min$year.id <- post45.min %>% group_indices(year)
-
-
-post45.min <- as.data.frame(post45.min)
-stan.data.post45 <- list(N = nrow(post45.min), y = post45.min[, 3],
-                      state = post45.min$state.id, S = length(unique(post45.min$state.id)),
-                      year = post45.min$year.id, T = length(unique(post45.min$year.id)),
-                      A = ncol(post45.mem.min), L = ncol(post45.all.mat.min),
-                      Z = post45.mem.min, 
-                      X = post45.all.mat.min,
-                      W = post45.reg.mat, M = ncol(post45.reg.mat)
+# Define the data list 
+post45.comp <- as.data.frame(post45.comp)
+stan.data.post45 <- list(N = nrow(post45.comp), y = post45.comp[, 3],
+                         state = post45.comp$state.id, S = length(unique(post45.comp$state.id)),
+                         year = post45.comp$year.id, T = length(unique(post45.comp$year.id)),
+                         A_sm = ncol(post45.mem.sm), A_lg = ncol(post45.mem.lg),
+                         L = ncol(post45.all.mat.sm),
+                         Z_sm = post45.mem.sm, 
+                         Z_lg = post45.mem.lg,
+                         X_sm = post45.all.mat.sm,
+                         X_lg = post45.all.mat.lg,
+                         J = 2,
+                         W = post45.reg.mat, M = ncol(post45.reg.mat)
 )
 
-# Compile the model code: changes w/o the transformation
-# model.3 <- stan_model(file = "data/ml-model-noasinh.stan")
+
+
+# Compile the model code: changes w/ transformation
+# no varying slopes
+
+# quick variational bayes check
+vb.lmbcap.post45 <- vb(model.lmbcap.sim, 
+                    data = stan.data.post45, seed = 12,
+                    iter = 10000)
+rm(vb.lmbcap.post45)
 
 # Regular STAN
 system.time(
-  ml.model.post45 <- sampling(model.2, data = stan.data.post45, 
-                           iter = 2500, warmup = 1000, chains = 4, 
-                           control = list(max_treedepth = 15)
+  ml.model.post45 <- sampling(model.lmbcap.sim, data = stan.data.post45, 
+                           iter = 2000, warmup = 1000, chains = 4, 
+                           control = list(max_treedepth = 15),
+                           pars = c("beta_sm", "beta_lg",
+                                    "lambda_sm", "lambda_lg", "gamma",
+                                    "nu", "sigma", "sigma_state", "sigma_year",
+                                    "sigma_all_lg", "sigma_all_sm"),
+                           include = TRUE
   )
 )
 

@@ -59,6 +59,7 @@ sipri.data <- sipri.data %>%
   ) %>%
   group_by()
 
+# Loaded SIPRI, but missing Eastern Euro Cold War data is a problem
 
 # Load Digiuseppe and Poast's data
 dg.poast <- read.csv("data/dg-poast2016.csv")
@@ -79,10 +80,11 @@ colnames(state.char) <- c("ccode", "year",
                             "totalcap.atop.ally", "totalmilex.atop.ally", "ls.threatenv")
 
 summary(state.char$year)
+# cut missing data- using Nordhaus et al data (through 2001)
 state.char <- filter(state.char, year <= 2001)
 
 # Add a Cold War variable 
-state.char$cold.war <- ifelse(state.char$year >= 1949 & state.char$year <= 1990, 1, 0)
+state.char$cold.war <- ifelse(state.char$year >= 1949 & state.char$year <= 1991, 1, 0)
 
 # Add some proxies for entrapment risk
 entrapment.vars <- read.csv("data/conflict-risk-data.csv")
@@ -159,7 +161,6 @@ full.data$atopid[is.na(full.data$atopid)] <- 0
 # States with no alliances in a year are given an alliance ID of zero, grouping them all together
 
 
-
 # The full dataset can be used to create an alliance characteristics-year dataset
 alliance.year.1950 <- full.data %>%
   filter(atopid > 0) %>%
@@ -169,14 +170,16 @@ alliance.year.1950 <- full.data %>%
     total.cap = sum(CINC, na.rm = TRUE),
     total.expend = sum(ln.milex, na.rm = TRUE),
     total.expend.sipri = sum(ln.sipri.milex, na.rm = TRUE), 
-    num.mem = n()
+    num.mem = n(),
+    .groups = "keep"
   )
 
-alliance.year.1950 <- alliance.year.1950[order(alliance.year.1950$atopid, alliance.year.1950$year), ]
+alliance.year.1950 <- alliance.year.1950[order(alliance.year.1950$atopid, 
+                                               alliance.year.1950$year), ]
 
 # With na.rm = TRUE, all missing values have a sum of zero.
 # I filter out all of these alliance-year observations
-alliance.year.1950 <- filter(alliance.year, total.expend != 0)
+alliance.year.1950 <- filter(alliance.year.1950, total.expend != 0)
 
 ggplot(alliance.year.1950, aes(x = total.expend)) + geom_density()
 
@@ -200,7 +203,8 @@ full.data <- group_by(full.data, atopid, ccode, year)
 
 state.mem.post45 <- full.data %>% 
                 select(atopid, ccode, year, ln.milex) %>% 
-                  left_join(alliance.year.1950) %>%
+                  left_join(select(alliance.year.1950, 
+                                   atopid, year, total.expend)) %>%
               mutate(ally.spend = total.expend - ln.milex) %>%
               distinct(atopid, ccode, year, .keep_all = TRUE) %>%
                  select(ccode, atopid, year, ally.spend)
@@ -220,7 +224,11 @@ state.mem.post45 <- state.mem.post45 %>%
 
 
 # filter to ensure alliances match: 
-state.mem.post45 <- filter(state.mem.post45, atopid %in% alliance.char$atopid)
+state.mem.post45 <- filter(state.mem.post45, 
+                           atopid %in% alliance.char$atopid) %>%
+                    select(ccode, year, # avoids duplicates by ally.spend
+                           atopid, ally.spend.norm)
+  
 
 
 # This dataframe  contains the spending for the alliances states are a member of in a given year
@@ -245,7 +253,8 @@ post45.state <-  left_join(post45.state, state.mem.post45)
 post45.state[, 11: ncol(post45.state)][is.na(post45.state[, 11: ncol(post45.state)])] <- 0
 
 # Remove observations with missing values
-post45.comp <- post45.state[complete.cases(post45.state), ]
+post45.comp <- post45.state[complete.cases(post45.state), ] %>%
+  filter(ccode != 950)
 
 
 # Rescale the state-level regressors
@@ -253,26 +262,35 @@ post45.comp[, 4:9] <- lapply(post45.comp[, 4:9],
                                  function(x) rescale(x, binary.inputs = "0/1"))
 
 
-# Create separate datasets for major and non-major powers
-# major powers
-post45.maj <- filter(post45.comp, majpower == 1)
+# Create separate small and large membership matrices
 # Create a matrix of major power membership in alliances (Z in STAN model)
-post45.mem.maj <- as.matrix(post45.maj[, 12: ncol(post45.maj)])
-# remove alliances with no major power participation
-post45.mem.maj <- post45.mem.maj[, colSums(post45.mem.maj != 0) > 0]
+post45.mem.mat <- as.matrix(post45.comp[, 12: ncol(post45.comp)])
 
-# non-major powers
-post45.min <- filter(post45.comp, majpower == 0)
-# Create a matrix of npn-major membership in alliances (Z in STAN model)
-post45.mem.min <- as.matrix(post45.min[, 12: ncol(post45.min)])
-# remove alliances with no non-major power participation
-post45.mem.min <- post45.mem.min[, colSums(post45.mem.min != 0) > 0]
+# Get cap-year matrices for this data to split large and small matrices
+cap.year.post45 <- left_join(select(post45.comp, ccode, year),
+                          cap.year)
+cap.year.post45 <- cap.year.post45[, colnames(cap.year.post45) %in% 
+                                     colnames(post45.mem.mat)]
+
+# get state-mem marix for large
+post45.mem.lg = post45.mem.mat*cap.year.post45
+# state-mem matrix for small states
+sum(cap.year.post45) # total large 1s
+cap.year.post45.sm <- mutate_all(cap.year.post45,  ~ifelse(. == 1, 0, 1))
+sum(cap.year.post45.sm) # total small 1s (includes 0s) 
+nrow(cap.year.post45.sm)*ncol(cap.year.post45.sm) - 
+  sum(cap.year.post45) # difference equal to above: checks w/ missing
+post45.mem.sm = state.mem.full*cap.year.post45.sm
+
+# remove 0 cols (no small members or missing data on allies)
+post45.mem.sm <-  post45.mem.sm[, colSums(post45.mem.sm) != 0]
+post45.mem.lg <-  post45.mem.lg[, colSums(post45.mem.lg) != 0]
 
 
 
 ### transform data into matrices for STAN: focus on non-major powers 
 # State-level characeristics
-post45.reg.mat <- as.matrix(post45.min[, 4:9])
+post45.reg.mat <- as.matrix(post45.comp[, 4:8])
 
 # check correlations among state-level regressors
 cor(post45.reg.mat, method = "pearson")
@@ -281,18 +299,48 @@ cor(post45.reg.mat, method = "pearson")
 # Create the matrix of alliance-level variables for major and non-major power groups
 # non-major powers
 # Make the alliance characteristics data match the membership matrix
-post45.all.min <- filter(alliance.char, atopid %in% colnames(post45.mem.min)) %>%
-  select(atopid, latent.depth.mean, uncond.milsup, econagg.dum, fp.conc.index, num.mem, low.kap.sc, 
-         avg.democ, wartime, asymm, us.mem, ussr.mem) %>%
+post45.all.sm <- filter(alliance.char, atopid %in% colnames(post45.mem.sm)) %>%
+  select(atopid, latent.depth.mean, uncond.milsup, econagg.dum, 
+         fp.conc.index, num.mem, low.kap.sc, 
+         avg.democ, wartime, asymm, mean.threat, 
+         us.mem, ussr.mem) %>%
   na.omit
 
-post45.mem.min <- post45.mem.min[, colnames(post45.mem.min) %in% post45.all.min$atopid]
+post45.mem.sm <- post45.mem.sm[, colnames(post45.mem.sm) %in% 
+                                   post45.all.sm$atopid]
 
-post45.all.min <- select(post45.all.min, -c(atopid))
+post45.all.sm <- select(post45.all.sm, -c(atopid))
 
 # define non-major power alliance matrix
-cons <- rep(1, nrow(post45.all.min))
-post45.all.mat.min <- cbind(cons, post45.all.min)
-post45.all.mat.min <- as.matrix(post45.all.mat.min)
+cons <- rep(1, nrow(post45.all.sm))
+post45.all.mat.sm <- as.matrix(cbind(cons, post45.all.sm))
 
+
+# large state alliance regression
+# Make the alliance characteristics data match the membership matrix
+post45.all.lg <- filter(alliance.char, atopid %in% colnames(post45.mem.lg)) %>%
+  select(atopid, latent.depth.mean, uncond.milsup, econagg.dum, 
+         fp.conc.index, num.mem, low.kap.sc, 
+         avg.democ, wartime, asymm, mean.threat,
+         us.mem, ussr.mem) %>%
+  na.omit
+
+post45.mem.lg <- post45.mem.lg[, colnames(post45.mem.lg) %in% 
+                                 post45.all.lg$atopid]
+
+post45.all.lg <- select(post45.all.lg, -c(atopid))
+
+# define non-major power alliance matrix
+cons <- rep(1, nrow(post45.all.lg))
+post45.all.mat.lg <- as.matrix(cbind(cons, post45.all.lg))
+
+
+# create a state index variable
+post45.comp$state.id <- post45.comp %>% 
+                      group_by(ccode) %>%
+                      group_indices(ccode)
+# Create a year index variable 
+post45.comp$year.id <- post45.comp %>% 
+                       group_by(year) %>%
+                       group_indices(year)
 

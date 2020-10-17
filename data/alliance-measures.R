@@ -255,14 +255,14 @@ latent.depth <- bfa_copula(~ intcom + compag.mil +
                              base.dum + 
                             organ1 + contrib + subord, 
                           data = atop.depth, num.factor = 1,
-                          restrict = list(c("intcom", 1, ">0")),
+                          restrict = list(c("base.dum", 1, ">0")),
                           factor.scales = FALSE,
                           keep.scores = TRUE, loading.prior = "normal", 
                           px = TRUE, imh.iter = 1000, imh.burn = 1000,
                           nburn = 20000, nsim = 30000, thin = 30, print.status = 2000)
 
 # Little bit of diagnosis
-# plot(get_coda(latent.depth))
+plot(get_coda(latent.depth))
 
 # Diagnosis of convergence with coda
 lcap.sam <- get_coda(latent.depth, scores = TRUE)

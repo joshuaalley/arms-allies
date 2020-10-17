@@ -1,7 +1,6 @@
 // Joshua Alley
 // Texas A&M University
 // Multiple Membership Multilevel Model 
-// encoded as a mixture with known proportions
 
 
 data {

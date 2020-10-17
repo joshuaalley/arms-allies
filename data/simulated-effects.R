@@ -4,8 +4,8 @@
 
 
 ### simulate impact of increasing treaty depth 
-all.data.ldepth <- numeric(ncol(alliance.reg.mat.min))
-names(all.data.ldepth) <- c(colnames(alliance.reg.mat.min))
+all.data.ldepth <- numeric(ncol(alliance.reg.mat.sm))
+names(all.data.ldepth) <- c(colnames(alliance.reg.mat.sm))
 
 # Set values of variables for simulation 
 all.data.ldepth["cons"] <- 1 
@@ -19,18 +19,16 @@ all.data.ldepth["avg.democ"] <- median(reg.all.data.min$avg.democ)
 all.data.ldepth["wartime"] <- 0
 all.data.ldepth["asymm"] <- 0
 all.data.ldepth["mean.threat"] <- median(reg.all.data.min$mean.threat)
-all.data.ldepth["us.mem"] <- 0
-all.data.ldepth["ussr.mem"] <- 0
 
-# vector with cpa present
+# vector with high depth
 all.data.hdepth <- all.data.ldepth
 all.data.hdepth["latent.depth.mean"] <- 1.5 # key IV: 3rd quartile
 
 
 # Simulate the effect 
-lambda.ldepth <- coef.min$beta%*%all.data.ldepth
+lambda.ldepth <- coef$beta_sm%*%all.data.ldepth
 hist(lambda.ldepth)
-lambda.hdepth <- coef.min$beta%*%all.data.hdepth
+lambda.hdepth <- coef$beta_sm%*%all.data.hdepth
 hist(lambda.hdepth)
 
 # Look at differnce
@@ -90,7 +88,7 @@ rm(list = c("impact.milex.low", "impact.milex.high"))
 
 
 # Plot the results
-impact.milex.nonmaj <- ggplot(impact.milex.comp, aes(y = Depth, x = mean)) +
+impact.milex.sm <- ggplot(impact.milex.comp, aes(y = Depth, x = mean)) +
                         geom_vline(xintercept = 0) +
                         geom_point(size = 4) +
                         geom_errorbarh(aes(xmin = lower, xmax = upper, height = .1), size = 2) +
@@ -98,29 +96,29 @@ impact.milex.nonmaj <- ggplot(impact.milex.comp, aes(y = Depth, x = mean)) +
                          y = "Treaty Depth") +
                         ggtitle("Substantive Effect of Increasing Treaty Depth") +
                          theme_bw()
-impact.milex.nonmaj
+impact.milex.sm
 
 # Graphical summary of minor power alliance-level regression 
 color_scheme_set("darkgray")
-nonmaj.intervals <- mcmc_intervals(coef.min$beta, 
+sm.intervals <- mcmc_intervals(coef$beta_sm, 
                prob = .9) +
                 labs(x = "Effect on Allied Capability Coefficient") +
                 ggtitle("Alliance Regression Coefficients") +
                 theme_bw()
-nonmaj.intervals
+sm.intervals
 
 
 # Examine different plot layouts 
 # Alliance-level regression
-grid.arrange(nonmaj.intervals, impact.milex.nonmaj,
+grid.arrange(sm.intervals, impact.milex.sm,
              nrow = 2)
 
-results.allreg <- arrangeGrob(nonmaj.intervals, impact.milex.nonmaj,
+results.allreg <- arrangeGrob(sm.intervals, impact.milex.sm,
                               nrow = 2)
 ggsave("figures/results-allreg.png", results.allreg, height = 6, width = 8) #save file
 
 # Alliance-specific parameters and predictions
-grid.arrange(lambda.depth.min, growth.depth.plot,
+grid.arrange(lambda.depth.sm, growth.depth.sm,
              nrow = 2)
 results.allpred <- arrangeGrob(lambda.depth.min, growth.depth.plot,
                               nrow = 2)

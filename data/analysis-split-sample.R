@@ -7,6 +7,66 @@
 # the scripts alliance-measures.R and dataset construction and summary.R 
 
 
+# Create a major power index variable 
+reg.state.comp$mp.id <- reg.state.comp %>% 
+  group_by(majpower) %>% group_indices()
+
+# Create separate datasets for major and non-major powers
+# major powers
+reg.state.comp.maj <- filter(reg.state.comp, majpower == 1)
+# Create a matrix of major power membership in alliances (Z in STAN model)
+state.mem.maj <- as.matrix(reg.state.comp.maj[, 12: ncol(reg.state.comp.maj)])
+# remove alliances with no major power participation
+state.mem.maj <- state.mem.maj[, colSums(state.mem.maj != 0) > 0]
+
+# non-major powers
+reg.state.comp.min <- filter(reg.state.comp, majpower == 0)
+# Create a matrix of npn-major membership in alliances (Z in STAN model)
+state.mem.min <- as.matrix(reg.state.comp.min[, 12: ncol(reg.state.comp.min)])
+# remove alliances with no non-major power participation or missing capability data
+state.mem.min <- state.mem.min[, colSums(state.mem.min != 0) > 0]
+
+
+# Create the matrix of alliance-level variables for major and non-major power groups
+# non-major powers
+# Make the alliance characteristics data match the membership matrix
+reg.all.data.min <- filter(alliance.char, atopid %in% colnames(state.mem.min)) %>%
+  select(atopid, latent.depth.mean, uncond.milsup, econagg.dum, fp.conc.index, num.mem, low.kap.sc, 
+         avg.democ, wartime, asymm, mean.threat, us.mem, ussr.mem) %>%
+  na.omit
+
+state.mem.min <- state.mem.min[, colnames(state.mem.min) %in% reg.all.data.min$atopid]
+
+reg.all.data.min <- select(reg.all.data.min, -c(atopid))
+
+# define non-major power alliance matrix
+cons <- rep(1, nrow(reg.all.data.min))
+alliance.reg.mat.min <- cbind(cons, reg.all.data.min)
+alliance.reg.mat.min <- as.matrix(alliance.reg.mat.min)
+
+
+# Make the alliance characteristics data match the membership matrix
+reg.all.data.maj <- filter(alliance.char, atopid %in% colnames(state.mem.maj)) %>%
+  select(atopid, latent.depth.mean, uncond.milsup, econagg.dum, fp.conc.index, num.mem, low.kap.sc, 
+         avg.democ, wartime, asymm, mean.threat, us.mem, ussr.mem) %>%
+  na.omit
+
+state.mem.maj <- state.mem.maj[, colnames(state.mem.maj) %in% reg.all.data.maj$atopid]
+
+reg.all.data.maj <- select(reg.all.data.maj, -c(atopid))
+
+# define major power alliance matrix 
+cons <- rep(1, nrow(reg.all.data.maj))
+alliance.reg.mat.maj <- cbind(cons, reg.all.data.maj)
+alliance.reg.mat.maj <- as.matrix(alliance.reg.mat.maj)
+
+# Create Appropriate id variables in each subsample
+maj.id <- filter(reg.state.comp, majpower == 1) %>% select(state.id, year.id)
+min.id <- filter(reg.state.comp, majpower == 0) %>% select(state.id, year.id)
+
+
+
+
 # Compile the model code: 
 model.2 <- stan_model(file = "data/ml-model-split.stan")
 
@@ -391,7 +451,6 @@ lambda.depth.us <- ggplot(lambda.min.sum, aes(x = latent.depth.mean, y = lambda.
   ggtitle("Depth and Impact of US Alliances") +
   theme_classic()
 lambda.depth.us
-ggsave("figures/lambda-depth-us.png", height = 6, width = 8)
 
 
 # highlight alliances with Soviet membership
@@ -492,16 +551,6 @@ growth.depth.plot <- ggplot(growth.pred.res, aes(x = latent.depth.mean, y = mean
                        theme_bw() 
 growth.depth.plot
 
-# take largest absolute value for each alliance
-ggplot(growth.pred.res.max, aes(x = latent.depth.mean, y = mean.pred)) +
-  geom_hline(yintercept = 0) +
-  geom_point() + 
-  geom_smooth(method = "lm") + 
-  labs(x = "Latent Depth", y = "Largest Mean Predicted Military Spending Growth from Alliance") +
-  theme_classic() 
-cor.test(growth.pred.res.max$latent.depth.mean, growth.pred.res.max$mean.pred) # expected negative correlation
-
-
 
 # Major powers 
 dim(state.mem.maj)
@@ -518,3 +567,8 @@ agg.all.maj <- cbind(reg.state.comp.maj$ccode,
 # Save model and take it out of the workspace (1.7 GB w/ likelihood and PPC)
 saveRDS(ml.model.min, "data/ml-model-min-znorm.rds")
 rm(ml.model.min)
+
+
+# Save model and take it out of the workspace (1.7 GB w/ likelihood and PPC)
+saveRDS(ml.model.maj, "data/ml-model-maj.rds")
+rm(ml.model.maj)

@@ -13,10 +13,11 @@ alliance.char <- select(atop.milsup, atopid,
                     begyr, endyr,
                     uncond.milsup, scope.index, latent.depth.mean,
                     offense, defense, consul, neutral, nonagg, base,
-                    armred.rc, organ1, milaid.rc, us.mem, ussr.mem,  
-                    ecaid, trade.dum, milcor.index, econagg.dum, fp.conc.index, econagg.index, 
-                    num.mem, nonagg.only, wartime, asymm, asymm.cap, non.maj.only,
-                    low.kap.sc, milinst)
+                    armred.rc, organ1, milaid.rc, us.mem, ussr.mem, mp.count, 
+                    ecaid, trade.dum, milcor.index, 
+                    econagg.dum, fp.conc.index, econagg.index, 
+                    nonagg.only, wartime, asymm, asymm.cap, non.maj.only,
+                    low.kap.sc, milinst, super.mem)
 
 # Expand alliance characteristics data to make it alliance characteristic-year data
 # Don't care about truncation here, just need to know if alliance is operational
@@ -79,11 +80,16 @@ atop.mem.expand <- atop.mem.expand %>%
 atop.mem.expand$year = atop.mem.expand$yrent + atop.mem.expand$count
 
 
+# atop.mem.final removes phased year entry and exit
+atop.mem.final <- ungroup(atop.mem.expand) %>%
+             select(atopid, ccode, year) %>% 
+             distinct(.keep_all = TRUE)
 
 
 
 # Merge the two alliance data types using ATOP ID and year
-alliance.comp <- left_join(atop.mem.expand, alliance.char.expand, by = c("atopid", "year"))
+alliance.comp <- left_join(atop.mem.final, alliance.char.expand, 
+                           by = c("atopid", "year"))
 alliance.comp <- unique(alliance.comp)
  
 
@@ -182,8 +188,9 @@ interstate.war <- interstate.war %>%
       group_by(ccode, year) %>%
       summarize(
         atwar = max(atwar),
-        initiator = max(initiator) # whether state initiated any conflict in a given year
-      )
+        initiator = max(initiator), # whether state initiated any conflict in a given year
+      .groups = "keep"
+        )
 
 
 # Merge conflict data with other state variables
@@ -324,7 +331,8 @@ gml.mid.part <- gml.mid.part %>%
                 group_by(ccode, year) %>%
                 summarize(
                 mid.pres = 1,
-                disputes = n()
+                disputes = n(),
+                .groups = "keep"
                  )
 
 # merge with state variables 
@@ -385,10 +393,6 @@ ggplot(state.vars, aes(x = asinh(growth.milex))) + geom_histogram(bins = 45)
 # Concerns, given noise in COW measure: 
 # cases where growth is -1 or close. Implies elimination of military budget
 # cases with infinite change- 0 to some spending: newly indep states and fluctuations in budget
-# Other large positive growth rates are less concerning- part of wartime increases
-# Place both these types of observations in their respective state TS to check them
-# Measurement error model would be essential. SIPRI 1949-2016 from Zielinski et al would be less noisy
-
 # But SIPRI is missing most Warsaw Pact members in the Cold War, which is a problem.
 
 
@@ -420,9 +424,10 @@ td.rivalry.annual <- td.rivalry %>%
   summarize(
     total.rivals = sum(rivalry, na.rm = TRUE),
     rival.milex = sum(ln.milex, na.rm = TRUE),
-    avg.rival.milex = rival.milex / total.rivals
+    avg.rival.milex = rival.milex / total.rivals,
+    .groups = "keep"
   ) %>%
-  group_by() 
+  ungroup() 
 colnames(td.rivalry.annual)[1] <- "ccode"
 
 
@@ -445,10 +450,6 @@ write.csv(state.vars,
 
 
 
-## TODO(JOSH)
-# Get a state variables dataset with key stuff, and run multiple imputation
-
-
 
 
 
@@ -466,7 +467,8 @@ atop.cow.year <- atop.cow.year %>%
   select(atopid, ccode, year, everything())
 
 # Ensure no duplicate observations are present after merging- not an issue here
-atop.cow.year <- unique(atop.cow.year)
+atop.cow.year <- distinct(atop.cow.year,
+                          .keep_all = TRUE)
 
 # Sort data 
 atop.cow.year[order(atop.cow.year$ccode, atop.cow.year$year, atop.cow.year$atopid), ]
@@ -477,7 +479,7 @@ atop.cow.year[order(atop.cow.year$ccode, atop.cow.year$year, atop.cow.year$atopi
 atop.cow.year$atopid[is.na(atop.cow.year$atopid)] <- 0
 
 # If no ATOP alliance, fill all other alliance characteristic variables with a zero.
-atop.cow.year[4:38][is.na(atop.cow.year[, 4:38] & atop.cow.year$atopid == 0)] <- 0
+atop.cow.year[4:36][is.na(atop.cow.year[, 4:36] & atop.cow.year$atopid == 0)] <- 0
 
 # export data to test of public goods theory
 write.csv(atop.cow.year, 
@@ -501,16 +503,65 @@ state.mem <- spread(state.mem, key = atopid, value = member, fill = 0)
 
 
 # The full dataset can be used to create an alliance characteristics-year dataset
-alliance.year <- atop.cow.year %>%
-  filter(atopid > 0) %>%
+alliance.state.year <- atop.cow.year %>%
   group_by(atopid, year) %>%
   mutate(
-    most.cap = ifelse(cinc == max(cinc, na.rm = TRUE), 1, 0),
-    maxcap.democ = ifelse(most.cap == 1, polity2, 0),
+    num.mem = n(),
     cinc.share = cinc / sum(cinc, na.rm = TRUE),
+    cinc.dist = cinc.share - (1 / num.mem), # gap between share and even dist of cap
+    # dummy indicator of most capable state
+    most.cap = ifelse(cinc == max(cinc, na.rm = TRUE) | # most capability OR
+                    (mp.count > 1 & mp.count == num.mem & majpower == 1) | # major power alliances OR
+                    (cinc.share >= .4 & num.mem == 2) |  # symmetric non-maj OR
+                    (majpower == 1 & asymm.cap == 1 & # Other major powers in asymm ML
+                      super.mem == 0 & num.mem > 2), # w/o superpowers, however
+                      1, 0),
+    
+    maxcap.democ = ifelse(most.cap == 1, polity2, 0),
     democ.weight = polity2 * cinc.share,
-    democ = ifelse(polity2 > 5, 1, 0)
-      ) %>% 
+    democ = ifelse(polity2 > 5, 1, 0),
+    contrib.cinc.per = cinc.share*100
+      ) 
+
+# summarize CINC shares
+summary(alliance.state.year$cinc.share, 
+        subset = alliance.state.year$atopid != 0)
+filter(alliance.state.year, atopid != 0) %>%
+   ggplot(aes(x = cinc.share)) + geom_histogram()
+
+
+# scatterplot by size
+filter(alliance.state.year, atopid != 0 & num.mem > 0) %>%
+ggplot(aes(x = num.mem, y = cinc.share)) +  
+  stat_bin_hex(colour="white", na.rm=TRUE) + # bin points- overplotted
+  scale_fill_gradientn(colours=c("#999999","#333333"), 
+                       name = "Frequency", 
+                       na.value=NA)
+# multilateral
+filter(alliance.state.year, atopid != 0 &
+         num.mem > 2) %>%
+  ggplot(aes(x = cinc.share)) + geom_histogram()
+# bilateral
+filter(alliance.state.year, atopid != 0 &
+         num.mem == 2) %>%
+  ggplot(aes(x = cinc.share)) + geom_histogram()
+
+
+# create an indicator of state capability for model where 
+# lambdas are grouped by most capable state
+cap.year <- alliance.state.year %>%
+             group_by(ccode, atopid) %>%
+            select(ccode, year, atopid, most.cap) 
+
+cap.year <- distinct(cap.year, atopid, ccode, year, .keep_all = TRUE)
+
+# This matrix has a binary indicator of which alliances states are a member of in a given year
+cap.year <- spread(cap.year, key = atopid, value = most.cap, fill = 0)
+
+
+# alliance-year data- summarize state characteristics
+alliance.year <- alliance.state.year %>% 
+  filter(atopid > 0) %>%
   summarize(
     avg.democ = mean(polity2, na.rm = TRUE),
     max.democ = max(polity2, na.rm = TRUE),
@@ -521,7 +572,8 @@ alliance.year <- atop.cow.year %>%
     democ.count = sum(democ, na.rm = TRUE),
     
     total.cap = sum(cinc, na.rm = TRUE),
-    total.expend = sum(ln.milex, na.rm = TRUE),
+    total.expend = sum(milex, na.rm = TRUE),
+    total.ln.expend = sum(ln.milex, na.rm = TRUE),
     total.gdp = sum(gdp, na.rm = TRUE),
     num.mem = n(),
   
@@ -532,7 +584,8 @@ alliance.year <- atop.cow.year %>%
     
     max.threat = max(lsthreat, na.rm = TRUE),
     min.threat = min(lsthreat, na.rm = TRUE),
-    mean.threat = mean(lsthreat, na.rm = TRUE)
+    mean.threat = mean(lsthreat, na.rm = TRUE),
+    .groups = "keep"
   )
 
 alliance.year[order(alliance.year$atopid, alliance.year$year),] 
@@ -549,7 +602,7 @@ alliance.year <- alliance.year %>%
 alliance.democ <- filter(alliance.year, begyr == year) %>% 
                  select(c(atopid, dem.prop, joint.democ, avg.democ, max.democ, min.democ, 
                           avg.democ.weight, max.democ.weight, min.democ.weight,
-                          max.threat, min.threat, mean.threat, 
+                          max.threat, min.threat, mean.threat, num.mem, 
                           maxcap.democ.min, maxcap.democ.max))
 
 # merge with alliance characteristics data
@@ -595,19 +648,20 @@ atop.cow.year$ln.milex[is.na(atop.cow.year$ln.milex)] <- 0
 # Create the dataset
 state.mem.cap <- atop.cow.year %>% 
   filter(defense == 1 | offense == 1) %>%
-  select(atopid, ccode, year, cinc, ln.milex, gdp) %>% 
+  select(atopid, ccode, year, cinc, milex, ln.milex, gdp) %>% 
   left_join(alliance.year) %>%
-  mutate(alliance.contrib = ln.milex / total.expend,
-         ally.spend = total.expend - ln.milex,
+  mutate(milex.contrib = milex / total.expend,
+         milex.contrib.ln = ln.milex / total.ln.expend,
+         ally.spend = total.ln.expend - ln.milex,
          ally.cap = total.cap - cinc,
          contrib.gdp = gdp / total.gdp) %>%
   distinct(atopid, ccode, year, .keep_all = TRUE) %>%
-  select(ccode, atopid, year, ally.spend, ally.cap, avg.democ, alliance.contrib, contrib.gdp) 
+  select(ccode, atopid, year, ally.spend, ally.cap, avg.democ, milex.contrib, contrib.gdp) 
 
 # Replace missing values with zero if atopid = 0 (no alliance)
 state.mem.cap$ally.spend[is.na(state.mem.cap$ally.spend) & state.mem.cap$atopid == 0] <- 0
 state.mem.cap$ally.cap[is.na(state.mem.cap$ally.cap) & state.mem.cap$atopid == 0] <- 0
-state.mem.cap$alliance.contrib[is.na(state.mem.cap$alliance.contrib) & state.mem.cap$atopid == 0] <- 0
+state.mem.cap$milex.contrib[is.na(state.mem.cap$milex.contrib) & state.mem.cap$atopid == 0] <- 0
 state.mem.cap$avg.democ[is.na(state.mem.cap$avg.democ) & state.mem.cap$atopid == 0] <- 0
 state.mem.cap$contrib.gdp[is.na(state.mem.cap$contrib.gdp) & state.mem.cap$atopid == 0] <- 0
 
@@ -673,20 +727,20 @@ summary(state.mem.cap$ally.spend.norm)
 ggplot(state.mem.cap, aes(x = ally.spend.norm)) + geom_histogram()
 
 
+# This dataframe contains the normalized capability (by year) for the alliances states are a member of in a given year
+state.mem.spread.norm <- select(state.mem.cap, atopid, ccode, year, ally.spend.norm) %>%
+  spread(key = atopid, value = ally.spend.norm, fill = 0)
+
+
 # Create several alternative membership matrices
 # Create another membership matrix with contribution to the alliance
-state.mem.contrib <- select(state.mem.cap, atopid, ccode, year, alliance.contrib) %>%
+state.mem.contrib <- select(state.mem.cap, atopid, ccode, year, milex.contrib) %>%
                   spread(key = atopid, 
-                            value = alliance.contrib, fill = 0)
+                            value = milex.contrib, fill = 0)
 
 # This dataframe contains the total cinc scores for the alliances states are a member of in a given year
 state.mem.spread.cinc <- select(state.mem.cap, atopid, ccode, year, ally.cap) %>%
   spread(key = atopid, value = ally.cap, fill = 0)
-
-
-# This dataframe contains the normalized capability (by year) for the alliances states are a member of in a given year
-state.mem.spread.norm <- select(state.mem.cap, atopid, ccode, year, ally.spend.norm) %>%
-  spread(key = atopid, value = ally.spend.norm, fill = 0)
 
 # This dataframe contains rescaled allied spending for the alliances states are a member of in a given year
 state.mem.spread.rescale <- select(state.mem.cap, atopid, ccode, year, ally.spend.rescale) %>%
@@ -705,43 +759,25 @@ state.mem.spread.rescale2sd <- select(state.mem.cap, atopid, ccode, year, ally.s
 
 
 # Define a state-year level dataset with no missing observations
-reg.state.data <- state.vars %>%
+reg.state.comp <- state.vars %>%
   select(ccode, year, growth.milex, 
          atwar, civilwar.part, rival.milex, gdp.growth, polity2, 
-         cold.war, disputes, majpower) 
+         cold.war, disputes, majpower) %>%
+       drop_na() %>%
+     filter(year >= 1919)
 
 # Add state membership in alliances to this data
-reg.state.data <-  left_join(reg.state.data, state.mem.spread.norm) 
+reg.state.comp <-  left_join(reg.state.comp, state.mem.spread.norm) 
 
 
 # Replace missing alliance values with zero 
-reg.state.data[, 12: ncol(reg.state.data)][is.na(reg.state.data[, 12: ncol(reg.state.data)])] <- 0
-
-# Remove observations with missing values
-reg.state.comp <- reg.state.data[complete.cases(reg.state.data), ]
+reg.state.comp[, 12: ncol(reg.state.comp)][
+  is.na(reg.state.comp[, 12: ncol(reg.state.comp)])] <- 0
 
 
 # Rescale the state-level regressors
 reg.state.comp[, 4:10] <- lapply(reg.state.comp[, 4:10], 
                                  function(x) rescale(x, binary.inputs = "0/1"))
-
-
-# Create separate datasets for major and non-major powers
-# major powers
-reg.state.comp.maj <- filter(reg.state.comp, majpower == 1)
-# Create a matrix of major power membership in alliances (Z in STAN model)
-state.mem.maj <- as.matrix(reg.state.comp.maj[, 12: ncol(reg.state.comp.maj)])
-# remove alliances with no major power participation
-state.mem.maj <- state.mem.maj[, colSums(state.mem.maj != 0) > 0]
-
-# non-major powers
-reg.state.comp.min <- filter(reg.state.comp, majpower == 0)
-# Create a matrix of npn-major membership in alliances (Z in STAN model)
-state.mem.min <- as.matrix(reg.state.comp.min[, 12: ncol(reg.state.comp.min)])
-# remove alliances with no non-major power participation or missing capability data
-state.mem.min <- state.mem.min[, colSums(state.mem.min != 0) > 0]
-
-
 
 
 # Check the range and distribution of the DV
@@ -752,15 +788,11 @@ ggplot(reg.state.comp, aes(growth.milex)) + geom_density()
 
 
 # create a state index variable
-reg.state.comp$state.id <- reg.state.comp %>% group_indices(ccode)
+reg.state.comp$state.id <- reg.state.comp %>% 
+  group_by(ccode) %>% group_indices()
 # Create a year index variable 
-reg.state.comp$year.id <- reg.state.comp %>% group_indices(year)
-# Create a major power index variable 
-reg.state.comp$mp.id <- reg.state.comp %>% group_indices(majpower)
-
-
-
-
+reg.state.comp$year.id <- reg.state.comp%>% 
+  group_by(year) %>% group_indices()
 
 
 ### transform data into matrices for STAN
@@ -773,50 +805,9 @@ cor(reg.state.mat, method = "pearson")
 
 # General set of alliance-level regressors
 reg.all.data <- select(alliance.char, atopid, latent.depth.mean, uncond.milsup, econagg.dum, fp.conc.index, num.mem, low.kap.sc, 
-         avg.democ, wartime, asymm, mean.threat, us.mem, ussr.mem)
-
-
-# Create the matrix of alliance-level variables for major and non-major power groups
-# non-major powers
-# Make the alliance characteristics data match the membership matrix
-reg.all.data.min <- filter(alliance.char, atopid %in% colnames(state.mem.min)) %>%
-  select(atopid, latent.depth.mean, uncond.milsup, econagg.dum, fp.conc.index, num.mem, low.kap.sc, 
-         avg.democ, wartime, asymm, mean.threat, us.mem, ussr.mem) %>%
-  na.omit
-
-state.mem.min <- state.mem.min[, colnames(state.mem.min) %in% reg.all.data.min$atopid]
-
-reg.all.data.min <- select(reg.all.data.min, -c(atopid))
-
-# define non-major power alliance matrix
-cons <- rep(1, nrow(reg.all.data.min))
-alliance.reg.mat.min <- cbind(cons, reg.all.data.min)
-alliance.reg.mat.min <- as.matrix(alliance.reg.mat.min)
-
-
-# Make the alliance characteristics data match the membership matrix
-reg.all.data.maj <- filter(alliance.char, atopid %in% colnames(state.mem.maj)) %>%
-  select(atopid, latent.depth.mean, uncond.milsup, econagg.dum, fp.conc.index, num.mem, low.kap.sc, 
-         avg.democ, wartime, asymm, mean.threat, us.mem, ussr.mem) %>%
-  na.omit
-
-state.mem.maj <- state.mem.maj[, colnames(state.mem.maj) %in% reg.all.data.maj$atopid]
-
-reg.all.data.maj <- select(reg.all.data.maj, -c(atopid))
-
-# define major power alliance matrix 
-cons <- rep(1, nrow(reg.all.data.maj))
-alliance.reg.mat.maj <- cbind(cons, reg.all.data.maj)
-alliance.reg.mat.maj <- as.matrix(alliance.reg.mat.maj)
-
-
-
-# Create Appropriate id variables in each subsample
-maj.id <- filter(reg.state.comp, majpower == 1) %>% select(state.id, year.id)
-min.id <- filter(reg.state.comp, majpower == 0) %>% select(state.id, year.id)
-
+         avg.democ, wartime, asymm, mean.threat)
 
 
 # quick tables of summary statistics
-stargazer(reg.all.data.min, summary = TRUE)
-stargazer(alliance.reg.mat.min, summary = TRUE)
+stargazer(reg.all.data, summary = TRUE)
+stargazer(reg.state.mat, summary = TRUE)
