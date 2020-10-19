@@ -721,10 +721,75 @@ state.mem.cap <- state.mem.cap %>%
                    mutate(
                      ally.spend.norm = ally.spend / max(ally.spend, na.rm = TRUE)
                    ) %>%
-                  group_by()
+                  ungroup()
                   
 summary(state.mem.cap$ally.spend.norm)
 ggplot(state.mem.cap, aes(x = ally.spend.norm)) + geom_histogram()
+
+
+# change in alliance capability over time within alliances
+state.mem.cap %>%
+   filter(atopid != 0) %>%
+    group_by(atopid, year) %>%
+  mutate(
+    change.ally.norm = ally.spend.norm - lag(ally.spend.norm)
+  ) %>%
+  filter(change.ally.norm != 0) %>%
+  ggplot(aes(x = change.ally.norm)) + geom_histogram() 
+
+
+# summarize the distribution  
+state.mem.cap %>%
+  filter(atopid != 0) %>%
+  group_by(atopid, year) %>%
+  mutate(
+    change.ally.norm = ally.spend.norm - lag(ally.spend.norm)
+  ) %>%
+  filter(change.ally.norm != 0) %>%
+    ungroup() %>%
+  summarize(
+   sum.change.norm = summary(change.ally.norm)
+  )
+
+# calculate variation in alliance-cap
+# over years
+state.cap.var <- select(state.mem.cap, ccode, atopid, year, 
+                            ally.spend.norm) %>%
+                       group_by(ccode, atopid) %>% # over time var within alliance
+                       summarize(
+                         sd.cap = sd(ally.spend.norm, na.rm = TRUE),
+                         .groups = "keep"
+                       ) %>%
+                     filter(sd.cap > 0) # remove state-alliances w/ no cap
+summary(state.cap.var$sd.cap)
+ggplot(state.cap.var, aes(x = sd.cap)) + geom_histogram()
+
+
+# alliance cap var
+# within alliances across states and time 
+alliance.cap.var <- select(state.mem.cap, ccode, atopid, year, 
+                        ally.spend.norm) %>%
+  group_by(atopid) %>%
+  summarize(
+    sd.cap = sd(ally.spend.norm, na.rm = TRUE),
+    .groups = "keep"
+  ) %>%
+  filter(sd.cap > 0)
+summary(alliance.cap.var$sd.cap)
+ggplot(alliance.cap.var, aes(x = sd.cap)) + geom_histogram()
+
+# by year
+# within alliances across states by year
+year.cap.var <- select(state.mem.cap, ccode, atopid, year, 
+                           ally.spend.norm) %>%
+  group_by(atopid, year) %>%
+  summarize(
+    sd.cap = sd(ally.spend.norm, na.rm = TRUE),
+    .groups = "keep"
+  ) %>%
+  filter(sd.cap > 0)
+summary(year.cap.var$sd.cap)
+ggplot(year.cap.var, aes(x = sd.cap)) + geom_histogram()
 
 
 # This dataframe contains the normalized capability (by year) for the alliances states are a member of in a given year
