@@ -36,6 +36,8 @@ state.mem.sm = state.mem.full*cap.year.sm
 state.mem.sm <-  state.mem.sm[, colSums(state.mem.sm) != 0]
 state.mem.lg <-  state.mem.lg[, colSums(state.mem.lg) != 0]
 
+
+
 # finalize alliance-level matrix
 reg.all.data.sm <- filter(reg.all.data, atopid %in% colnames(state.mem.sm))
 reg.all.data.sm <- select(reg.all.data.sm, -c(atopid))
@@ -67,7 +69,7 @@ stan.data.lmbcap <- list(N = nrow(reg.state.comp), y = reg.state.comp[, 3],
 )
 
 
-# model with separate beta distributions
+# model with separate beta distributions in alliance-level reg
 model.lmbcap.sim <- stan_model(file = "data/ml-model-lmbcap-sim.stan")
 
 
@@ -77,27 +79,39 @@ vb.lmbcap.sim <- vb(model.lmbcap.sim,
                          iter = 10000)
 # launch_shinystan(vb.lmbcap.sim) # check output here if interested
 # Remove vb model 
-rm(list = c("vb.lmbcap.sim"))
+rm(vb.lmbcap.sim)
 
-# Regular STAN: takes 12 hours
+# Regular STAN: takes ~12 hours
 system.time(
   ml.model.lmbcap.sim <- sampling(model.lmbcap.sim, 
-                              data = stan.data.lmbcap, 
-                              iter = 2000, warmup = 1000, chains = 4,
-                              control=list(max_treedepth = 15),
-                              pars = c("beta_sm", "beta_lg", # reduces memory load
-                                       "lambda_sm", "lambda_lg", "gamma",
-                                       "nu", "sigma", "sigma_state", "sigma_year",
-                                       "sigma_all_lg", "sigma_all_sm"),
-                              include = TRUE
+                          data = stan.data.lmbcap,
+                          iter = 2000, warmup = 1000, chains = 4,
+                          control=list(max_treedepth = 15),
+                          pars = c("beta_sm", "beta_lg", "lambda_sm", "lambda_lg", "gamma",
+                            "alpha", "sigma", "sigma_state", "sigma_year",
+                            "sigma_all_lg", "sigma_all_sm",
+                            "y_rep"),
+                          include = TRUE
   )
 )
 # save output 
 saveRDS(ml.model.lmbcap.sim, "data/est-lmbcap-sim.rds")
+# load CSV output if needed 
+# lmbcap.sim.csv <- dir(path = "data/", 
+#                       pattern = "est-lmbcap-sim_[1-4].csv",
+#                       full.names = TRUE)
+# ml.model.lmbcap.sim <- read_stan_csv(lmbcap.sim.csv)
 
 
 # diagnose model
 check_hmc_diagnostics(ml.model.lmbcap.sim)
+
+
+# posterior predictive check
+yrep <- extract(ml.model.lmbcap.sim, pars = "y_rep")
+yrep <- yrep$y_rep[1:100, ] # take first 100
+ppc_dens_overlay(asinh(stan.data.lmbcap$y), yrep)
+
 
 
 # trace plot for appendix
@@ -130,11 +144,11 @@ rownames(beta.summary.sm) <- c("Constant", "Depth", "Uncond Milsup", "Econ. Link
                                 "Number Members", "FP Similarity",
                                 "Democratic Membership", 
                                 "Wartime", "Asymmetric Ob.", "Mean Threat",
-                               "US Mem", "USSR Mem",
                                 "sigma Alliances")
 
 print(beta.summary.sm)
 xtable(beta.summary.sm, digits = 3) # for appendix
+
 
 
 
@@ -185,16 +199,15 @@ mean(coef$beta_lg[, 8] < 0) # Dem. Membership: large
 mean(coef$beta_sm[, 8] < 0) # Dem. Membership: small
 mean(coef$beta_lg[, 9] < 0) # wartime: large
 mean(coef$beta_sm[, 9] > 0) # wartime: small
-mean(coef$beta_lg[, 10] < 0) # asymmetric: large
-mean(coef$beta_sm[, 10] > 0) # asymmetric: small
+mean(coef$beta_lg[, 10] < 0) # asymmetric ob: large
+mean(coef$beta_sm[, 10] > 0) # asymmetric ob: small
 mean(coef$beta_lg[, 11] > 0) # threat: large
 mean(coef$beta_sm[, 11] > 0) # threat: small
 
 
-
 # compare trends in lambdas across treaty depth in major and minor
 
-# Start with major powers
+# Start with large powers
 lambda.means.lg <- get_posterior_mean(ml.model.lmbcap.sim, pars = "lambda_lg")
 lambda.df.lg <- tibble(lambda = lambda.means.lg[, 5]) %>%  # add lambdas to df
   bind_cols(filter(alliance.char, atopid %in% colnames(state.mem.lg)))
@@ -290,7 +303,6 @@ growth.pred.res <- left_join(growth.pred.res, alliance.char)
 assign(paste0("growth.pred.res.", size), 
        growth.pred.res,
        envir = .GlobalEnv) # place in global environment
-head(growth.pred.res.sm)
 
 }
 

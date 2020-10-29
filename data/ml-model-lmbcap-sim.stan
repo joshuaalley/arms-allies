@@ -7,7 +7,7 @@ data {
   int<lower = 1> N; // number of observations 
   int<lower = 1> S; // number of states
   int<lower = 1> T; // number of years
-  int<lower = 1> J; // number of state capability groups
+  int<lower = 1> J; // number of state capability groups: (for var slopes)
   int<lower = 1> A_sm; // number of alliances: non-major
   int<lower = 1> A_lg; // number of alliances: non-major
   int<lower = 1> L; // number of alliance-level variables
@@ -64,22 +64,24 @@ parameters {
   vector[L] beta_lg; // effect of alliance char on treaty participation- large
   real<lower = 0> sigma_all_sm; // variance hyperparameter of the alliances: non-major
   real<lower = 0> sigma_all_lg; // variance hyperparameter of the alliances: major
-  real<lower = 3> nu; // degrees of freedom in t-distribution of outcome- one per group
+//  real<lower = 3> nu; // degrees of freedom in t-distribution of outcome- one per group
 
 }
 
 transformed parameters {
-  vector[N] y_hat; // fitted values 
   vector[S] alpha_state; // state intercepts
   vector[T] alpha_year; // year intercepts
   vector[A_sm] theta_sm; // mean of alliance parameters: non-major
   vector[A_sm] lambda_sm; // alliance parameters: non-major
   vector[A_lg] theta_lg; // mean of alliance parameters: major
   vector[A_lg] lambda_lg; // alliance parameters: major
+  vector[N] y_hat; // fitted values 
 
- alpha_state = 0 + sigma_state * alpha_state_std; // non-centered parameterization, where alpha_state ~ N(0, sigma_state)
+ alpha_state = 0 + sigma_state * alpha_state_std; // non-centered parameterization, 
+                                    // where alpha_state ~ N(0, sigma_state)
 
- alpha_year = 0 + sigma_year * alpha_year_std; // non-centered parameterization, where alpha_state ~ N(0, sigma_state)
+ alpha_year = 0 + sigma_year * alpha_year_std; // non-centered parameterization, 
+                                    // where alpha_state ~ N(0, sigma_state)
   
   theta_sm = X_sm * beta_sm;
   theta_lg = X_lg * beta_lg;
@@ -89,14 +91,13 @@ transformed parameters {
    lambda_sm[i] = theta_sm[i] + sigma_all_sm * lambda_std_sm[i];
  for (i in 1:A_lg)
    lambda_lg[i] = theta_lg[i] + sigma_all_lg * lambda_std_lg[i];
-
-// Linear prediction of the state-year spending. csr_matrix_times vector will
-// produce a vector as a it multiplies the membership matrix by the vector of alliance characteristics lambda
-    y_hat = alpha + alpha_state[state] + alpha_year[year] + 
+   
+  y_hat = alpha + alpha_state[state] + alpha_year[year] + 
     W * gamma + // state-level factors 
   csr_matrix_times_vector(N, A_sm, w_sm, v_sm, u_sm, lambda_sm) + // small membership matrix
   csr_matrix_times_vector(N, A_lg, w_lg, v_lg, u_lg, lambda_lg);
-    
+
+
 }
 
 model {
@@ -115,8 +116,15 @@ model {
   beta_sm ~  normal(0, .5);
   beta_lg ~  normal(0, .5);
   gamma ~ normal(0, .5); 
-  nu ~ gamma(2, 0.1); // Prior for degrees of freedom in t-dist
+//  nu ~ gamma(2, 0.1); // Prior for degrees of freedom in t-dist
   
-  asinh(y) ~ student_t(nu, y_hat, sigma);
+  asinh(y) ~ double_exponential(y_hat, sigma);
   target += -asinh(y);
 }
+
+generated quantities{
+  // Posterior predictive check 
+  real y_rep[N] = double_exponential_rng(y_hat, sigma);
+  
+}
+

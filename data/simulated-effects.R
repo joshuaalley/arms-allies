@@ -103,7 +103,7 @@ color_scheme_set("darkgray")
 sm.intervals <- mcmc_intervals(coef$beta_sm, 
                prob = .9) +
                 labs(x = "Effect on Allied Capability Coefficient") +
-                ggtitle("Alliance Regression Coefficients") +
+                ggtitle("Small State Alliance Regression Coefficients") +
                 theme_bw()
 sm.intervals
 
@@ -120,14 +120,26 @@ ggsave("figures/results-allreg.png", results.allreg, height = 6, width = 8) #sav
 # Alliance-specific parameters and predictions
 grid.arrange(lambda.depth.sm, growth.depth.sm,
              nrow = 2)
-results.allpred <- arrangeGrob(lambda.depth.min, growth.depth.plot,
+results.allpred <- arrangeGrob(lambda.depth.sm, growth.depth.sm,
                               nrow = 2)
 ggsave("figures/results-allpred.png", results.allpred, height = 8, width = 8) #save file
 
 
-grid.arrange(nonmaj.intervals, impact.milex.nonmaj, growth.depth.plot,
+grid.arrange(sm.intervals, impact.milex.sm, growth.depth.sm,
   layout_matrix = rbind(c(1, 2),
                         c(3, 3))
 )
 
+# large states: 
+lg.intervals <- mcmc_intervals(coef$beta_lg, 
+               prob = .9) +
+              labs(x = "Effect on Impact of Total Allied Military Spending") +
+              ggtitle("Large State Alliance Regression Coefficients")
+lg.intervals 
 
+
+# all in one
+grid.arrange(lg.intervals, lambda.depth.lg, growth.depth.lg,
+             layout_matrix = rbind(c(1, 2),
+                                   c(3, 3))
+)
