@@ -85,7 +85,7 @@ rm(vb.lmbcap.sim)
 system.time(
   ml.model.lmbcap.sim <- sampling(model.lmbcap.sim, 
                           data = stan.data.lmbcap,
-                          iter = 2000, warmup = 1000, chains = 4,
+                          iter = 2400, warmup = 1200, chains = 4,
                           control=list(max_treedepth = 15),
                           pars = c("beta_sm", "beta_lg", "lambda_sm", "lambda_lg", "gamma",
                             "alpha", "sigma", "sigma_state", "sigma_year",
@@ -96,11 +96,6 @@ system.time(
 )
 # save output 
 saveRDS(ml.model.lmbcap.sim, "data/est-lmbcap-sim.rds")
-# load CSV output if needed 
-# lmbcap.sim.csv <- dir(path = "data/", 
-#                       pattern = "est-lmbcap-sim_[1-4].csv",
-#                       full.names = TRUE)
-# ml.model.lmbcap.sim <- read_stan_csv(lmbcap.sim.csv)
 
 
 # diagnose model
@@ -111,7 +106,9 @@ check_hmc_diagnostics(ml.model.lmbcap.sim)
 yrep <- extract(ml.model.lmbcap.sim, pars = "y_rep")
 yrep <- yrep$y_rep[1:100, ] # take first 100
 ppc_dens_overlay(asinh(stan.data.lmbcap$y), yrep)
-
+# some crazy outlier predictions w/ , but best fit overall
+ppc_dens_overlay(asinh(stan.data.lmbcap$y), yrep) +
+  xlim(-2, 2)
 
 
 # trace plot for appendix
@@ -240,8 +237,6 @@ lambda.depth.sm <- ggplot(lambda.df.sm, aes(x = latent.depth.mean, y = lambda)) 
   labs(x = "Latent Treaty Depth", y = "Allied Capability Coefficent") +
   ggtitle("Small Alliance Members")
 lambda.depth.sm
-#ggsave("figures/lambda-ld-small.png", height = 6, width = 8)
-
 
 # Compare all in one plot
 grid.arrange(lambda.depth.lg, lambda.depth.sm,

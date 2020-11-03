@@ -621,12 +621,12 @@ Because alliance participation has different consequences for large and small al
 
 The state-year-level regression starts with a distribution for the outcome:
 \begin{equation}
-y \sim laplace(\mu, \sigma)
+y \sim Cauchy(\mu, \sigma)
 \end{equation}
  
 
 $y$ is the dependent variable--- percentage changes in military spending. 
-I model the outcome using a double-exponential distribution address heavy tails.
+I model the outcome using a Cauchy distribution address heavy tails.
 $\sigma$ is analogous to the error term in a frequentist regression as it captures unexplained variation.  
 $\mu$, the mean outcome, depends on several factors.
 \begin{equation}
@@ -756,7 +756,7 @@ Having described the measure of treaty depth, multilevel model, and covariates, 
 This section summarizes inferences from the multilevel model. 
 I find support for all three hypotheses. 
 Because shallow alliances tend to increase military spending and deep alliances often decrease spending, treaty depth and the effect of alliance participation on junior alliance member military spending are negatively correlated. 
-Results are based on 2,000 samples from four chains, with 1,000 warm-up iterations. 
+Results are based on 2,400 samples from four chains, with 1,200 warm-up iterations. 
 To facilitate model fitting, I employed a non-centered parameterization of the varying intercepts and a sparse matrix representation of \textbf{Z}. 
 Standard convergence diagnostics indicate the chains adequately explored the posterior.\footnote{See the appendix for details on convergence and other robustness checks.} 
 
@@ -770,7 +770,7 @@ Instead, I use the 90\% credible intervals of the parameters and calculate the n
 \autoref{fig:results-allreg} summarizes the coefficient estimates from the alliance-level regression and the simulated substantive effect of greater treaty depth. 
 The preponderance of evidence matches Hypothesis 3, as shown in the top panel of \autoref{fig:results-allreg}.
 There is a 96\% chance treaty depth is negatively correlated with the impact of alliance participation on percent changes in military spending for small alliance members.
-As treaty depth rises, the effect of alliance participation on military spending falls. 
+As treaty depth rises, the effect of alliance participation on small state military spending falls. 
 
 
 \begin{figure}[htbp]
@@ -783,10 +783,10 @@ As treaty depth rises, the effect of alliance participation on military spending
 
 I plot the substantive effect of the alliance-level depth coefficient in the bottom panel of \autoref{fig:results-allreg}. 
 I assess this substantive effect by simulating the effect of changing treaty depth from the minimum value of -0.8 to 1.5. 
-Holding other alliance covariates at their modes or medians, this increase in depth reduces a hypothetical alliance parameter $\lambda$ by .08 in expectation, which then lowers military spending growth.
+Holding other alliance covariates at their modes or medians, this increase in depth reduces a hypothetical alliance parameter $\lambda$ by .1 in expectation, which then lowers military spending growth.
 The results of the the simulation are summarized by 90\% intervals for predicted growth in military spending in the hypothetical shallow alliance, predicted spending growth in the hypothetical deep alliance, and the difference between those two scenarios.
-Assuming the hypothetical alliance has median capability, the difference in spending growth between the shallow and deep treaty has a mean of -.03.
-The 90\% credible interval of this predicted fall in military spending due to increasing treaty depth ranges from -0.056 to -0.001.
+Assuming the hypothetical alliance has median capability, the difference in spending growth between the shallow and deep treaty has a mean of -.04.
+The 90\% credible interval of this predicted fall in military spending due to increasing treaty depth ranges from -0.07 to -0.002.
 Although the range of estimated substantive effects includes small values, there is a perceptible difference between junior alliance member military spending growth in deep and shallow alliances, all else equal.  
 
 
@@ -806,16 +806,16 @@ If this is true, there will also be a negative trend in the expected value of $\
 
 The preponderance of evidence in \autoref{fig:results-allpred} matches the predictions of Hypotheses 1 and 2.
 The top panel of \autoref{fig:results-allpred} plots the expected value of the alliance participation parameter across the range of treaty depth. 
-As expected, shallow treaties often have positive $\lambda$ values,\footnote{All the negative $\lambda$ estimates in alliances with minimal depth are treaties between the Soviet Union and Eastern European states during the Cold War.} which corresponds to Hypothesis 1. 
+As expected, shallow treaties have positive $\lambda$ parameters on average, which corresponds to Hypothesis 1. 
 Most of the deepest treaties have a negative $\lambda$, which matches Hypothesis 2. 
-Because other treaty characteristics and chance also influence the $\lambda$ estimates, there is substantial variation in how alliance participation impacts junior member power military spending. 
+Because other treaty characteristics and chance also influence the $\lambda$ estimates, there is substantial variation in how alliance participation impacts junior alliance member military spending. 
 
 
 I then used the $\lambda$ posteriors to estimate the impact of alliance participation on state-year military spending growth. 
-To assess the annual impact of alliances on their members, I multiplied the alliance membership matrix $\textbf{Z}$ by the $\lambda$ parameters to generate 9,124 non-zero state-alliance-year predictions.\footnote{These estimates hold all state-level variables constant.} 
+To assess the annual impact of alliances on their members, I multiplied the alliance membership matrix $\textbf{Z}$ by the $\lambda$ parameters to generate 7,936 non-zero state-alliance-year predictions.\footnote{These estimates hold all state-level variables constant.} 
 The scatter plot in the bottom panel of \autoref{fig:results-allpred} shows the distribution of predicted changes in military spending from alliance participation.
 Each point marks the mean estimated effect of an alliance on growth in military spending for that state-year.
-To avoid overplotting the 9,124 point estimates, I combined them into hexagons. 
+To avoid overplotting the 7,936 point estimates, I combined them into hexagons. 
 Darker hexagons mark areas with more points. 
 As Hypothesis 1 predicts, participation in shallow alliances regularly increases military spending. 
 Many alliances with shallow depth have little effect on military spending, however. 
@@ -829,7 +829,7 @@ I also fit a model that shifted the distribution of latent depth to include only
 Last, I include single level panel regressions that average or summarize states' alliance portfolio in several ways. 
 
 
-In summary, I find that treaty depth modifies the impact of alliance participation on military spending.  
+In summary, treaty depth modifies the impact of alliance participation on military spending.  
 Participating in deep alliances often reduces military spending, while being part of a shallow alliance often increases spending. 
 I now discuss the implications of the argument and results. 
 

@@ -51,7 +51,7 @@ transformed data{
 
 parameters {
   real alpha; // overall intercept 
-  real<lower = 0> sigma; // variance of outcome- 
+  real<lower = 0> sigma; // variance of outcome
   vector[S] alpha_state_std; // better behaved distribution of state intercepts
   vector[T] alpha_year_std; // better behaved distribution of year intercepts
   vector[A_sm] lambda_std_sm; // better behaved distribution of alliance intercepts: non-major 
@@ -91,12 +91,11 @@ transformed parameters {
    lambda_sm[i] = theta_sm[i] + sigma_all_sm * lambda_std_sm[i];
  for (i in 1:A_lg)
    lambda_lg[i] = theta_lg[i] + sigma_all_lg * lambda_std_lg[i];
-   
+
   y_hat = alpha + alpha_state[state] + alpha_year[year] + 
     W * gamma + // state-level factors 
   csr_matrix_times_vector(N, A_sm, w_sm, v_sm, u_sm, lambda_sm) + // small membership matrix
   csr_matrix_times_vector(N, A_lg, w_lg, v_lg, u_lg, lambda_lg);
-
 
 }
 
@@ -116,15 +115,15 @@ model {
   beta_sm ~  normal(0, .5);
   beta_lg ~  normal(0, .5);
   gamma ~ normal(0, .5); 
-//  nu ~ gamma(2, 0.1); // Prior for degrees of freedom in t-dist
   
-  asinh(y) ~ double_exponential(y_hat, sigma);
-  target += -asinh(y);
+ asinh(y) ~ cauchy(y_hat, sigma);
+ target += -asinh(y);
+  
 }
 
 generated quantities{
   // Posterior predictive check 
-  real y_rep[N] = double_exponential_rng(y_hat, sigma);
+  real y_rep[N] = cauchy_rng(y_hat, sigma);
   
 }
 
