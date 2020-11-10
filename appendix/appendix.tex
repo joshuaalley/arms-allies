@@ -111,14 +111,14 @@ $ p(\nu) \sim Gamma(2, 0.1)$
 
 There were no divergent iterations in either sample running 4 chains for 2,000 iterations with 1,000 warmup iterations. 
 The $\hat{R}$ is less than 1.1 for all parameters in both samples. 
-Trace plots in \autoref{fig:trace-all-min} indicate good mixing of the chains for the alliance-level parameters. 
+Trace plots in \autoref{fig:trace-all-sm} indicate good mixing of the chains for the alliance-level parameters of the junior member regression. 
 Taken together, all of this implies that the chains adequately explored the posterior distribution. 
 
 \begin{figure}[htbp]
 	\centering
-		\includegraphics[width=0.95\textwidth]{trace-all-min.png}
-	\caption{Traceplot of alliance level parameters in the non-major power sample.}
-	\label{fig:trace-all-min}
+		\includegraphics[width=0.95\textwidth]{trace-all-sm.png}
+	\caption{Traceplot of alliance level parameters in the small alliance member regression.}
+	\label{fig:trace-all-sm}
 \end{figure}
 
 
@@ -172,6 +172,10 @@ Taken together, all of this implies that the chains adequately explored the post
 %Rescaling capability by the maximum produces similar inferences about alliance characteristics, including treaty depth. 
 
 
+\section{Large State Alliance Results} 
+
+
+
 
 \section{Fake Data Simulation Check}
 
@@ -208,6 +212,7 @@ Even with small multiples, the 100 $\lambda$ parameters are hard to plot, so I o
 Among the $\lambda$ parameters, 93 of 100 intervals contain the known $\lambda$ value.
 Given the large number of parameters and smaller sample, this is acceptable accuracy. 
 Even the seven inaccurate confidence intervals were quite close--- all were within .015 of the known parameter.\footnote{Fine margins around these intervals implies that the exact number of accurate $\lambda$ intervals is sensitive to simulation variance.}
+
 
 
 
@@ -453,6 +458,23 @@ Because our measures operationalize different concepts in different groups of al
 My measure is not generally superior, and which latent depth measure scholars use in other analyses should depend on how they conceptualize alliance treaty depth. 
 
 
+\section{Including Neutrality Pacts}
+
+To further validate my latent measure, this section reports inferences about latent depth from a measurement model with offensive, defensive and neutrality pacts as well as results from a multilevel model that includes neutrality pacts. 
+This dataset adds 101 alliances with pure neutrality obligations to the dataset. 
+Again, I analyze offensive and defensive alliances in the manuscript because these treaties are the focus of prior research. 
+However, as \autoref{fig:neutral-plot} shows, including neutrality pacts has little impact on the factor loadings, and few alliances with only neutrality promises have high depth. 
+The factor loading for a formal organization is somewhat lower in this sample, and all the other loadings are slightly higher in expectation, compared to alliances with active support. 
+The median alliance with active military support has higher depth than the third quartile alliance with only neutrality as well. 
+
+
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.95\textwidth]{neutral-plot.png}
+	\caption{Factor loadings and mean treaty depth in a sample of all ATOP alliances with neutrality, offensive or defensive obligations, 1816--2016. The top panel plots the factor loadings from a Bayesian mixed factor analysis \citep{Murrayetal2013}. The bottom panel compares the distribution of treaty depth in alliances with military support and alliances with only neutrality obligations. Alliances without active military support are far more shallow. 
+	}
+	\label{fig:neutral-plot}
+\end{figure}
 
 \section{Are Deep Alliances Less Reliable?} 
 
