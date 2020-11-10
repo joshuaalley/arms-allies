@@ -143,3 +143,9 @@ grid.arrange(lg.intervals, lambda.depth.lg, growth.depth.lg,
              layout_matrix = rbind(c(1, 2),
                                    c(3, 3))
 )
+
+lg.res <- arrangeGrob(lg.intervals, lambda.depth.lg, growth.depth.lg,
+             layout_matrix = rbind(c(1, 2),
+                                   c(3, 3))
+           )
+ggsave("appendix/lg-res.png", lg.res, height = 6, width = 8)

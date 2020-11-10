@@ -96,10 +96,11 @@ $ p(\alpha^{yr}) \sim N(0, \sigma^{yr}) $ \\
 $ p(\sigma^{yr}) \sim N(0, 1) $ \\
 $ p(\alpha^{st}) \sim N(0, \sigma^{st}) $ \\ 
 $ p(\sigma^{st}) \sim \mbox{half-}N(0, .5) $ \\ 
-$ p(\sigma^{all}) \sim \mbox{half-}N(0, .5) $ \\
-$ p(\beta) \sim N(0, .5) $ \\
-$ p(\gamma) \sim N(0, .5) $ \\ 
-$ p(\nu) \sim Gamma(2, 0.1)$ 
+$ p(\sigma^{all}_{lg}) \sim \mbox{half-}N(0, .5) $ \\
+$ p(\sigma^{all}_{sm}) \sim \mbox{half-}N(0, .5) $ \\
+$ p(\beta_{sm}) \sim N(0, .5) $ \\
+$ p(\beta_{lg}) \sim N(0, .5) $ \\
+$ p(\gamma) \sim N(0, .5) $ 
 \end{tabular} 
 \caption{Summary of Priors in Multilevel Model} 
 \label{tab:priors}
@@ -174,6 +175,19 @@ Taken together, all of this implies that the chains adequately explored the post
 
 \section{Large State Alliance Results} 
 
+The manuscript reports results from the small state alliance regression. 
+Inferences about large states are also interesting, however, as leading alliance members have a different connection between alliance participation and military spending.
+\autoref{fig:lg-res} summarizes these alliance-level regression results.   
+Large alliance members are more responsive to external threat and foreign policy similarity, less responsive to treaty depth, and more inclined to make no changes or reduce percentage changes in defense spending as a result of alliance participation.
+Joining shallow alliances does not increase large alliance member military spending, likely because their capability provides adequate value for their allies without additional post-alliance spending. 
+
+
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.95\textwidth]{lg-res.png}
+	\caption{Inferences about alliance participation and military spending for large alliance members. The top left panel plots the 90\% credible intervals of the alliance-level regression parameters for leading alliance members. The top right panel plots the mean alliance participation parameter against treaty depth. Last, the bottom panel plots predicted state-alliance-year percentage changes in military spending from alliance participation for large states.}
+	\label{fig:lg-res}
+\end{figure}
 
 
 
