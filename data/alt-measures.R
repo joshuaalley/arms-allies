@@ -1,6 +1,97 @@
 # Joshua Alley
 # Texas A&M University 
-# Compare my measure of depth with others
+# Compare latent depth with others
+
+
+# model with depth rescaled 
+stan.data.lmbcap.rsd <- stan.data.lmbcap
+# shift distribution of latent depth for min 0
+# small 
+stan.data.lmbcap.rsd$X_sm[, 2] <- stan.data.lmbcap.rsd$X_sm[, 2] +
+                                    abs(min(stan.data.lmbcap.rsd$X_sm[, 2]))
+summary(stan.data.lmbcap.rsd$X_sm[, 2])
+# large
+stan.data.lmbcap.rsd$X_lg[, 2] <- stan.data.lmbcap.rsd$X_lg[, 2] +
+  abs(min(stan.data.lmbcap.rsd$X_lg[, 2]))
+summary(stan.data.lmbcap.rsd$X_lg[, 2])
+
+
+# fit model- only save alliance pars
+system.time(
+  ml.model.lmbcap.rsd <- sampling(model.lmbcap.sim, 
+                                  data = stan.data.lmbcap.rsd,
+                                  iter = 2000, warmup = 1000, chains = 4,
+                                  control=list(max_treedepth = 15),
+                                  pars = c("beta_sm", "beta_lg",
+                                           "lambda_sm", "lambda_lg"),
+                                  include = TRUE
+  )
+)
+
+check_hmc_diagnostics(ml.model.lmbcap.rsd)
+
+
+# extract coefs 
+coef.rsd <- extract(ml.model.lmbcap.rsd)
+colnames(coef.rsd$beta_sm) <- colnames(coef$beta_sm)
+colnames(coef.rsd$beta_lg) <- colnames(coef$beta_lg)
+
+# Summary for the appendix
+color_scheme_set("darkgray")
+sm.intervals.rsd <- mcmc_intervals(coef.rsd$beta_sm, 
+                       prob = .9) +
+                   ggtitle("Small Alliance Members") +
+                   theme_classic()
+sm.intervals.rsd
+# large state
+lg.intervals.rsd <- mcmc_intervals(coef.rsd$beta_lg, 
+                        prob = .9) +
+                     ggtitle("Large Alliance Members") + 
+                      theme_classic()
+lg.intervals.rsd
+# Start with large powers
+lambda.means.lg.rsd <- get_posterior_mean(ml.model.lmbcap.rsd, pars = "lambda_lg")
+lambda.df.lg.rsd <- cbind.data.frame(lambda.means.lg.rsd[, 5], stan.data.lmbcap.rsd$X_lg)
+colnames(lambda.df.lg.rsd)[1] <- "lambda"
+cor.test(lambda.df.lg.rsd$lambda, lambda.df.lg.rsd$latent.depth.mean,
+         alternative = "less", method = "spearman")
+
+# plot karge powers
+lambda.depth.lg.rsd <- ggplot(lambda.df.lg.rsd, aes(x = latent.depth.mean, y = lambda)) +
+  geom_hline(yintercept = 0) +
+  geom_point() +
+  geom_smooth(method = "lm") + theme_classic() +
+  labs(x = "Latent Treaty Depth (Shifted)", y = "Effect of Allied Spending") +
+  ggtitle("Large Alliance Members")
+lambda.depth.lg.rsd
+
+
+
+# small powers
+lambda.means.sm.rsd <- get_posterior_mean(ml.model.lmbcap.rsd, pars = "lambda_sm")
+lambda.df.sm.rsd <- cbind.data.frame(lambda.means.sm.rsd[, 5], stan.data.lmbcap.rsd$X_sm)
+colnames(lambda.df.sm.rsd)[1] <- "lambda"
+cor.test(lambda.df.sm.rsd$lambda, lambda.df.sm.rsd$latent.depth.mean, 
+         alternative = "less", method = "spearman")
+
+# plot small powers
+lambda.depth.sm.rsd <- ggplot(lambda.df.sm.rsd, aes(x = latent.depth.mean, y = lambda)) +
+  geom_hline(yintercept = 0) +
+  geom_point() +
+  geom_smooth(method = "lm") + theme_classic() +
+  labs(x = "Latent Treaty Depth (Shifted)", y = "Allied Capability Coefficent") +
+  ggtitle("Small Alliance Members")
+lambda.depth.sm.rsd
+
+
+# Combine small and large regression plots 
+grid.arrange(sm.intervals.rsd, lambda.depth.sm.rsd,
+             lg.intervals.rsd, lambda.depth.lg.rsd)
+# set as own object and export
+rsd.plots <- arrangeGrob(sm.intervals.rsd, lambda.depth.sm.rsd,
+                          lg.intervals.rsd, lambda.depth.lg.rsd)
+ggsave("appendix/rsd-plots.png", rsd.plots, height = 6, width = 8)
+
 
 
 ### Leeds and Anac 2005: Military Institutionalization
@@ -21,45 +112,64 @@ cor.test(atop.milsup$latent.depth.mean, atop.milsup$milinst)
 
 # Reanalysis with milinst measure
 # Make the alliance characteristics data match the membership matrix
-reg.all.data.milinst <- filter(alliance.char, atopid %in% colnames(state.mem.min)) %>%
-  select(atopid, milinst, uncond.milsup, econagg.dum, fp.conc.index, num.mem, low.kap.sc, 
-         avg.democ, wartime, asymm, us.mem, ussr.mem) %>%
+reg.all.data.milinst <- filter(alliance.char, atopid %in% colnames(state.mem.full)) %>%
+  select(atopid, milinst, uncond.milsup, econagg.dum, 
+         fp.conc.index, num.mem, low.kap.sc, 
+         avg.democ, wartime, asymm, mean.threat) %>%
   na.omit
 
-# need a new membership matrix 
-state.mem.milinst <- state.mem.min[, colnames(state.mem.min) %in% reg.all.data.milinst$atopid]
 
-reg.all.data.milinst <- select(reg.all.data.milinst, -c(atopid))
+# finalize alliance-level matrices
+# small states
+all.data.milinst.sm <- filter(reg.all.data.milinst, 
+                              atopid %in% colnames(state.mem.sm)) 
+# 5 w/ NA instiutionalization
+state.mem.sm.milinst <- state.mem.sm[, colnames(state.mem.sm) %in% all.data.milinst.sm$atopid]
+all.data.milinst.sm <- select(all.data.milinst.sm, -c(atopid))
+cons <- rep(1, nrow(all.data.milinst.sm))
+alliance.mat.milinst.sm <- as.matrix(cbind(cons, all.data.milinst.sm))
 
-# define non-milinstor power alliance matrix
-cons.milinst <- rep(1, nrow(reg.all.data.milinst))
-alliance.reg.mat.milinst <- cbind(cons.milinst, reg.all.data.milinst)
-alliance.reg.mat.milinst <- as.matrix(alliance.reg.mat.milinst)
+# large state
+all.data.milinst.lg <- filter(reg.all.data.milinst, 
+                              atopid %in% colnames(state.mem.lg)) 
+# 5 w/ NA instiutionalization
+state.mem.lg.milinst <- state.mem.lg[, colnames(state.mem.lg) %in% all.data.milinst.lg$atopid]
+all.data.milinst.lg <- select(all.data.milinst.lg, -c(atopid))
+cons <- rep(1, nrow(all.data.milinst.lg))
+alliance.mat.milinst.lg <- as.matrix(cbind(cons, all.data.milinst.lg))
 
 
 
-# set-up the data
-# STAN data 
-stan.data.milinst <- list(N = nrow(reg.state.comp.min), y = reg.state.comp.min[, 3],
-                      state = reg.state.comp.min$state.id, S = length(unique(reg.state.comp.min$state.id)),
-                      year = reg.state.comp.min$year.id, T = length(unique(reg.state.comp.min$year.id)),
-                      A = ncol(state.mem.milinst), L = ncol(alliance.reg.mat.milinst),
-                      Z = state.mem.milinst, 
-                      X = alliance.reg.mat.milinst,
-                      W = reg.state.mat.min, M = ncol(reg.state.mat.min)
+
+# Define the data list 
+reg.state.comp <- as.data.frame(reg.state.comp)
+stan.data.milinst <- list(N = nrow(reg.state.comp), y = reg.state.comp[, 3],
+                         state = reg.state.comp$state.id, S = length(unique(reg.state.comp$state.id)),
+                         year = reg.state.comp$year.id, T = length(unique(reg.state.comp$year.id)),
+                         A_sm = ncol(state.mem.sm.milinst), A_lg = ncol(state.mem.lg.milinst),
+                         L = ncol(alliance.reg.mat.sm),
+                         Z_sm = state.mem.sm.milinst, 
+                         Z_lg = state.mem.lg.milinst,
+                         X_sm = alliance.mat.milinst.sm,
+                         X_lg = alliance.mat.milinst.lg,
+                         J = 2,
+                         W = reg.state.mat, M = ncol(reg.state.mat)
 )
-
-# Compile the model code: 
-model.2 <- stan_model(file = "data/ml-model-split.stan")
 
 # Regular STAN
 system.time(
-  ml.model.milinst <- sampling(model.2, data = stan.data.milinst, 
-                           iter = 2000, warmup = 1000, chains = 4, 
-                           control = list(max_treedepth = 15)
+  ml.model.milinst <- sampling(model.lmbcap.sim, data = stan.data.milinst, 
+                           iter = 2400, warmup = 1200, chains = 4, 
+                           control = list(max_treedepth = 15),
+                           pars = c("beta_sm", "beta_lg", "lambda_sm", "lambda_lg", "gamma",
+                                    "alpha", "sigma", "sigma_state", "sigma_year",
+                                    "sigma_all_lg", "sigma_all_sm",
+                                    "y_rep"),
+                           include = TRUE
   )
 )
-
+# Save model 
+saveRDS(ml.model.milinst, "data/ml-model-milinst.rds")
 # diagnose model
 check_hmc_diagnostics(ml.model.milinst)
 
@@ -98,8 +208,7 @@ ggplot(lambda.df.milinst, aes(x = as.factor(milinst), y = lambda)) +
   labs(x = "Military Instituionalization", y = "Effect of Allied Spending") 
 ggsave("appendix/milinst-lambda.png", height = 5, width = 7)
 
-# Save model and take it out of the workspace (1.7 GB w/ likelihood and PPC)
-saveRDS(ml.model.milinst, "data/ml-model-milinst.rds")
+# remove fitted model
 rm(ml.model.milinst)
 
 
@@ -177,7 +286,7 @@ rm(depth) # remove full MCMC
 # Create a dataset of factors
 bc.latent.factors <- cbind.data.frame(c("Military Contact", "Common Defense Policy",
                                   "Integrated Command", "Military Aid",
-                                  "Bases", "Contribution", 
+                                  "Bases", "Specific Contrib", 
                                   "Formal IO", "Economic Aid", "Secrecy"),
                                    apply(bc.loading, 2, mean),
                                    apply(bc.loading, 2, sd))

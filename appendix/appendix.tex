@@ -173,7 +173,7 @@ Taken together, all of this implies that the chains adequately explored the post
 %Rescaling capability by the maximum produces similar inferences about alliance characteristics, including treaty depth. 
 
 
-\section{Large State Alliance Results} 
+\section{Large State Alliance Level Regression Estimates} 
 
 The manuscript reports results from the small state alliance regression. 
 Inferences about large states are also interesting, however, as leading alliance members have a different connection between alliance participation and military spending.
@@ -309,11 +309,33 @@ The dummy variable is closest to \citet{DigiuseppePoast2016}'s design.
 
 
 
-\section{Alternative Measures of Alliance Treaty Depth}
+\section{Alternative Alliance Treaty Depth Measures}
 
 This part of the appendix compares my latent measure of treaty depth with similar measures in earlier research.  
-I first show that there are important differences between my measure and the military institutionalization measure of \citet{LeedsAnac2005}, but using military institutionalization instead of latent depth generates similar inferences about how treaty depth modifies the impact of alliance participation. 
+I first check whether altering the range of the latent treaty depth measure affects inferences.  
+Then I show that there are important differences between my measure and the military institutionalization measure of \citet{LeedsAnac2005}, but using military institutionalization instead of latent depth generates similar inferences about how treaty depth modifies the impact of alliance participation. 
 Then I describe the conceptual and empirical differences between my latent measure and that of \citet{BensonClinton2016}.
+
+
+\subsection{Range of Latent Depth}
+
+Latent treaty depth includes negative and positive values due to standard assumptions of latent variable models. 
+To check whether this range is responsible for patterns in the $\lambda$ parameters over the range of treaty depth,\footnote{Thanks to an anonymous reviewer for this suggestion.} I refit the model after shifting the range of treaty depth. 
+In this model, treaty depth has a minimum value of 0, and alliances with some depth have positive values. 
+
+
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.95\textwidth]{rsd-plots.png}
+	\caption{Inferences from the alliance level regressions in a multilevel model with the range of latent treaty depth adjusted to include 0 and positive values. The top row summarizes results from the junior alliance member regression, while the bottom row reports estimates from the leading alliance member regression. These inferences are very similar to those reported in the manuscript.}
+	\label{fig:rsd-plots}
+\end{figure}
+
+
+\autoref{fig:rsd-plots} plots the results of the alliance-level regression and predicted lambda values. 
+As this figure clearly shows, for small alliance members, the positive mean effect of alliance participation on military spending in shallow alliances and negative mean association in deep alliances I report in the manuscript remains unchanged. 
+Thus, inferences about treaty depth and military spending are not as sensitive to constraining treaty depth to zero and positive values. 
+
 
 
 \subsection{Leeds and Anac 2005}
