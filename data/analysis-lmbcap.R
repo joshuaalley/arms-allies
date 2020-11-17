@@ -12,7 +12,8 @@ state.mem.full <- as.matrix(reg.state.comp[, 12: ncol(reg.state.comp)])
 reg.all.data <- filter(alliance.char, atopid %in% colnames(state.mem.full)) %>%
   select(atopid, latent.depth.mean, uncond.milsup, econagg.dum, 
          fp.conc.index, num.mem, low.kap.sc, 
-         avg.democ, wartime, asymm, mean.threat) %>%
+         avg.democ, wartime, asymm, mean.threat,
+         us.mem, ussr.mem) %>%
   na.omit()
 
 state.mem.full <- state.mem.full[, colnames(state.mem.full) %in% 
@@ -81,11 +82,11 @@ vb.lmbcap.sim <- vb(model.lmbcap.sim,
 # Remove vb model 
 rm(vb.lmbcap.sim)
 
-# Regular STAN: takes ~12 hours
+# Regular STAN: takes ~12 hours on laptop
 system.time(
   ml.model.lmbcap.sim <- sampling(model.lmbcap.sim, 
                           data = stan.data.lmbcap,
-                          iter = 2400, warmup = 1200, chains = 4,
+                          iter = 3000, warmup = 1500, chains = 4,
                           control=list(max_treedepth = 15),
                           pars = c("beta_sm", "beta_lg", "lambda_sm", "lambda_lg", "gamma",
                             "alpha", "sigma", "sigma_state", "sigma_year",
@@ -126,6 +127,7 @@ rownames(beta.summary.lg) <- c("Constant", "Depth", "Uncond Milsup", "Econ. Link
                                 "Number Members", "FP Similarity",
                                 "Democratic Membership", 
                                 "Wartime", "Asymmetric Ob.", "Mean Threat",
+                                "US Mem.", "USSR Mem.",
                                 "sigma Alliances")
 
 
@@ -137,19 +139,19 @@ xtable(beta.summary.lg, digits = 3)
 beta.summary.sm <- summary(ml.model.lmbcap.sim, pars = c("beta_sm", "sigma_all_sm"), probs = c(0.05, 0.95))$summary
 beta.summary.sm <- beta.summary.sm[, -2]
 rownames(beta.summary.sm) <- c("Constant", "Depth", "Uncond Milsup", "Econ. Link", 
-                                "FP Conc.",
-                                "Number Members", "FP Similarity",
-                                "Democratic Membership", 
-                                "Wartime", "Asymmetric Ob.", "Mean Threat",
-                                "sigma Alliances")
-
+                               "FP Conc.",
+                               "Number Members", "FP Similarity",
+                               "Democratic Membership", 
+                               "Wartime", "Asymmetric Ob.", "Mean Threat",
+                               "US Mem.", "USSR Mem.",
+                               "sigma Alliances")
 print(beta.summary.sm)
 xtable(beta.summary.sm, digits = 3) # for appendix
 
 
 
 
-# Summarize the alliance cofficient estimates in large and minor subsets
+# Summarize the alliance coefficient estimates in large and minor subsets
 coef <- extract(ml.model.lmbcap.sim,                         
                 pars = c("beta_sm", "beta_lg", 
                       "gamma",
@@ -160,7 +162,8 @@ alliance.pars <-  c("Constant", "Depth", "Uncond Milsup", "Econ. Link",
                     "Number Members", "FP Similarity",
                     "Democratic Membership", 
                     "Wartime", "Asymmetric Obligations",
-                    "Mean Threat") # vector of labels
+                    "Mean Threat",
+                    "US Mem.", "USSR Mem.") # vector of labels
 colnames(coef$gamma) <- colnames(reg.state.mat)
 colnames(coef$beta_sm) <- alliance.pars
 colnames(coef$beta_lg) <- alliance.pars

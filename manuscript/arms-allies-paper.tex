@@ -647,10 +647,12 @@ I use total allied spending to express the effect of alliance participation as i
 The $\textbf{Z}$ matrices encode quasi-spatial indicators of alliance participation for all $a$ alliances in the data. 
 States can be members of multiple treaties, so state-year observations are not neatly nested within alliances. 
 This specification means each alliance has a unique impact on military spending, even when states participate in multiple treaties. 
+Furthermore, there is variation in allied capability over time for every alliance member which starts when the alliance forms, continues with fluctuations in allied spending while the alliance is active and ends with alliance termination. 
 
 
 $\lambda_{sm}$ and $\lambda_{lg}$ are vectors of parameters which estimate the impact of participation in specific alliances on military spending. 
 Because the non-zero elements of $\textbf{Z}$ are allied spending, the $\lambda$ parameters capture alliance members' response to allied capability. 
+These parameters apply to all states of the same size, so alliance formation and membership have a common effect on multiple states when there are multiple large or multiple small alliance members.
 There are 195 large and 159 small alliance participation parameters, so there are 354 unique alliance participation parameters. 
 Both sets of $\lambda$ parameters have their own distribution, so I assume alliances are similar but different in how they impact military spending. 
 

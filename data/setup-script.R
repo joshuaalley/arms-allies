@@ -4,7 +4,7 @@
 # Run this at start of every session
 
 # install BFA (archived on CRAN)
-# install.packages(pkgs = "bfa_0.4.tar", type="source", repos=NULL)
+#install.packages(pkgs = "bfa_0.4.tar", type="source", repos=NULL)
 
 # Load packages
 library(here)
@@ -25,7 +25,6 @@ library(coefplot)
 library(MASS)
 library(plm)
 library(margins)
-library(interflex)
 library(ExtremeBounds)
 library(bfa)
 library(coda)

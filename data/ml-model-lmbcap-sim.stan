@@ -64,7 +64,6 @@ parameters {
   vector[L] beta_lg; // effect of alliance char on treaty participation- large
   real<lower = 0> sigma_all_sm; // variance hyperparameter of the alliances: non-major
   real<lower = 0> sigma_all_lg; // variance hyperparameter of the alliances: major
-//  real<lower = 3> nu; // degrees of freedom in t-distribution of outcome- one per group
 
 }
 
