@@ -115,7 +115,8 @@ cor.test(atop.milsup$latent.depth.mean, atop.milsup$milinst)
 reg.all.data.milinst <- filter(alliance.char, atopid %in% colnames(state.mem.full)) %>%
   select(atopid, milinst, uncond.milsup, econagg.dum, 
          fp.conc.index, num.mem, low.kap.sc, 
-         avg.democ, wartime, asymm, mean.threat) %>%
+         avg.democ, wartime, asymm, mean.threat,
+         us.mem, ussr.mem) %>%
   na.omit
 
 
@@ -128,6 +129,7 @@ state.mem.sm.milinst <- state.mem.sm[, colnames(state.mem.sm) %in% all.data.mili
 all.data.milinst.sm <- select(all.data.milinst.sm, -c(atopid))
 cons <- rep(1, nrow(all.data.milinst.sm))
 alliance.mat.milinst.sm <- as.matrix(cbind(cons, all.data.milinst.sm))
+
 
 # large state
 all.data.milinst.lg <- filter(reg.all.data.milinst, 
@@ -159,7 +161,7 @@ stan.data.milinst <- list(N = nrow(reg.state.comp), y = reg.state.comp[, 3],
 # Regular STAN
 system.time(
   ml.model.milinst <- sampling(model.lmbcap.sim, data = stan.data.milinst, 
-                           iter = 2400, warmup = 1200, chains = 4, 
+                           iter = 3000, warmup = 1500, chains = 4, 
                            control = list(max_treedepth = 15),
                            pars = c("beta_sm", "beta_lg", "lambda_sm", "lambda_lg", "gamma",
                                     "alpha", "sigma", "sigma_state", "sigma_year",
@@ -175,32 +177,43 @@ check_hmc_diagnostics(ml.model.milinst)
 
 
 # summarize intervals for minor powers w/ milinst measure
-beta.summary.milinst <- summary(ml.model.milinst, pars = c("beta", "sigma_all"), probs = c(0.05, 0.95))$summary
+beta.summary.milinst <- summary(ml.model.milinst, pars = c("beta_sm", 
+                                "sigma_all_sm"), probs = c(0.05, 0.95))$summary
 beta.summary.milinst <- beta.summary.milinst[, -2]
-rownames(beta.summary.milinst) <- c("Constant", "Military Inst.", "Uncond. Milsup.", "Econ. Link", 
-                                "FP Conc.",
-                                "Number Members", "FP Similarity",
-                                "Democratic Membership", 
-                                "Wartime", "Asymmetric", "US. Mem", "USSR Mem.",
-                                "sigma Alliances")
-
+rownames(beta.summary.milinst) <- c("Constant", "Institutionalization", "Uncond Milsup", "Econ. Link", 
+                                    "FP Conc.",
+                                    "Number Members", "FP Similarity",
+                                    "Democratic Membership", 
+                                    "Wartime", "Asymmetric Ob.", "Mean Threat",
+                                    "US Mem.", "USSR Mem.",
+                                    "sigma Alliances")
 print(beta.summary.milinst)
 xtable(beta.summary.milinst, digits = 3) # for appendix
 
 
 # check posterior probabilities
-coef.milinst <- extract(ml.model.milinst, pars = c("beta"))
-mean(coef.milinst$beta[, 2] < 0) 
+coef.milinst <- extract(ml.model.milinst, pars = c("beta_sm"))
+mean(coef.milinst$beta_sm[, 2] < 0) 
+
+colnames(coef.milinst$beta_sm) <-  c("Constant", "Institutionalization", "Uncond Milsup", "Econ. Link", 
+                                     "FP Conc.",
+                                     "Number Members", "FP Similarity",
+                                     "Democratic Membership", 
+                                     "Wartime", "Asymmetric Ob.", "Mean Threat",
+                                     "US Mem.", "USSR Mem.")
+mcmc_intervals(coef.milinst$beta_sm, prob = .9) 
+ggsave("appendix/alliance-reg-milinst.png", height = 4, width = 6)
+
 
 # Produce plot of lambda against military institutionalization
-lambda.means.milinst <- get_posterior_mean(ml.model.milinst, pars = "lambda")
+lambda.means.milinst <- get_posterior_mean(ml.model.milinst, pars = "lambda_sm")
 lambda.df.milinst <- tibble(lambda = lambda.means.milinst[, 5]) %>%  # add lambdas to df
-  bind_cols(filter(alliance.char, atopid %in% colnames(state.mem.milinst)))
+  bind_cols(filter(alliance.char, atopid %in% colnames(state.mem.sm.milinst)))
 cor.test(lambda.df.milinst$lambda, lambda.df.milinst$latent.depth.mean,
          alternative = "less", method = "spearman")
 
 # plot
-ggplot(lambda.df.milinst, aes(x = as.factor(milinst), y = lambda)) +
+ggplot(lambda.df.milinst, aes(x = factor(milinst), y = lambda)) +
   geom_hline(yintercept = 0) +
   geom_boxplot(outlier.shape = NA) +
   geom_jitter(alpha = .5) +
