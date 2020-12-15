@@ -109,7 +109,7 @@ $ p(\gamma) \sim N(0, .5) $
 
 \section{Hamiltonian Monte Carlo Diagnostics}
 
-There were no divergent iterations in either sample running 4 chains for 2,000 iterations with 1,000 warmup iterations. 
+There were no divergent iterations in either sample running 4 chains for 3,000 iterations with 1,500 warmup iterations. 
 The $\hat{R}$ is less than 1.1 for all parameters in both samples. 
 Trace plots in \autoref{fig:trace-all-sm} indicate good mixing of the chains for the alliance-level parameters of the junior member regression. 
 Taken together, all of this implies that the chains adequately explored the posterior distribution. 
@@ -174,11 +174,11 @@ Taken together, all of this implies that the chains adequately explored the post
 
 \section{Large State Alliance Level Regression Estimates} 
 
-The manuscript reports results from the small state alliance regression. 
-Inferences about large states are also interesting, however, as leading alliance members have a different connection between alliance participation and military spending.
+The manuscript reports results from the small state alliance regression, but inferences about large states are also interesting. 
+Leading alliance members have a different connection between alliance participation and military spending.
 \autoref{fig:lg-res} summarizes these alliance-level regression results.   
-Large alliance members are more responsive to external threat and foreign policy similarity, less responsive to treaty depth, and more inclined to make no changes or reduce percentage changes in defense spending as a result of alliance participation.
-Joining shallow alliances does not increase large alliance member military spending, likely because their capability provides adequate value for their allies without additional post-alliance spending. 
+Large alliance members are more responsive to external threat and foreign policy similarity, less responsive to treaty depth, and more inclined to make no changes or reduce percentage changes in defense spending as a result of alliance participation, compared to small alliance members.
+Joining shallow alliances is less likely to increase large alliance member military spending, likely because their capability provides adequate value for their allies without additional post-alliance spending. 
 
 
 \begin{figure}[htbp]
@@ -194,13 +194,13 @@ Joining shallow alliances does not increase large alliance member military spend
 
 
 With any complicated model, simulating fake data and seeing if the model can recover known parameters is essential. 
-Fake-data simulation helps validate results from observed data and identify problems. 
+Fake-data simulation helps validate results from observed data and identify model problems. 
 This section summarizes results from fitting the multilevel model to fake data.
 
 
 I simulated a dataset of 2000 t-distributed observations with 50 states observed for 200 years and 100 alliances. 
 The outcome has a different scale than the military spending outcome variable, so coefficient values here do not match the paper.  
-I then simulated two state and alliance level variables and took a piece of the matrix of state membership in alliances. 
+I then simulated two state and alliance level variables and took a piece of a full matrix of state membership in alliances. 
 Last, I ran the model without evaluating the likelihood, generating a posterior prediction of the outcome based on the fake data.
 
 
@@ -242,7 +242,7 @@ In addition to the state-level controls in the multilevel model, I included aver
 
 
 I estimated several models, including robust regressions on non-major powers and non-major powers in alliances. 
-These models examine non-major powers as these states are more likely to be junior alliance members. 
+These models examine non-major powers as these states are more likely to be junior alliance members, and single-level regressions cannot split states as large and small relative to other alliance members. 
 Comparing non-major powers with at least one alliance provides a crude approximation of the depth coefficient in the multilevel model, which compares deep and shallow alliances. 
 I also applied state and year fixed effects to an OLS model of percentage changes in defense expenditures. 
 The estimated association between average treaty depth and military spending changes is summarized in \autoref{fig:single-level-mplot}. 
@@ -298,14 +298,14 @@ In this model, treaty depth has a minimum value of 0, and alliances with some de
 \begin{figure}[htbp]
 	\centering
 		\includegraphics[width=0.95\textwidth]{rsd-plots.png}
-	\caption{Inferences from the alliance level regressions in a multilevel model with the range of latent treaty depth adjusted to include 0 and positive values. The top row summarizes results from the junior alliance member regression, while the bottom row reports estimates from the leading alliance member regression. These results are very similar to those reported in the manuscript.}
+	\caption{Inferences from the alliance level regressions in a multilevel model with the range of latent treaty depth adjusted to have a minimum value of 0. The top row summarizes results from the junior alliance member regression, while the bottom row reports estimates from the leading alliance member regression. These results are very similar to the model in the manuscript.}
 	\label{fig:rsd-plots}
 \end{figure}
 
 
 \autoref{fig:rsd-plots} plots the results of the alliance-level regression and predicted lambda values. 
 As this figure clearly shows, for small alliance members, the positive mean effect of alliance participation on military spending in shallow alliances and negative mean association in deep alliances I report in the manuscript remains unchanged. 
-Thus, inferences about treaty depth and military spending are not as sensitive to constraining treaty depth to zero and positive values. 
+Thus, inferences about treaty depth and military spending are not very sensitive to shifting the range of treaty depth to zero and positive values. 
 
 
 
@@ -358,11 +358,11 @@ Military institutionalization and the impact of alliance participation on milita
 
 
 \autoref{fig:milinst-lambda} helps assess Hypotheses 1 and 2. 
-Among alliances with no institutionalization, most treaties have a positive effect. 
+Among alliances with no institutionalization, roughly half the treaties have a positive effect. 
 Alliances with moderate institutionalization have mixed effects. 
-Last, participation in alliances with high institutionalization tends to reduce military spending. 
+Participation in alliances with high institutionalization tends to reduce military spending. 
 Support for Hypotheses 1 is weaker, but there is ample evidence for Hypothesis 2. 
-The trend across military institutionalization is less clear than with the latent measure of treaty depth, probably because the military institutionalization measure understates variation in treaty depth and is missing data on five alliances. 
+The trend across military institutionalization is less clear than with the latent measure of treaty depth, probably because the military institutionalization measure understates variation in treaty depth and is missing some data. 
 The institutionalization measure has a higher posterior standard deviation than the latent measure, which is likely the result of different measurement strategies. 
 
 
@@ -416,7 +416,7 @@ Although Benson and Clinton's measure is close to my purposes, it captures a sli
 
 
 % differences in loadings and estimator have important consequences for depth scores
-Given conceptuial differences and my decision to use a semiparametric estimator that breaks problematic correlations between the latent variables and dependence structure \citep{Murrayetal2013}, I draw different conclusions about the factor loadings and distribution of treaty depth. 
+Given conceptual differences and my decision to use a semiparametric estimator that breaks problematic correlations between the latent variables and dependence structure \citep{Murrayetal2013}, I draw different conclusions about the factor loadings and distribution of treaty depth. 
 \autoref{fig:bc-2016-comp} describes the key differences between my latent measure of depth and Benson and Clinton's measure.
 In the top panel, I look at differences in the factor loadings across the two models.\footnote{Recall that I removed economic aid and secrecy from the observed data in my measure, because they are distinct from military cooperation.} 
 Benson and Clinton break the ATOP policy coordination variable into military contact and common defense policy, but I treat this as an ordinal variable, which is the largest source of depth.\footnote{The military contact variable on which the policy coordination score is based gives alliances that require wartime military contact a score of one, scores treaties with peacetime military contact as a two, and assigns alliances with defense cooperation a score of three. There is a order to the extent of policy coordination required as this variable increases.}
@@ -452,6 +452,8 @@ My measure is not generally superior, and which latent depth measure scholars us
 To further validate my latent measure, this section reports inferences about latent depth from a measurement model with offensive, defensive and neutrality pacts as well as results from a multilevel model that includes neutrality pacts. 
 This dataset adds 101 alliances with pure neutrality obligations to the dataset. 
 Again, I analyze offensive and defensive alliances in the manuscript because these treaties are the focus of prior research. 
+Pure neutrality pacts commit to nonintervention in the event of conflict, which is far less costly than active military support. 
+Therefore, these alliances are qualitatively different, and are unlikely to create the military spending dilemma where states balance adding capability to an alliance and the opportunity cost of defense spending. 
 However, as \autoref{fig:neutral-plot} shows, including neutrality pacts has little impact on the factor loadings, and few alliances with only neutrality promises have high depth. 
 The factor loading for a formal organization is somewhat lower in this sample, and all the other loadings are slightly higher in expectation, compared to alliances with active support. 
 The median alliance with active military support has higher depth than the third quartile alliance with only neutrality as well. 
@@ -460,7 +462,7 @@ The median alliance with active military support has higher depth than the third
 \begin{figure}[htbp]
 	\centering
 		\includegraphics[width=0.95\textwidth]{neutral-plot.png}
-	\caption{Factor loadings and mean treaty depth in a sample of all ATOP alliances with neutrality, offensive or defensive obligations, 1816--2016. The top panel plots the factor loadings from a Bayesian mixed factor analysis \citep{Murrayetal2013}. The bottom panel compares the distribution of treaty depth in alliances with military support and alliances with only neutrality obligations. Alliances without active military support are far more shallow. 
+	\caption{Factor loadings and mean treaty depth in a sample of all ATOP alliances with neutrality, offensive or defensive obligations, 1919--2016. The top panel plots the factor loadings from a Bayesian mixed factor analysis \citep{Murrayetal2013}. The bottom panel compares the distribution of treaty depth in alliances with military support and alliances with only neutrality obligations. Alliances without active military support are far more shallow. 
 	}
 	\label{fig:neutral-plot}
 \end{figure}
@@ -468,16 +470,17 @@ The median alliance with active military support has higher depth than the third
 \section{Are Deep Alliances Less Reliable?} 
 
 
-\citet{LeedsAnac2005} find that institutionalized alliances are less reliable, which contradicts my claim that deep alliances increase treaty reliability. 
-Besides potential bias from non-random selection into challenges of alliances \citep{Smith1995}, this empirical finding depends in part on their ordinal institutionalization measure. 
+\citet{LeedsAnac2005} find that alliance members are less likely to honor institutionalized alliances when members invoke the treaty.
+These interesting findings contradict my claim that deep alliances increase treaty reliability, but may not reflect lackluster credibility of deep alliances. 
+As \citet[pg. 198]{LeedsAnac2005} note, their results could be a function of non-random selection in alliance challenges \citep{Smith1995}. 
+Furthermore, how treaty depth is measured affects inferences with Leed's and Anac's research design.
 Replacing the ordinal measure with my continuous latent depth variable leads to different inferences about alliance treaty design and performance. 
-Therefore, the surprising finding in this paper that better institutionalized alliances have worse performance may also reflect measurement decisions. 
 
 
 I focus my replication on Leeds and Anac's model of whether alliance members honor treaties with active military support. 
 The replication focuses on this model because my argument examines defensive and offensive alliances. 
 Their dataset includes 103 alliance performance opportunities, where states could honor or violate promises of military support. 
-Using a logit model that adjusts for alliance formality, capability changes, changes in the policy process and whether the ally was the original target, Leeds and Anac find a negative relationship between institutionalization and performance. 
+Using a logistic regression model that adjusts for alliance formality, capability changes, changes in the policy process and whether the ally was the original target, Leeds and Anac find a negative relationship between institutionalization and performance. 
 I replicate this estimate in the first column of \autoref{tab:depth-performance}. 
 
 
@@ -489,8 +492,7 @@ I replicate this estimate in the first column of \autoref{tab:depth-performance}
  & \multicolumn{6}{c}{\textit{Dependent variable:}} \\ 
 \cline{2-7} 
 \\[-1.8ex] & \multicolumn{4}{c}{Leeds and Anac} & \multicolumn{2}{c}{Berkemeier and Fuhrmann} \\ 
-\\[-1.8ex] & \multicolumn{2}{c}{\textit{logistic}} & \multicolumn{2}{c}{\textit{normal}} & \textit{logistic} & \textit{GLM} \\ 
- & \multicolumn{2}{c}{\textit{}} & \multicolumn{2}{c}{\textit{}} & \textit{} & \textit{(bias reduction)} \\ 
+\\[-1.8ex] & \multicolumn{2}{c}{\textit{Logit}} & \multicolumn{2}{c}{\textit{Firth Logit}} & \textit{Logit} & \textit{Firth Logit} \\ 
 \\[-1.8ex] & (1) & (2) & (3) & (4) & (5) & (6)\\ 
 \hline \\[-1.8ex] 
  Military Institutionalization & $-$0.543 &  & $-$0.086 &  &  &  \\ 
@@ -551,7 +553,7 @@ Across all these models and estimators, I find a similar result--- a positive re
 Therefore, I do not find that highly institutionalized alliances are less reliable. 
 The change in the direction of the coefficient is suggestive, given the limited number of alliance performance opportunities in these datasets. 
 Again, given non-random selection into alliance crises and challenges, placing excessive weight on the above results is unwise. 
-They do suggest, however, that deep alliances are not necessarily less reliable when invoked. 
+They do suggest, however, that deep alliances may not be less reliable when invoked. 
 
 
 

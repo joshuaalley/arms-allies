@@ -1,5 +1,4 @@
 # Joshua Alley
-# Texas A&M University
 # Load Packages, manage conflicts and and define key functions 
 # Run this at start of every session
 
