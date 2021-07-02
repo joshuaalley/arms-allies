@@ -656,7 +656,7 @@ state.mem.cap <- atop.cow.year %>%
          ally.cap = total.cap - cinc,
          contrib.gdp = gdp / total.gdp) %>%
   distinct(atopid, ccode, year, .keep_all = TRUE) %>%
-  select(ccode, atopid, year, ally.spend, ally.cap, avg.democ, milex.contrib, contrib.gdp) 
+  select(ccode, atopid, year, ally.spend, ally.cap, avg.democ, milex.contrib, contrib.gdp, num.mem) 
 
 # Replace missing values with zero if atopid = 0 (no alliance)
 state.mem.cap$ally.spend[is.na(state.mem.cap$ally.spend) & state.mem.cap$atopid == 0] <- 0

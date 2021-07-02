@@ -218,7 +218,7 @@ cor.test(lambda.df.lg$lambda, lambda.df.lg$latent.depth.mean,
 lambda.depth.lg <- ggplot(lambda.df.lg, aes(x = latent.depth.mean, y = lambda)) +
   geom_hline(yintercept = 0) +
   geom_point() +
-  geom_smooth(method = "lm") + theme_classic() +
+  geom_smooth(method = "lm", colour = "black") + theme_classic() +
   labs(x = "Latent Treaty Depth", y = "Effect of Allied Spending") +
   ggtitle("Large Alliance Members")
 lambda.depth.lg
@@ -236,7 +236,7 @@ cor.test(lambda.df.sm$lambda, lambda.df.sm$latent.depth.mean,
 lambda.depth.sm <- ggplot(lambda.df.sm, aes(x = latent.depth.mean, y = lambda)) +
   geom_hline(yintercept = 0) +
   geom_point() +
-  geom_smooth(method = "lm") + theme_classic() +
+  geom_smooth(method = "lm", colour = "black") + theme_classic() +
   labs(x = "Latent Treaty Depth", y = "Allied Capability Coefficent") +
   ggtitle("Small Alliance Members")
 lambda.depth.sm
