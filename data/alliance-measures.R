@@ -332,7 +332,7 @@ ls.styear
 # Combine plots 
 grid.arrange(plot.factors, ls.styear)
 ld.summary <- arrangeGrob(plot.factors, ls.styear)
-ggsave("figures/ld-summary.jpg", ld.summary, height = 9, width = 6.5) #save file
+ggsave("figures/ld-summary.jpg", ld.summary, height = 7, width = 6) #save file
 
 
 # 171 alliances with depth above -.6 
