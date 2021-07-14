@@ -3,7 +3,7 @@
 # Run this at start of every session
 
 # install BFA (archived on CRAN)
-#install.packages(pkgs = "bfa_0.4.tar", type="source", repos=NULL)
+install.packages(pkgs = "bfa_0.4.tar", type="source", repos=NULL)
 
 # Load packages
 library(here)

@@ -214,7 +214,7 @@ lambda.df.lg <- tibble(lambda = lambda.means.lg[, 5]) %>%  # add lambdas to df
 cor.test(lambda.df.lg$lambda, lambda.df.lg$latent.depth.mean,
          alternative = "less", method = "spearman")
 
-# plot karge powers
+# plot large powers
 lambda.depth.lg <- ggplot(lambda.df.lg, aes(x = latent.depth.mean, y = lambda)) +
   geom_hline(yintercept = 0) +
   geom_point() +

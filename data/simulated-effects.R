@@ -1,5 +1,4 @@
 # Joshua Alley
-# Texas A&M University
 # Simulate impact of changing alliance covariates on Lambda and growth in spending 
 
 
@@ -13,12 +12,12 @@ all.data.ldepth["latent.depth.mean"] <- -0.80 # key IV: minimum
 all.data.ldepth["uncond.milsup"] <- 0 
 all.data.ldepth["econagg.dum"] <- 0
 all.data.ldepth["fp.conc.index"] <- 0
-all.data.ldepth["num.mem"] <- median(reg.all.data.min$num.mem)
-all.data.ldepth["low.kap.sc"] <- median(reg.all.data.min$low.kap.sc)
-all.data.ldepth["avg.democ"] <- median(reg.all.data.min$avg.democ)
+all.data.ldepth["num.mem"] <- median(reg.all.data.sm$num.mem)
+all.data.ldepth["low.kap.sc"] <- median(reg.all.data.sm$low.kap.sc)
+all.data.ldepth["avg.democ"] <- median(reg.all.data.sm$avg.democ)
 all.data.ldepth["wartime"] <- 0
 all.data.ldepth["asymm"] <- 0
-all.data.ldepth["mean.threat"] <- median(reg.all.data.min$mean.threat)
+all.data.ldepth["mean.threat"] <- median(reg.all.data.sm$mean.threat)
 
 # vector with high depth
 all.data.hdepth <- all.data.ldepth
@@ -115,14 +114,14 @@ grid.arrange(sm.intervals, impact.milex.sm,
 
 results.allreg <- arrangeGrob(sm.intervals, impact.milex.sm,
                               nrow = 2)
-ggsave("figures/results-allreg.png", results.allreg, height = 6, width = 8) #save file
+ggsave("figures/results-allreg.jpg", results.allreg, height = 7, width = 6) #save file
 
 # Alliance-specific parameters and predictions
 grid.arrange(lambda.depth.sm, growth.depth.sm,
              nrow = 2)
 results.allpred <- arrangeGrob(lambda.depth.sm, growth.depth.sm,
                               nrow = 2)
-ggsave("figures/results-allpred.png", results.allpred, height = 8, width = 8) #save file
+ggsave("figures/results-allpred.jpg", results.allpred, height = 7, width = 6) #save file
 
 
 grid.arrange(sm.intervals, impact.milex.sm, growth.depth.sm,

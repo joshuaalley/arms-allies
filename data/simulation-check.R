@@ -1,24 +1,10 @@
 # Joshua Alley
-# Texas A&M University
 # Simulate fake data from ML model and attempt to recover parameters
 
 # Initial idea from: http://modernstatisticalworkflow.blogspot.com/2017/04/an-easy-way-to-simulate-fake-data-from.html 
 
 
 # working directory set through projects
-
-# load packages 
-library(MASS)
-library(tidyverse)
-library(rstan)
-library(shinystan)
-library(bayesplot)
-
-
-# set-up global STAN options
-options(mc.cores = parallel::detectCores())
-rstan_options(auto_write = TRUE)
-
 
 # set seed
 set.seed(12)
@@ -86,7 +72,8 @@ sim.data.est$run_estimation <- 1 # estimate the likelihood
 
 # run the model on this simulated data: attempt to recover parameters
 sim.out.est <- sampling(compiled.ml, data = sim.data.est,
-                    iter = 1000, warmup = 500, chains = 4)
+                    iter = 3000, warmup = 1500, chains = 4,
+                    control = list(max_treedepth = 20))
 
 
 # Check diagnostics
@@ -124,7 +111,7 @@ b1.sim.plot
 b2.sim.plot <- mcmc_areas(sim.est.sum$beta, pars = c("beta2"), prob = .9) +
                 vline_at(true.beta[2], color = "black", size = 2) 
 b2.sim.plot
-multiplot.ggplot(b1.sim.plot, b2.sim.plot)
+grid.arrange(b1.sim.plot, b2.sim.plot)
 
 
 

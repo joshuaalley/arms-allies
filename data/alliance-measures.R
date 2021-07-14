@@ -289,7 +289,7 @@ colnames(latent.factors) <- c("var", "mean", "sd")
 latent.factors <- arrange(latent.factors, desc(mean)) 
 latent.factors$var<- reorder(latent.factors$var, latent.factors$mean)
 
-ggplot(latent.factors, aes(x = mean, y = var)) + 
+plot.factors <- ggplot(latent.factors, aes(x = mean, y = var)) + 
   geom_point(size = 2) +
   geom_errorbarh(aes(xmin = mean - 2*sd, 
                      xmax = mean + 2*sd),
@@ -297,7 +297,7 @@ ggplot(latent.factors, aes(x = mean, y = var)) +
   geom_vline(xintercept = 0) +
   labs(x = "Factor Loading", y = "Variable") +
   theme_classic()
-ggsave("figures/factor-loadings.png", height = 6, width = 8)
+plot.factors
 
 # get posterior scores of latent factor: mean and variance
 post.score <- get_posterior_scores(latent.depth)
@@ -330,7 +330,10 @@ ls.styear <- ggplot(atop.milsup, aes(x = begyr, y = latent.depth.mean)) +
   theme_classic()
 ls.styear
 # Combine plots 
-multiplot.ggplot(ls.hist, ls.styear)
+grid.arrange(plot.factors, ls.styear)
+ld.summary <- arrangeGrob(plot.factors, ls.styear)
+ggsave("figures/ld-summary.jpg", ld.summary, height = 9, width = 6.5) #save file
+
 
 # 171 alliances with depth above -.6 
 sum(atop.milsup$latent.depth.mean > -.6)
@@ -369,11 +372,5 @@ t.test(atop.milsup$low.kap.sc ~ atop.milsup$econagg.dum)
 cor.test(atop.milsup$num.mem, atop.milsup$latent.depth.mean)
 ggplot(atop.milsup, aes(x = num.mem, y = latent.depth.mean)) +
   geom_point()
-
-
-# Export to public-goods-test paper and sources of depth paper
-write.csv(atop, 
-          "../Dissertation/public-goods-test/data/atop-additions.csv", 
-          row.names = F)
 
 

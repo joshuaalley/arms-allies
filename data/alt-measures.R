@@ -254,7 +254,7 @@ hist.bfa <- ggplot(benson.clinton.comp, aes(x = latent.depth.rs)) +
 hist.bc16 <- ggplot(benson.clinton.comp, aes(x = Depth.score.rs)) +
   geom_histogram() +
   ggtitle("Benson and Clinton")
-multiplot.ggplot(hist.bfa, hist.bc16)
+grid.arrange(hist.bfa, hist.bc16)
 
 # Scatter plot
 bc.score.comp <- ggplot(benson.clinton.comp, aes(y = Depth.score.rs, x = latent.depth.rs)) +

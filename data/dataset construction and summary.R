@@ -170,6 +170,7 @@ state.vars <- left_join(state.vars, gdp.data)
 
 
 # To solve missing GDP data from state splits in post-45 era, get GDP data from DiGiuseppe and Poast. 
+dg.poast <- read.csv("data/dg-poast2016.csv")
 state.vars <- left_join(state.vars, select(dg.poast, ccode, year, LNRGDP)) 
 state.vars$ln.gdp[is.na(state.vars$ln.gdp)] <- state.vars$LNRGDP[is.na(state.vars$ln.gdp)]
 state.vars <- select(state.vars, -c(LNRGDP))
@@ -443,13 +444,6 @@ state.vars$avg.rival.milex[is.na(state.vars$avg.rival.milex)] <- 0
 state.vars <- filter(state.vars, year <= 2007)
 
 
-# export data to test of public goods theory
-write.csv(state.vars, 
-          "../Dissertation/depth-sources/data/state-vars.csv", 
-          row.names = F)
-
-
-
 
 
 
@@ -480,11 +474,6 @@ atop.cow.year$atopid[is.na(atop.cow.year$atopid)] <- 0
 
 # If no ATOP alliance, fill all other alliance characteristic variables with a zero.
 atop.cow.year[4:36][is.na(atop.cow.year[, 4:36] & atop.cow.year$atopid == 0)] <- 0
-
-# export data to test of public goods theory
-write.csv(atop.cow.year, 
-          "../Dissertation/public-goods-test/data/atop-cow-year.csv", 
-          row.names = F)
 
 
 # Create a dataset of state-year alliance membership in pacts with military suport:
@@ -665,19 +654,9 @@ state.mem.cap$milex.contrib[is.na(state.mem.cap$milex.contrib) & state.mem.cap$a
 state.mem.cap$avg.democ[is.na(state.mem.cap$avg.democ) & state.mem.cap$atopid == 0] <- 0
 state.mem.cap$contrib.gdp[is.na(state.mem.cap$contrib.gdp) & state.mem.cap$atopid == 0] <- 0
 
-# export data to test of public goods theory
-write.csv(state.mem.cap, 
-          "../Dissertation/public-goods-test/data/state-mem-cap.csv", 
-          row.names = F)
-
 
 # Add allied spending to state-alliance-year data: single level regressions
 state.ally.year <- left_join(atop.cow.year, state.mem.cap)
-
-# Write to Olson and Zeckhauser reanalysis paper
-write.csv(state.ally.year, 
-          "../Dissertation/public-goods-test/data/alliance-state-year.csv", 
-          row.names = F)
 
 
 

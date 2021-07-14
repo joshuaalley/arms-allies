@@ -16,7 +16,7 @@ state.char.full <- state.ally.year %>%
   summarize(
     treaty.count = n(),
     total.ally.expend = sum(ally.spend[defense == 1 | offense == 1], na.rm = TRUE),
-    avg.treaty.contrib = mean(alliance.contrib[defense == 1 | offense == 1], na.rm = TRUE),
+    #avg.treaty.contrib = mean(alliance.contrib[defense == 1 | offense == 1], na.rm = TRUE),
     
     uncond.milsup.pres = max(uncond.milsup, na.rm = TRUE),
     uncond.milsup.expend = sum(ally.spend[uncond.milsup == 1], na.rm = TRUE),
